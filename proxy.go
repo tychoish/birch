@@ -101,7 +101,7 @@ func (ps *ProxySession) RespondToCommand(clientMessage Message, doc SimpleBSON) 
 
 func (ps *ProxySession) respondWithError(clientMessage Message, err error) error {
 	ps.logger.Logf(slogger.INFO, "respondWithError %s", err)
-	
+
 	if clientMessage.Header().OpCode == OP_QUERY {
 		errDoc := bson.D{{"$err", err.Error()}, {"ok", 0}}
 		doc, myErr := SimpleBSONConvert(errDoc)

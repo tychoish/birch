@@ -10,6 +10,7 @@ import "github.com/erh/mongonet"
 
 type MyFactory struct {
 }
+
 func (myf *MyFactory) NewInterceptor(ps *mongonet.ProxySession) mongonet.ProxyInterceptor {
 	return &MyInterceptor{ps}
 }
@@ -27,7 +28,7 @@ func (myi *MyInterceptor) sniResponse() mongonet.SimpleBSON {
 	return raw
 }
 
-func (myi* MyInterceptor) InterceptClientToMongo(m mongonet.Message) (mongonet.Message, mongonet.ResponseInterceptor, error) {
+func (myi *MyInterceptor) InterceptClientToMongo(m mongonet.Message) (mongonet.Message, mongonet.ResponseInterceptor, error) {
 	switch mm := m.(type) {
 	case *mongonet.QueryMessage:
 		if !mongonet.NamespaceIsCommand(mm.Namespace) {
@@ -56,7 +57,6 @@ func (myi* MyInterceptor) InterceptClientToMongo(m mongonet.Message) (mongonet.M
 	return m, nil, nil
 }
 
-
 func main() {
 
 	bindHost := flag.String("host", "127.0.0.1", "what to bind to")
@@ -79,7 +79,7 @@ func main() {
 	}
 
 	pc.InterceptorFactory = &MyFactory{}
-	
+
 	proxy := mongonet.NewProxy(pc)
 
 	err := proxy.Run()
