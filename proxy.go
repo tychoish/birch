@@ -32,11 +32,12 @@ type ResponseInterceptor interface {
 
 type ProxyInterceptor interface {
 	InterceptClientToMongo(m Message) (Message, ResponseInterceptor, error)
+	Close()
 }
 
 type ProxyInterceptorFactory interface {
 	// This has to be thread safe, will be called from many clients
-	NewInterceptor(ps *ProxySession) ProxyInterceptor
+	NewInterceptor(ps *ProxySession) (ProxyInterceptor, error)
 }
 
 // -----
@@ -205,12 +206,13 @@ func (ps *ProxySession) doLoop(mongoConn net.Conn) error {
 }
 
 func (ps *ProxySession) Run() {
+	var err error
 	defer ps.conn.Close()
 
 	switch c := ps.conn.(type) {
 	case *tls.Conn:
 		// we do this here so that we can get the SNI server name
-		err := c.Handshake()
+		err = c.Handshake()
 		if err != nil {
 			ps.logger.Logf(slogger.ERROR, "error doing tls handshake %s", err)
 			return
@@ -221,7 +223,12 @@ func (ps *ProxySession) Run() {
 	ps.logger.Logf(slogger.INFO, "new connection SSLServerName [%s]", ps.SSLServerName)
 
 	if ps.proxy.config.InterceptorFactory != nil {
-		ps.interceptor = ps.proxy.config.InterceptorFactory.NewInterceptor(ps)
+		ps.interceptor, err = ps.proxy.config.InterceptorFactory.NewInterceptor(ps)
+		if err != nil {
+			ps.logger.Logf(slogger.INFO, "error creating new interceptor %s", err)
+			return
+		}
+		defer ps.interceptor.Close()
 	}
 
 	// TODO: eventually this gets pooled

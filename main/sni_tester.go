@@ -11,8 +11,8 @@ import "github.com/erh/mongonet"
 type MyFactory struct {
 }
 
-func (myf *MyFactory) NewInterceptor(ps *mongonet.ProxySession) mongonet.ProxyInterceptor {
-	return &MyInterceptor{ps}
+func (myf *MyFactory) NewInterceptor(ps *mongonet.ProxySession) (mongonet.ProxyInterceptor, error) {
+	return &MyInterceptor{ps}, nil
 }
 
 type MyInterceptor struct {
@@ -55,6 +55,9 @@ func (myi *MyInterceptor) InterceptClientToMongo(m mongonet.Message) (mongonet.M
 	}
 
 	return m, nil, nil
+}
+
+func (myi *MyInterceptor) Close() {
 }
 
 func main() {
