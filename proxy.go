@@ -46,6 +46,10 @@ func (ps *ProxySession) GetLogger() *slogger.Logger {
 	return ps.logger
 }
 
+func (ps *ProxySession) ServerPort() int {
+     return ps.proxy.config.BindPort
+}
+
 func (ps *ProxySession) xferMongoToClient(mongoConn net.Conn, respInter ResponseInterceptor) (Message, error) {
 	resp, err := ReadMessage(mongoConn)
 	if err != nil {
