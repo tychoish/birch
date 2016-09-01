@@ -33,6 +33,8 @@ type ResponseInterceptor interface {
 type ProxyInterceptor interface {
 	InterceptClientToMongo(m Message) (Message, ResponseInterceptor, error)
 	Close()
+	TrackInBytes(int)
+	TrackOutBytes(int)
 }
 
 type ProxyInterceptorFactory interface {
@@ -47,28 +49,7 @@ func (ps *ProxySession) GetLogger() *slogger.Logger {
 }
 
 func (ps *ProxySession) ServerPort() int {
-     return ps.proxy.config.BindPort
-}
-
-func (ps *ProxySession) xferMongoToClient(mongoConn net.Conn, respInter ResponseInterceptor) (Message, error) {
-	resp, err := ReadMessage(mongoConn)
-	if err != nil {
-		return resp, NewStackErrorf("got error reading response from mongo %s", err)
-	}
-
-	if respInter != nil {
-		resp, err = respInter.InterceptMongoToClient(resp)
-		if err != nil {
-			return nil, NewStackErrorf("error intercepting message %s", err)
-		}
-	}
-
-	err = SendMessage(resp, ps.conn)
-	if err != nil {
-		return resp, NewStackErrorf("got error sending response to client %s", err)
-	}
-
-	return resp, nil
+	return ps.proxy.config.BindPort
 }
 
 func (ps *ProxySession) RespondToCommand(clientMessage Message, doc SimpleBSON) error {
@@ -162,6 +143,8 @@ func (ps *ProxySession) doLoop(mongoConn net.Conn) error {
 
 	var respInter ResponseInterceptor
 	if ps.interceptor != nil {
+		ps.interceptor.TrackInBytes(int(m.Header().Size))
+
 		m, respInter, err = ps.interceptor.InterceptClientToMongo(m)
 		if err != nil {
 			if !m.HasResponse() {
@@ -194,9 +177,25 @@ func (ps *ProxySession) doLoop(mongoConn net.Conn) error {
 			m.(*QueryMessage).Flags&(1<<6) != 0
 
 	for {
-		resp, err := ps.xferMongoToClient(mongoConn, respInter)
+		resp, err := ReadMessage(mongoConn)
 		if err != nil {
-			return err
+			return NewStackErrorf("got error reading response from mongo %s", err)
+		}
+
+		if respInter != nil {
+			resp, err = respInter.InterceptMongoToClient(resp)
+			if err != nil {
+				return NewStackErrorf("error intercepting message %s", err)
+			}
+		}
+
+		err = SendMessage(resp, ps.conn)
+		if err != nil {
+			return NewStackErrorf("got error sending response to client %s", err)
+		}
+
+		if ps.interceptor != nil {
+			ps.interceptor.TrackOutBytes(int(m.Header().Size))
 		}
 
 		if !inExhaustMode {
