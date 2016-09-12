@@ -148,7 +148,10 @@ func BSONWalk(doc bson.D, pathString string, visitor BSONWalkVisitor) (bson.D, e
 var DELETE_ME = fmt.Errorf("delete_me")
 
 func BSONWalkHelp(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bool) (bson.D, error) {
+	prev := doc
 	current := doc
+
+	docPath := []int{}
 
 	for pieceOffset, piece := range path {
 		idx := BSONIndexOf(current, piece)
@@ -157,6 +160,7 @@ func BSONWalkHelp(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bo
 		if idx < 0 {
 			return doc, nil
 		}
+		docPath = append(docPath, idx)
 
 		elem := &(current)[idx]
 
@@ -171,7 +175,13 @@ func BSONWalkHelp(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bo
 					if inArray {
 						return bson.D{}, DELETE_ME
 					} else {
-						panic("hi")
+						fixed := append(current[0:idx], current[idx+1:]...)
+						if pieceOffset == 0 {
+							return fixed, nil
+						}
+
+						prev[docPath[len(docPath)-2]].Value = fixed
+						return doc, nil
 					}
 				}
 
@@ -185,6 +195,7 @@ func BSONWalkHelp(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bo
 
 		switch val := elem.Value.(type) {
 		case bson.D:
+			prev = current
 			current = val
 		case []bson.D:
 			numDeleted := 0

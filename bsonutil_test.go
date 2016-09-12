@@ -164,3 +164,79 @@ func TestBSONWalk6(test *testing.T) {
 	}
 
 }
+
+func TestBSONWalk7(test *testing.T) {
+	doc := bson.D{{"a", 111}, {"b", 3}}
+	walker := &testWalker{}
+	doc, err := BSONWalk(doc, "a", walker)
+	if err != nil {
+		test.Errorf("why did we get an error %s", err)
+	}
+	if len(doc) != 1 {
+		test.Errorf("didn't delete 1 %s", doc)
+	}
+	if doc[0].Name != "b" {
+		test.Errorf("deleted wrong one? %s", doc)
+	}
+
+}
+
+func TestBSONWalk8(test *testing.T) {
+	doc := bson.D{{"b", 11}, {"a", 111}}
+	walker := &testWalker{}
+	doc, err := BSONWalk(doc, "a", walker)
+	if err != nil {
+		test.Errorf("why did we get an error %s", err)
+	}
+	if len(doc) != 1 {
+		test.Errorf("didn't delete 1 %s", doc)
+	}
+	if doc[0].Name != "b" {
+		test.Errorf("deleted wrong one? %s", doc)
+	}
+
+}
+
+func TestBSONWalk9(test *testing.T) {
+	doc := bson.D{{"b", 11}, {"a", 111}, {"c", 12}}
+	walker := &testWalker{}
+	doc, err := BSONWalk(doc, "a", walker)
+	if err != nil {
+		test.Errorf("why did we get an error %s", err)
+	}
+	if len(doc) != 2 {
+		test.Errorf("didn't delete 1 %s", doc)
+	}
+	if doc[0].Name != "b" {
+		test.Errorf("deleted wrong one? %s", doc)
+	}
+	if doc[1].Name != "c" {
+		test.Errorf("deleted wrong one? %s", doc)
+	}
+
+}
+
+func TestBSONWalk10(test *testing.T) {
+	doc := bson.D{{"b", 11}, {"a", bson.D{{"x", 1}, {"y", 111}}}, {"c", 12}}
+	walker := &testWalker{}
+	doc, err := BSONWalk(doc, "a.y", walker)
+	if err != nil {
+		test.Errorf("why did we get an error %s", err)
+	}
+	if len(doc) != 3 {
+		test.Errorf("what did i do! %s", doc)
+	}
+
+	if doc[1].Name != "a" {
+		test.Errorf("what did i do! %s", doc)
+	}
+
+	sub := doc[1].Value.(bson.D)
+	if len(sub) != 1 {
+		test.Errorf("didn't delete %s", doc)
+	}
+	if sub[0].Name != "x" {
+		test.Errorf("deleted wrong one? %s", doc)
+	}
+
+}
