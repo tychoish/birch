@@ -44,6 +44,10 @@ type ProxyInterceptorFactory interface {
 
 // -----
 
+func (ps *ProxySession) RemoteAddr() net.Addr {
+	return ps.conn.RemoteAddr()
+}
+
 func (ps *ProxySession) GetLogger() *slogger.Logger {
 	return ps.logger
 }
@@ -228,7 +232,7 @@ func (ps *ProxySession) Run() {
 	if ps.proxy.config.InterceptorFactory != nil {
 		ps.interceptor, err = ps.proxy.config.InterceptorFactory.NewInterceptor(ps)
 		if err != nil {
-			ps.logger.Logf(slogger.INFO, "error creating new interceptor %s", err)
+			ps.logger.Logf(slogger.INFO, "error creating new interceptor because: %s", err)
 			return
 		}
 		defer ps.interceptor.Close()
