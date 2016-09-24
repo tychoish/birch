@@ -1,0 +1,62 @@
+package mongonet
+
+import "net"
+import "sync"
+import "sync/atomic"
+import "time"
+
+type PooledConnection struct {
+	conn         net.Conn
+	lastUsedUnix int64
+	pool         *ConnectionPool
+	closed       bool
+}
+
+func (pc *PooledConnection) Close() {
+	pc.pool.Put(pc)
+}
+
+// ---
+
+type ConnectionPool struct {
+	address        string
+	timeoutSeconds int64
+
+	pool         *sync.Pool
+	totalCreated int64
+}
+
+func NewConnectionPool(address string) *ConnectionPool {
+	return &ConnectionPool{address, 3600, &sync.Pool{}, 0}
+}
+
+func (cp *ConnectionPool) Get() (*PooledConnection, error) {
+	raw := cp.pool.Get()
+	if raw != nil {
+		conn := raw.(*PooledConnection)
+		// if a connection has been idle for more than an hour, don't re-use it
+		if time.Now().Unix()-conn.lastUsedUnix < cp.timeoutSeconds {
+			conn.closed = false
+			return conn, nil
+		}
+		// close it since we're not going to use it anymore
+		conn.conn.Close()
+	}
+
+	newConn, err := net.Dial("tcp", cp.address)
+	if err != nil {
+		return &PooledConnection{}, err
+	}
+
+	atomic.AddInt64(&cp.totalCreated, 1)
+	return &PooledConnection{newConn, 0, cp, false}, nil
+}
+
+func (cp *ConnectionPool) Put(conn *PooledConnection) {
+	if conn.closed {
+		panic("closing a connection twice")
+	}
+	conn.lastUsedUnix = time.Now().Unix()
+	conn.closed = true
+	cp.pool.Put(conn)
+}
