@@ -10,7 +10,8 @@ import "gopkg.in/mgo.v2/bson"
 import "github.com/mongodb/slogger/v2/slogger"
 
 type Proxy struct {
-	config ProxyConfig
+	config   ProxyConfig
+	connPool *ConnectionPool
 
 	logger *slogger.Logger
 }
@@ -54,6 +55,15 @@ func (ps *ProxySession) GetLogger() *slogger.Logger {
 
 func (ps *ProxySession) ServerPort() int {
 	return ps.proxy.config.BindPort
+}
+
+func (ps *ProxySession) Stats() bson.D {
+	return bson.D{
+		{"connectionPool", bson.D{
+			{"totalCreated", ps.proxy.connPool.totalCreated},
+		},
+		},
+	}
 }
 
 func (ps *ProxySession) RespondToCommand(clientMessage Message, doc SimpleBSON) error {
@@ -136,13 +146,13 @@ func (ps *ProxySession) respondWithError(clientMessage Message, err error) error
 
 }
 
-func (ps *ProxySession) doLoop(mongoConn net.Conn) error {
+func (ps *ProxySession) doLoop(pooledConn *PooledConnection) (*PooledConnection, error) {
 	m, err := ReadMessage(ps.conn)
 	if err != nil {
 		if err == io.EOF {
-			return err
+			return pooledConn, err
 		}
-		return NewStackErrorf("got error reading from client: %s", err)
+		return pooledConn, NewStackErrorf("got error reading from client: %s", err)
 	}
 
 	var respInter ResponseInterceptor
@@ -153,28 +163,42 @@ func (ps *ProxySession) doLoop(mongoConn net.Conn) error {
 		if err != nil {
 			if !m.HasResponse() {
 				// we can't respond, so we just fail
-				return err
+				return pooledConn, err
 			}
 			err = ps.respondWithError(m, err)
 			if err != nil {
-				return NewStackErrorf("couldn't send error response to client %s", err)
+				return pooledConn, NewStackErrorf("couldn't send error response to client %s", err)
 			}
-			return nil
+			return pooledConn, nil
 		}
 		if m == nil {
 			// already responded
-			return nil
+			return pooledConn, nil
 		}
 	}
 
+	if pooledConn == nil {
+		pooledConn, err = ps.proxy.connPool.Get()
+		if err != nil {
+			return nil, NewStackErrorf("cannot get connection to mongo %s", err)
+		}
+	}
+
+	if pooledConn.closed {
+		panic("oh no!")
+	}
+	mongoConn := pooledConn.conn
+
 	err = SendMessage(m, mongoConn)
 	if err != nil {
-		return NewStackErrorf("error writing to mongo: %s", err)
+		return pooledConn, NewStackErrorf("error writing to mongo: %s", err)
 	}
 
 	if !m.HasResponse() {
-		return nil
+		return pooledConn, nil
 	}
+
+	defer pooledConn.Close()
 
 	inExhaustMode :=
 		m.Header().OpCode == OP_QUERY &&
@@ -183,19 +207,19 @@ func (ps *ProxySession) doLoop(mongoConn net.Conn) error {
 	for {
 		resp, err := ReadMessage(mongoConn)
 		if err != nil {
-			return NewStackErrorf("got error reading response from mongo %s", err)
+			return nil, NewStackErrorf("got error reading response from mongo %s", err)
 		}
 
 		if respInter != nil {
 			resp, err = respInter.InterceptMongoToClient(resp)
 			if err != nil {
-				return NewStackErrorf("error intercepting message %s", err)
+				return nil, NewStackErrorf("error intercepting message %s", err)
 			}
 		}
 
 		err = SendMessage(resp, ps.conn)
 		if err != nil {
-			return NewStackErrorf("got error sending response to client %s", err)
+			return nil, NewStackErrorf("got error sending response to client %s", err)
 		}
 
 		if ps.interceptor != nil {
@@ -203,11 +227,11 @@ func (ps *ProxySession) doLoop(mongoConn net.Conn) error {
 		}
 
 		if !inExhaustMode {
-			return nil
+			return nil, nil
 		}
 
 		if resp.(*ReplyMessage).CursorId == 0 {
-			return nil
+			return nil, nil
 		}
 	}
 }
@@ -238,26 +262,25 @@ func (ps *ProxySession) Run() {
 		defer ps.interceptor.Close()
 	}
 
-	// TODO: eventually this gets pooled
-	mongoConn, err := net.Dial("tcp", ps.proxy.config.MongoAddress())
-	if err != nil {
-		ps.logger.Logf(slogger.ERROR, "error connecting to mongo: %s %s\n", ps.proxy.config.MongoAddress(), err)
-		return
-	}
-
-	defer mongoConn.Close()
-
 	defer ps.logger.Logf(slogger.INFO, "socket closed")
 
+	var pooledConn *PooledConnection = nil
+
 	for {
-		err = ps.doLoop(mongoConn)
-		if err == io.EOF {
-			return
-		}
+		pooledConn, err = ps.doLoop(pooledConn)
 		if err != nil {
-			ps.logger.Logf(slogger.WARN, "error doing loop: %s", err)
+			if pooledConn != nil {
+				pooledConn.Close()
+			}
+			if err != io.EOF {
+				ps.logger.Logf(slogger.WARN, "error doing loop: %s", err)
+			}
 			return
 		}
+	}
+
+	if pooledConn != nil {
+		pooledConn.Close()
 	}
 
 }
@@ -265,7 +288,7 @@ func (ps *ProxySession) Run() {
 // -------
 
 func NewProxy(pc ProxyConfig) Proxy {
-	p := Proxy{pc, nil}
+	p := Proxy{pc, NewConnectionPool(pc.MongoAddress()), nil}
 
 	p.logger = p.NewLogger("proxy")
 
