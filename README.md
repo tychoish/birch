@@ -13,6 +13,7 @@ This is a proxy that adds a single command "sni".
 This is to help test client sni support.
 
 To Start
+   cd cmd/sni_tester
    go run sni_tester.go <path to crt file> <path to key file>
 
 To use
