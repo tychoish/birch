@@ -191,7 +191,7 @@ func (ps *ProxySession) doLoop(pooledConn *PooledConnection) (*PooledConnection,
 
 	err = SendMessage(m, mongoConn)
 	if err != nil {
-		return pooledConn, NewStackErrorf("error writing to mongo: %s", err)
+		return nil, NewStackErrorf("error writing to mongo: %s", err)
 	}
 
 	if !m.HasResponse() {
@@ -207,6 +207,7 @@ func (ps *ProxySession) doLoop(pooledConn *PooledConnection) (*PooledConnection,
 	for {
 		resp, err := ReadMessage(mongoConn)
 		if err != nil {
+			pooledConn.bad = true
 			return nil, NewStackErrorf("got error reading response from mongo %s", err)
 		}
 

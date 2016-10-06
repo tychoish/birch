@@ -11,6 +11,7 @@ type PooledConnection struct {
 	lastUsedUnix int64
 	pool         *ConnectionPool
 	closed       bool
+	bad          bool
 }
 
 func (pc *PooledConnection) Close() {
@@ -24,8 +25,8 @@ type ConnectionPool struct {
 	timeoutSeconds int64
 	trace          bool
 
-	pool         []*PooledConnection
-	poolMutex    sync.Mutex
+	pool      []*PooledConnection
+	poolMutex sync.Mutex
 
 	totalCreated int64
 }
@@ -42,6 +43,12 @@ func (cp *ConnectionPool) Trace(s string) {
 
 func (cp *ConnectionPool) LoadTotalCreated() int64 {
 	return atomic.LoadInt64(&cp.totalCreated)
+}
+
+func (cp *ConnectionPool) CurrentInPool() int {
+	cp.poolMutex.Lock()
+	defer cp.poolMutex.Unlock()
+	return len(cp.pool)
 }
 
 func (cp *ConnectionPool) rawGet() *PooledConnection {
@@ -67,7 +74,7 @@ func (cp *ConnectionPool) Get() (*PooledConnection, error) {
 		if conn == nil {
 			break
 		}
-		
+
 		// if a connection has been idle for more than an hour, don't re-use it
 		if time.Now().Unix()-conn.lastUsedUnix < cp.timeoutSeconds {
 			conn.closed = false
@@ -83,7 +90,7 @@ func (cp *ConnectionPool) Get() (*PooledConnection, error) {
 	}
 
 	atomic.AddInt64(&cp.totalCreated, 1)
-	return &PooledConnection{newConn, 0, cp, false}, nil
+	return &PooledConnection{newConn, 0, cp, false, false}, nil
 }
 
 func (cp *ConnectionPool) Put(conn *PooledConnection) {
@@ -93,6 +100,11 @@ func (cp *ConnectionPool) Put(conn *PooledConnection) {
 	}
 	conn.lastUsedUnix = time.Now().Unix()
 	conn.closed = true
+
+	if conn.bad {
+		conn.conn.Close()
+		return
+	}
 
 	cp.poolMutex.Lock()
 	defer cp.poolMutex.Unlock()

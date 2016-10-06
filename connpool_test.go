@@ -43,6 +43,16 @@ func fun(cp *ConnectionPool) error {
 	return nil
 }
 
+func funBad(cp *ConnectionPool) error {
+	conn, err := cp.Get()
+	if err != nil {
+		return err
+	}
+	conn.bad = true
+	defer conn.Close()
+	return nil
+}
+
 func TestConnectionPool1(t *testing.T) {
 	port := 12349
 	fs := FakeServer{}
@@ -66,7 +76,7 @@ func TestConnectionPool1(t *testing.T) {
 		return
 	}
 
-	// 2nd loop, should re-use connection	
+	// 2nd loop, should re-use connection
 	err = fun(cp)
 	if err != nil {
 		t.Errorf("error funning %s", err)
@@ -105,6 +115,19 @@ func TestConnectionPool1(t *testing.T) {
 
 	if cp.LoadTotalCreated() != 3 {
 		t.Errorf("why is total created %d", cp.LoadTotalCreated())
+		return
+	}
+
+	before := cp.CurrentInPool()
+
+	err = funBad(cp)
+	if err != nil {
+		panic(err)
+	}
+
+	after := cp.CurrentInPool()
+	if after != before-1 {
+		t.Errorf("bad didn't work %d -> %d", before, after)
 		return
 	}
 
