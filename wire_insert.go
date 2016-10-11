@@ -61,3 +61,18 @@ func parseInsertMessage(header MessageHeader, buf []byte) (Message, error) {
 
 	return m, nil
 }
+
+func NewInsertMessage(namespace string, docs ...SimpleBSON) *InsertMessage {
+	im := &InsertMessage{}
+
+	im.header.RequestID = 17 // TODO
+	im.header.ResponseTo = 0
+	im.header.OpCode = OP_INSERT
+
+	im.Flags = 0
+	im.Namespace = namespace
+
+	im.Docs = docs
+
+	return im
+}

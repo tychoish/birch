@@ -73,3 +73,16 @@ func parseQueryMessage(header MessageHeader, buf []byte) (Message, error) {
 
 	return qm, nil
 }
+
+func NewQueryMessage(ns string, flags int32, skip int32, toReturn int32, query SimpleBSON, project SimpleBSON) *QueryMessage {
+	qm := &QueryMessage{}
+	qm.header.RequestID = 17 // TODO
+	qm.header.OpCode = OP_QUERY
+	qm.Flags = flags
+	qm.Namespace = ns
+	qm.Skip = skip
+	qm.NReturn = toReturn
+	qm.Query = query
+	qm.Project = project
+	return qm
+}

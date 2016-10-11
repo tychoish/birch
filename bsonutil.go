@@ -18,6 +18,14 @@ func SimpleBSONConvert(d interface{}) (SimpleBSON, error) {
 	return SimpleBSON{int32(len(raw)), raw}, nil
 }
 
+func SimpleBSONConvertOrPanic(d interface{}) SimpleBSON {
+	raw, err := bson.Marshal(d)
+	if err != nil {
+		panic(err)
+	}
+	return SimpleBSON{int32(len(raw)), raw}
+}
+
 func (sb SimpleBSON) ToBSOND() (bson.D, error) {
 	t := bson.D{}
 	err := bson.Unmarshal(sb.BSON, &t)
