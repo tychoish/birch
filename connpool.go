@@ -21,6 +21,8 @@ func (pc *PooledConnection) Close() {
 
 // ---
 
+type ConnectionHook func(net.Conn) error
+
 type ConnectionPool struct {
 	address        string
 	ssl            bool
@@ -31,10 +33,12 @@ type ConnectionPool struct {
 	poolMutex sync.Mutex
 
 	totalCreated int64
+
+	postCreateHook ConnectionHook
 }
 
-func NewConnectionPool(address string, ssl bool) *ConnectionPool {
-	return &ConnectionPool{address, ssl, 3600, false, []*PooledConnection{}, sync.Mutex{}, 0}
+func NewConnectionPool(address string, ssl bool, hook func(net.Conn) error) *ConnectionPool {
+	return &ConnectionPool{address, ssl, 3600, false, []*PooledConnection{}, sync.Mutex{}, 0, hook}
 }
 
 func (cp *ConnectionPool) Trace(s string) {
@@ -100,6 +104,13 @@ func (cp *ConnectionPool) Get() (*PooledConnection, error) {
 
 	if err != nil {
 		return &PooledConnection{}, err
+	}
+
+	if cp.postCreateHook != nil {
+		err = cp.postCreateHook(newConn)
+		if err != nil {
+			return &PooledConnection{}, err
+		}
 	}
 
 	atomic.AddInt64(&cp.totalCreated, 1)

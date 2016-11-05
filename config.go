@@ -21,6 +21,8 @@ type ProxyConfig struct {
 	VerboseLevel int
 
 	InterceptorFactory ProxyInterceptorFactory
+
+	ConnectionPoolHook ConnectionHook
 }
 
 func NewProxyConfig(bindHost string, bindPort int, mongoHost string, mongoPort int) ProxyConfig {
@@ -34,6 +36,7 @@ func NewProxyConfig(bindHost string, bindPort int, mongoHost string, mongoPort i
 		nil,
 		0,   // VerboseLevel
 		nil, // InterceptorFactory
+		nil, // ConnectionPoolHook
 	}
 }
 
