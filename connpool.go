@@ -1,5 +1,6 @@
 package mongonet
 
+import "crypto/tls"
 import "fmt"
 import "net"
 import "sync"
@@ -22,6 +23,7 @@ func (pc *PooledConnection) Close() {
 
 type ConnectionPool struct {
 	address        string
+	ssl            bool
 	timeoutSeconds int64
 	trace          bool
 
@@ -31,8 +33,8 @@ type ConnectionPool struct {
 	totalCreated int64
 }
 
-func NewConnectionPool(address string) *ConnectionPool {
-	return &ConnectionPool{address, 3600, false, []*PooledConnection{}, sync.Mutex{}, 0}
+func NewConnectionPool(address string, ssl bool) *ConnectionPool {
+	return &ConnectionPool{address, ssl, 3600, false, []*PooledConnection{}, sync.Mutex{}, 0}
 }
 
 func (cp *ConnectionPool) Trace(s string) {
@@ -84,7 +86,18 @@ func (cp *ConnectionPool) Get() (*PooledConnection, error) {
 		conn.conn.Close()
 	}
 
-	newConn, err := net.Dial("tcp", cp.address)
+	var err error
+	var newConn net.Conn
+
+	if cp.ssl {
+		tlsConfig := &tls.Config{}
+		tlsConfig.InsecureSkipVerify = true
+
+		newConn, err = tls.Dial("tcp", cp.address, tlsConfig)
+	} else {
+		newConn, err = net.Dial("tcp", cp.address)
+	}
+
 	if err != nil {
 		return &PooledConnection{}, err
 	}

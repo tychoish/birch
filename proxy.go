@@ -289,7 +289,7 @@ func (ps *ProxySession) Run() {
 // -------
 
 func NewProxy(pc ProxyConfig) Proxy {
-	p := Proxy{pc, NewConnectionPool(pc.MongoAddress()), nil}
+	p := Proxy{pc, NewConnectionPool(pc.MongoAddress(), pc.MongoSSL), nil}
 
 	p.logger = p.NewLogger("proxy")
 

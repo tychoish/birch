@@ -13,6 +13,7 @@ type ProxyConfig struct {
 
 	MongoHost string
 	MongoPort int
+	MongoSSL  bool
 
 	UseSSL  bool
 	SSLKeys []SSLPair
@@ -28,6 +29,7 @@ func NewProxyConfig(bindHost string, bindPort int, mongoHost string, mongoPort i
 		bindPort,
 		mongoHost,
 		mongoPort,
+		false, // MongoSSL
 		false, // UseSSL
 		nil,
 		0,   // VerboseLevel
