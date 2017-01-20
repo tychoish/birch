@@ -34,8 +34,8 @@ type ResponseInterceptor interface {
 type ProxyInterceptor interface {
 	InterceptClientToMongo(m Message) (Message, ResponseInterceptor, error)
 	Close()
-	TrackInBytes(int)
-	TrackOutBytes(int)
+	TrackRequest(MessageHeader)
+	TrackResponse(MessageHeader)
 }
 
 type ProxyInterceptorFactory interface {
@@ -158,7 +158,7 @@ func (ps *ProxySession) doLoop(pooledConn *PooledConnection) (*PooledConnection,
 
 	var respInter ResponseInterceptor
 	if ps.interceptor != nil {
-		ps.interceptor.TrackInBytes(int(m.Header().Size))
+		ps.interceptor.TrackRequest(m.Header())
 
 		m, respInter, err = ps.interceptor.InterceptClientToMongo(m)
 		if err != nil {
@@ -225,7 +225,7 @@ func (ps *ProxySession) doLoop(pooledConn *PooledConnection) (*PooledConnection,
 		}
 
 		if ps.interceptor != nil {
-			ps.interceptor.TrackOutBytes(int(m.Header().Size))
+			ps.interceptor.TrackResponse(resp.Header())
 		}
 
 		if !inExhaustMode {
