@@ -162,6 +162,12 @@ func (ps *ProxySession) doLoop(pooledConn *PooledConnection) (*PooledConnection,
 
 		m, respInter, err = ps.interceptor.InterceptClientToMongo(m)
 		if err != nil {
+			if m == nil {
+				if pooledConn != nil {
+					pooledConn.Close()
+				}
+				return nil, err
+			}
 			if !m.HasResponse() {
 				// we can't respond, so we just fail
 				return pooledConn, err
