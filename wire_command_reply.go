@@ -43,11 +43,17 @@ func parseCommandReplyMessage(header MessageHeader, buf []byte) (Message, error)
 	if err != nil {
 		return rm, err
 	}
+	if len(buf) < int(rm.CommandReply.Size) {
+		return rm, NewStackErrorf("invalid command message -- message length is too short.")
+	}
 	buf = buf[rm.CommandReply.Size:]
 
 	rm.Metadata, err = parseSimpleBSON(buf)
 	if err != nil {
 		return rm, err
+	}
+	if len(buf) < int(rm.Metadata.Size) {
+		return rm, NewStackErrorf("invalid command message -- message length is too short.")
 	}
 	buf = buf[rm.Metadata.Size:]
 

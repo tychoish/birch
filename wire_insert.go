@@ -41,6 +41,10 @@ func parseInsertMessage(header MessageHeader, buf []byte) (Message, error) {
 	var err error
 	loc := 0
 
+	if len(buf) < 4 {
+		return m, NewStackErrorf("invalid insert message -- message must have length of at least 4 bytes.")
+	}
+
 	m.Flags = readInt32(buf[loc:])
 	loc += 4
 
