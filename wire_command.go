@@ -1,5 +1,7 @@
 package mongonet
 
+import "errors"
+
 func (m *CommandMessage) HasResponse() bool {
 	return true
 }
@@ -48,7 +50,7 @@ func parseCommandMessage(header MessageHeader, buf []byte) (Message, error) {
 		return cmd, err
 	}
 	if len(buf) < len(cmd.DB)+1 {
-		return cmd, NewStackErrorf("invalid command message -- message length is too short.")
+		return cmd, errors.New("invalid command message -- message length is too short.")
 	}
 	buf = buf[len(cmd.DB)+1:]
 
@@ -57,7 +59,7 @@ func parseCommandMessage(header MessageHeader, buf []byte) (Message, error) {
 		return cmd, err
 	}
 	if len(buf) < len(cmd.CmdName)+1 {
-		return cmd, NewStackErrorf("invalid command message -- message length is too short.")
+		return cmd, errors.New("invalid command message -- message length is too short.")
 	}
 	buf = buf[len(cmd.CmdName)+1:]
 
@@ -66,7 +68,7 @@ func parseCommandMessage(header MessageHeader, buf []byte) (Message, error) {
 		return cmd, err
 	}
 	if len(buf) < int(cmd.CommandArgs.Size) {
-		return cmd, NewStackErrorf("invalid command message -- message length is too short.")
+		return cmd, errors.New("invalid command message -- message length is too short.")
 	}
 	buf = buf[cmd.CommandArgs.Size:]
 
@@ -75,7 +77,7 @@ func parseCommandMessage(header MessageHeader, buf []byte) (Message, error) {
 		return cmd, err
 	}
 	if len(buf) < int(cmd.Metadata.Size) {
-		return cmd, NewStackErrorf("invalid command message -- message length is too short.")
+		return cmd, errors.New("invalid command message -- message length is too short.")
 	}
 	buf = buf[cmd.Metadata.Size:]
 

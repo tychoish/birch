@@ -1,12 +1,15 @@
 package mongonet
 
-import "crypto/tls"
-import "crypto/x509"
-import "fmt"
-import "net"
-import "sync"
-import "sync/atomic"
-import "time"
+import (
+	"crypto/tls"
+	"crypto/x509"
+	"net"
+	"sync"
+	"sync/atomic"
+	"time"
+
+	"github.com/mongodb/grip"
+)
 
 type PooledConnection struct {
 	conn         net.Conn
@@ -40,13 +43,15 @@ type ConnectionPool struct {
 	postCreateHook ConnectionHook
 }
 
-func NewConnectionPool(address string, ssl bool, rootCAs *x509.CertPool, sslSkipVerify bool, hook func(net.Conn) error) *ConnectionPool {
-	return &ConnectionPool{address, ssl, rootCAs, sslSkipVerify, 3600, false, []*PooledConnection{}, sync.Mutex{}, 0, hook}
-}
-
-func (cp *ConnectionPool) Trace(s string) {
-	if cp.trace {
-		fmt.Printf(s)
+func NewConnectionPool(address string, ssl bool, rootCAs *x509.CertPool, sslSkipVerify bool, hook ConnectionHook) *ConnectionPool {
+	return &ConnectionPool{
+		address:        address,
+		ssl:            ssl,
+		rootCAs:        rootCAs,
+		sslSkipVerify:  sslSkipVerify,
+		timeoutSeconds: 3600,
+		pool:           []*PooledConnection{},
+		postCreateHook: hook,
 	}
 }
 
@@ -76,7 +81,7 @@ func (cp *ConnectionPool) rawGet() *PooledConnection {
 }
 
 func (cp *ConnectionPool) Get() (*PooledConnection, error) {
-	cp.Trace("ConnectionPool::Get\n")
+	grip.Debug("ConnectionPool::Get")
 
 	for {
 		conn := cp.rawGet()
@@ -120,10 +125,12 @@ func (cp *ConnectionPool) Get() (*PooledConnection, error) {
 }
 
 func (cp *ConnectionPool) Put(conn *PooledConnection) {
-	cp.Trace("ConnectionPool::Put\n")
+	grip.Debug("ConnectionPool::Put")
+
 	if conn.closed {
 		panic("closing a connection twice")
 	}
+
 	conn.lastUsedUnix = time.Now().Unix()
 	conn.closed = true
 
@@ -134,6 +141,6 @@ func (cp *ConnectionPool) Put(conn *PooledConnection) {
 
 	cp.poolMutex.Lock()
 	defer cp.poolMutex.Unlock()
-	cp.pool = append(cp.pool, conn)
 
+	cp.pool = append(cp.pool, conn)
 }

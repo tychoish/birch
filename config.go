@@ -1,10 +1,12 @@
 package mongonet
 
-import "crypto/x509"
-import "fmt"
-import "time"
+import (
+	"crypto/x509"
+	"fmt"
+	"time"
 
-import "github.com/mongodb/slogger/v2/slogger"
+	"github.com/mongodb/grip/level"
+)
 
 type SSLPair struct {
 	CertFile string
@@ -24,32 +26,20 @@ type ProxyConfig struct {
 	UseSSL  bool
 	SSLKeys []SSLPair
 
-	LogLevel  slogger.Level
-	Appenders []slogger.Appender
+	LogLevel level.Priority
 
 	InterceptorFactory ProxyInterceptorFactory
-
 	ConnectionPoolHook ConnectionHook
-
 	TCPKeepAlivePeriod time.Duration // set to 0 for no keep alives
 }
 
 func NewProxyConfig(bindHost string, bindPort int, mongoHost string, mongoPort int) ProxyConfig {
 	return ProxyConfig{
-		bindHost,
-		bindPort,
-		mongoHost,
-		mongoPort,
-		false, // MongoSSL
-		nil,   // MongoRootCAs
-		false, // MongoSSLSkipVerify
-		false, // UseSSL
-		nil,
-		slogger.OFF, // LogLevel
-		nil,         // Appenders
-		nil,         // InterceptorFactory
-		nil,         // ConnectionPoolHook
-		0,           // TCPKeepAlivePeriod
+		BindHost:  bindHost,
+		BindPort:  bindPort,
+		MongoHost: mongoHost,
+		MongoPort: mongoPort,
+		LogLevel:  level.Priority(0),
 	}
 }
 

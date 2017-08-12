@@ -1,5 +1,7 @@
 package mongonet
 
+import "github.com/pkg/errors"
+
 func (m *CommandReplyMessage) HasResponse() bool {
 	return false // because its a response
 }
@@ -33,7 +35,6 @@ func (m *CommandReplyMessage) Serialize() []byte {
 }
 
 func parseCommandReplyMessage(header MessageHeader, buf []byte) (Message, error) {
-
 	rm := &CommandReplyMessage{}
 	rm.header = header
 
@@ -44,7 +45,7 @@ func parseCommandReplyMessage(header MessageHeader, buf []byte) (Message, error)
 		return rm, err
 	}
 	if len(buf) < int(rm.CommandReply.Size) {
-		return rm, NewStackErrorf("invalid command message -- message length is too short.")
+		return rm, errors.New("invalid command message -- message length is too short")
 	}
 	buf = buf[rm.CommandReply.Size:]
 
@@ -53,7 +54,7 @@ func parseCommandReplyMessage(header MessageHeader, buf []byte) (Message, error)
 		return rm, err
 	}
 	if len(buf) < int(rm.Metadata.Size) {
-		return rm, NewStackErrorf("invalid command message -- message length is too short.")
+		return rm, errors.New("invalid command message -- message length is too short")
 	}
 	buf = buf[rm.Metadata.Size:]
 

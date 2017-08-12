@@ -1,9 +1,13 @@
 package mongonet
 
-import "fmt"
-import "net"
-import "testing"
-import "time"
+import (
+	"fmt"
+	"net"
+	"testing"
+	"time"
+
+	"github.com/mongodb/grip"
+)
 
 type FakeServer struct {
 	numAccepted int
@@ -11,7 +15,7 @@ type FakeServer struct {
 
 func (fs *FakeServer) doThread(conn net.Conn, threadNumber int) {
 	defer conn.Close()
-	fmt.Printf("connection from %s\n", conn.RemoteAddr())
+	grip.Infof("connection from %s", conn.RemoteAddr())
 }
 
 func (fs *FakeServer) run(ln net.Listener) {
@@ -130,5 +134,4 @@ func TestConnectionPool1(t *testing.T) {
 		t.Errorf("bad didn't work %d -> %d", before, after)
 		return
 	}
-
 }

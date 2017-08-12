@@ -1,6 +1,10 @@
 package mongonet
 
-import "io"
+import (
+	"io"
+
+	"github.com/pkg/errors"
+)
 
 const MaxInt32 = 2147483647
 
@@ -8,7 +12,7 @@ func sendBytes(writer io.Writer, buf []byte) error {
 	for {
 		written, err := writer.Write(buf)
 		if err != nil {
-			return NewStackErrorf("error writing to client: %s", err)
+			return errors.Wrap(err, "error writing to client")
 		}
 
 		if written == len(buf) {
@@ -28,7 +32,7 @@ func ReadMessage(reader io.Reader) (Message, error) {
 		return nil, err
 	}
 	if n != 4 {
-		return nil, NewStackErrorf("didn't read message size from socket, got %d", n)
+		return nil, errors.Errorf("didn't read message size from socket, got %d", n)
 	}
 
 	header := MessageHeader{}
@@ -37,13 +41,13 @@ func ReadMessage(reader io.Reader) (Message, error) {
 
 	if header.Size > int32(200*1024*1024) {
 		if header.Size == 542393671 {
-			return nil, NewStackErrorf("message too big, probably http request %d", header.Size)
+			return nil, errors.Errorf("message too big, probably http request %d", header.Size)
 		}
-		return nil, NewStackErrorf("message too big %d", header.Size)
+		return nil, errors.Errorf("message too big %d", header.Size)
 	}
 
 	if header.Size < 0 || header.Size-4 > MaxInt32 {
-		return nil, NewStackErrorf("message header has invalid size.")
+		return nil, errors.New("message header has invalid size.")
 	}
 	restBuf := make([]byte, header.Size-4)
 
@@ -59,7 +63,7 @@ func ReadMessage(reader io.Reader) (Message, error) {
 	}
 
 	if len(restBuf) < 12 {
-		return nil, NewStackErrorf("invalid message header. either header.Size = %v is shorter than message length, or message is missing RequestId, ResponseTo, or OpCode fields.", header.Size)
+		return nil, errors.Errorf("invalid message header. either header.Size = %v is shorter than message length, or message is missing RequestId, ResponseTo, or OpCode fields.", header.Size)
 	}
 	header.RequestID = readInt32(restBuf)
 	header.ResponseTo = readInt32(restBuf[4:])
@@ -87,7 +91,7 @@ func ReadMessage(reader io.Reader) (Message, error) {
 	case OP_COMMAND_REPLY:
 		return parseCommandReplyMessage(header, body)
 	default:
-		return nil, NewStackErrorf("unknown op code: %s", header.OpCode)
+		return nil, errors.Errorf("unknown op code: %s", header.OpCode)
 	}
 
 }

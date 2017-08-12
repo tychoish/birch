@@ -1,5 +1,7 @@
 package mongonet
 
+import "github.com/pkg/errors"
+
 func (m *UpdateMessage) HasResponse() bool {
 	return false
 }
@@ -43,7 +45,7 @@ func parseUpdateMessage(header MessageHeader, buf []byte) (Message, error) {
 	loc := 0
 
 	if len(buf) < 4 {
-		return m, NewStackErrorf("invalid update message -- message must have length of at least 4 bytes.")
+		return m, errors.New("invalid update message -- message must have length of at least 4 bytes")
 	}
 	m.Reserved = readInt32(buf[loc:])
 	loc += 4
@@ -55,7 +57,7 @@ func parseUpdateMessage(header MessageHeader, buf []byte) (Message, error) {
 	loc += len(m.Namespace) + 1
 
 	if len(buf) < (loc + 4) {
-		return m, NewStackErrorf("invalid update message -- message length is too short.")
+		return m, errors.New("invalid update message -- message length is too short")
 	}
 	m.Flags = readInt32(buf[loc:])
 	loc += 4
@@ -67,7 +69,7 @@ func parseUpdateMessage(header MessageHeader, buf []byte) (Message, error) {
 	loc += int(m.Filter.Size)
 
 	if len(buf) < loc {
-		return m, NewStackErrorf("invalid update message -- message length is too short.")
+		return m, errors.New("invalid update message -- message length is too short")
 	}
 	m.Update, err = parseSimpleBSON(buf[loc:])
 	if err != nil {

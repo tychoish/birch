@@ -1,9 +1,11 @@
 package mongonet
 
-import "fmt"
-import "strings"
+import (
+	"strings"
 
-import "gopkg.in/mgo.v2/bson"
+	"github.com/pkg/errors"
+	"gopkg.in/mgo.v2/bson"
+)
 
 type SimpleBSON struct {
 	Size int32
@@ -39,7 +41,7 @@ func (sb SimpleBSON) Copy(loc *int, buf []byte) {
 
 func parseSimpleBSON(b []byte) (SimpleBSON, error) {
 	if len(b) < 4 {
-		return SimpleBSON{}, NewStackErrorf("invalid bson -- length of bytes must be at least 4, not %v", len(b))
+		return SimpleBSON{}, errors.Errorf("invalid bson -- length of bytes must be at least 4, not %v", len(b))
 	}
 	size := readInt32(b)
 	if int(size) == 0 {
@@ -48,11 +50,11 @@ func parseSimpleBSON(b []byte) (SimpleBSON, error) {
 	}
 
 	if int(size) > (128 * 1024 * 1024) {
-		return SimpleBSON{}, NewStackErrorf("bson size invalid %d", size)
+		return SimpleBSON{}, errors.Errorf("bson size invalid %d", size)
 	}
 
 	if int(size) > len(b) {
-		return SimpleBSON{}, NewStackErrorf("invalid bson -- size = %v is greater than length of bytes = %v", size, len(b))
+		return SimpleBSON{}, errors.Errorf("invalid bson -- size = %v is greater than length of bytes = %v", size, len(b))
 	}
 
 	return SimpleBSON{size, b[0:int(size)]}, nil
@@ -70,6 +72,7 @@ func BSONIndexOf(doc bson.D, name string) int {
 			return i
 		}
 	}
+
 	return -1
 }
 
@@ -78,7 +81,7 @@ func GetAsString(elem bson.DocElem) (string, error) {
 	case string:
 		return val, nil
 	default:
-		return "", NewStackErrorf("not a string %T %s", val, val)
+		return "", errors.Errorf("not a string %T %s", val, val)
 	}
 }
 
@@ -93,7 +96,7 @@ func GetAsInt(elem bson.DocElem) (int, error) {
 	case float64:
 		return int(val), nil
 	default:
-		return 0, NewStackErrorf("not a number %T %s", val, val)
+		return 0, errors.Errorf("not a number %T %s", val, val)
 	}
 }
 
@@ -110,7 +113,7 @@ func GetAsBool(elem bson.DocElem) (bool, error) {
 	case float64:
 		return val != 0.0, nil
 	default:
-		return false, NewStackErrorf("not a bool %T %s", val, val)
+		return false, errors.Errorf("not a bool %T %s", val, val)
 	}
 }
 
@@ -119,7 +122,7 @@ func GetAsBSON(elem bson.DocElem) (bson.D, error) {
 	case bson.D:
 		return val, nil
 	default:
-		return bson.D{}, NewStackErrorf("not bson %T %s", val, val)
+		return bson.D{}, errors.Errorf("not bson %T %s", val, val)
 	}
 }
 
@@ -135,34 +138,28 @@ func GetAsBSONDocs(elem bson.DocElem) ([]bson.D, error) {
 			case bson.D:
 				a[num] = fixed
 			default:
-				return []bson.D{}, NewStackErrorf("not bson.D %T %s", raw, raw)
+				return []bson.D{}, errors.Errorf("not bson.D %T %s", raw, raw)
 			}
 		}
 		return a, nil
 
 	default:
-		return []bson.D{}, NewStackErrorf("not an array %T", elem.Value)
+		return []bson.D{}, errors.Errorf("not an array %T", elem.Value)
 	}
 }
 
 // ---
 
-type BSONWalkVisitor interface {
-	/**
-	change value
-	set Name = "" to delete
-	*/
-	Visit(elem *bson.DocElem) error
-}
+type BSONWalkVisitor func(*bson.DocElem) error
 
 func BSONWalk(doc bson.D, pathString string, visitor BSONWalkVisitor) (bson.D, error) {
 	path := strings.Split(pathString, ".")
-	return BSONWalkHelp(doc, path, visitor, false)
+	return walkBSON(doc, path, visitor, false)
 }
 
-var DELETE_ME = fmt.Errorf("delete_me")
+var walkAbortSignal = errors.New("walkAbortSignal")
 
-func BSONWalkHelp(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bool) (bson.D, error) {
+func walkBSON(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bool) (bson.D, error) {
 	prev := doc
 	current := doc
 
@@ -184,11 +181,11 @@ func BSONWalkHelp(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bo
 			if len(elem.Name) == 0 {
 				panic("this is not ok right now")
 			}
-			err := visitor.Visit(elem)
+			err := visitor(elem)
 			if err != nil {
-				if err == DELETE_ME {
+				if err == walkAbortSignal {
 					if inArray {
-						return bson.D{}, DELETE_ME
+						return bson.D{}, walkAbortSignal
 					} else {
 						fixed := append(current[0:idx], current[idx+1:]...)
 						if pieceOffset == 0 {
@@ -200,7 +197,7 @@ func BSONWalkHelp(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bo
 					}
 				}
 
-				return nil, fmt.Errorf("error visiting node %s", err)
+				return nil, errors.Wrap(err, "error visiting node")
 			}
 
 			return doc, nil
@@ -217,11 +214,11 @@ func BSONWalkHelp(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bo
 
 			for arrayOffset, sub := range val {
 				newDoc, err := BSONWalkHelp(sub, path[pieceOffset+1:], visitor, true)
-				if err == DELETE_ME {
+				if err == walkAbortSignal {
 					newDoc = nil
 					numDeleted++
 				} else if err != nil {
-					return nil, fmt.Errorf("error going deeper into array %s", err)
+					return nil, errors.Wrap(err, "error going deeper into array")
 				}
 
 				val[arrayOffset] = newDoc
@@ -248,16 +245,16 @@ func BSONWalkHelp(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bo
 				switch sub := subRaw.(type) {
 				case bson.D:
 					newDoc, err := BSONWalkHelp(sub, path[pieceOffset+1:], visitor, true)
-					if err == DELETE_ME {
+					if err == walkAbortSignal {
 						newDoc = nil
 						numDeleted++
 					} else if err != nil {
-						return nil, fmt.Errorf("error going deeper into array %s", err)
+						return nil, errors.Wrap(err, "error going deeper into array")
 					}
 
 					val[arrayOffset] = newDoc
 				default:
-					return nil, fmt.Errorf("bad type going deeper into array %s", sub)
+					return nil, errors.Errorf("bad type going deeper into array %s", sub)
 				}
 			}
 
@@ -275,7 +272,6 @@ func BSONWalkHelp(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bo
 
 			return doc, nil
 		default:
-			//fmt.Printf("hi %#v\n", elem.Value)
 			return doc, nil
 		}
 	}

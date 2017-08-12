@@ -1,8 +1,10 @@
 package mongonet
 
-import "testing"
+import (
+	"testing"
 
-import "gopkg.in/mgo.v2/bson"
+	"gopkg.in/mgo.v2/bson"
+)
 
 func TestBSONIndexOf(test *testing.T) {
 	doc := bson.D{{"a", 1}, {"b", 3}}
@@ -27,7 +29,7 @@ type testWalker struct {
 func (tw *testWalker) Visit(elem *bson.DocElem) error {
 	tw.seen = append(tw.seen, *elem)
 	if elem.Value.(int) == 111 {
-		return DELETE_ME
+		return walkAbortSignal
 	}
 	elem.Value = 17
 	return nil
@@ -36,7 +38,7 @@ func (tw *testWalker) Visit(elem *bson.DocElem) error {
 func TestBSONWalk1(test *testing.T) {
 	doc := bson.D{{"a", 1}, {"b", 3}}
 	walker := &testWalker{}
-	doc, err := BSONWalk(doc, "b", walker)
+	doc, err := BSONWalk(doc, "b", walker.Visit)
 	if err != nil {
 		test.Errorf("why did we get an error %s", err)
 	}
@@ -54,7 +56,7 @@ func TestBSONWalk1(test *testing.T) {
 func TestBSONWalk2(test *testing.T) {
 	doc := bson.D{{"a", 1}, {"b", 3}, {"c", bson.D{{"x", 5}, {"y", 7}}}}
 	walker := &testWalker{}
-	doc, err := BSONWalk(doc, "c.y", walker)
+	doc, err := BSONWalk(doc, "c.y", walker.Visit)
 	if err != nil {
 		test.Errorf("why did we get an error %s", err)
 		return
@@ -74,7 +76,7 @@ func TestBSONWalk2(test *testing.T) {
 func TestBSONWalk3(test *testing.T) {
 	doc := bson.D{{"a", 1}, {"b", 3}, {"c", []bson.D{bson.D{{"x", 5}}, bson.D{{"x", 7}}}}}
 	walker := &testWalker{}
-	doc, err := BSONWalk(doc, "c.x", walker)
+	doc, err := BSONWalk(doc, "c.x", walker.Visit)
 	if err != nil {
 		test.Errorf("why did we get an error %s", err)
 		return
@@ -94,7 +96,7 @@ func TestBSONWalk3(test *testing.T) {
 func TestBSONWalk4(test *testing.T) {
 	doc := bson.D{{"a", 1}, {"b", 3}, {"c", []interface{}{bson.D{{"x", 5}}, bson.D{{"x", 7}}}}}
 	walker := &testWalker{}
-	doc, err := BSONWalk(doc, "c.x", walker)
+	doc, err := BSONWalk(doc, "c.x", walker.Visit)
 	if err != nil {
 		test.Errorf("why did we get an error %s", err)
 		return
@@ -114,7 +116,7 @@ func TestBSONWalk4(test *testing.T) {
 func TestBSONWalk5(test *testing.T) {
 	doc := bson.D{{"a", 1}, {"b", 3}, {"c", []interface{}{bson.D{{"x", 5}}, bson.D{{"x", 111}, {"y", 3}}, bson.D{{"x", 7}}}}}
 	walker := &testWalker{}
-	doc, err := BSONWalk(doc, "c.x", walker)
+	doc, err := BSONWalk(doc, "c.x", walker.Visit)
 	if err != nil {
 		test.Errorf("why did we get an error %s", err)
 		return
@@ -141,7 +143,7 @@ func TestBSONWalk5(test *testing.T) {
 func TestBSONWalk6(test *testing.T) {
 	doc := bson.D{{"a", 1}, {"b", 3}, {"c", []bson.D{bson.D{{"x", 5}}, bson.D{{"x", 111}, {"y", 3}}, bson.D{{"x", 7}}}}}
 	walker := &testWalker{}
-	doc, err := BSONWalk(doc, "c.x", walker)
+	doc, err := BSONWalk(doc, "c.x", walker.Visit)
 	if err != nil {
 		test.Errorf("why did we get an error %s", err)
 		return
@@ -168,7 +170,7 @@ func TestBSONWalk6(test *testing.T) {
 func TestBSONWalk7(test *testing.T) {
 	doc := bson.D{{"a", 111}, {"b", 3}}
 	walker := &testWalker{}
-	doc, err := BSONWalk(doc, "a", walker)
+	doc, err := BSONWalk(doc, "a", walker.Visit)
 	if err != nil {
 		test.Errorf("why did we get an error %s", err)
 	}
@@ -184,7 +186,7 @@ func TestBSONWalk7(test *testing.T) {
 func TestBSONWalk8(test *testing.T) {
 	doc := bson.D{{"b", 11}, {"a", 111}}
 	walker := &testWalker{}
-	doc, err := BSONWalk(doc, "a", walker)
+	doc, err := BSONWalk(doc, "a", walker.Visit)
 	if err != nil {
 		test.Errorf("why did we get an error %s", err)
 	}
@@ -200,7 +202,7 @@ func TestBSONWalk8(test *testing.T) {
 func TestBSONWalk9(test *testing.T) {
 	doc := bson.D{{"b", 11}, {"a", 111}, {"c", 12}}
 	walker := &testWalker{}
-	doc, err := BSONWalk(doc, "a", walker)
+	doc, err := BSONWalk(doc, "a", walker.Visit)
 	if err != nil {
 		test.Errorf("why did we get an error %s", err)
 	}
@@ -219,7 +221,7 @@ func TestBSONWalk9(test *testing.T) {
 func TestBSONWalk10(test *testing.T) {
 	doc := bson.D{{"b", 11}, {"a", bson.D{{"x", 1}, {"y", 111}}}, {"c", 12}}
 	walker := &testWalker{}
-	doc, err := BSONWalk(doc, "a.y", walker)
+	doc, err := BSONWalk(doc, "a.y", walker.Visit)
 	if err != nil {
 		test.Errorf("why did we get an error %s", err)
 	}

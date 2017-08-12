@@ -1,5 +1,7 @@
 package mongonet
 
+import "github.com/pkg/errors"
+
 func (m *ReplyMessage) HasResponse() bool {
 	return false // because its a response
 }
@@ -39,7 +41,7 @@ func parseReplyMessage(header MessageHeader, buf []byte) (Message, error) {
 	loc := 0
 
 	if len(buf) < 20 {
-		return rm, NewStackErrorf("invalid reply message -- message must have length of at least 20 bytes.")
+		return rm, errors.New("invalid reply message -- message must have length of at least 20 bytes")
 	}
 	rm.Flags = readInt32(buf[loc:])
 	loc += 4

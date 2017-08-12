@@ -1,30 +1,31 @@
 package mongonet
 
-import "crypto/tls"
-import "fmt"
-import "io"
-import "net"
-import "time"
+import (
+	"crypto/tls"
+	"fmt"
+	"io"
+	"net"
+	"time"
 
-import "gopkg.in/mgo.v2/bson"
-
-import "github.com/mongodb/slogger/v2/slogger"
+	"github.com/mongodb/grip"
+	"github.com/mongodb/grip/logging"
+	"github.com/mongodb/grip/send"
+	"github.com/pkg/errors"
+	"gopkg.in/mgo.v2/bson"
+)
 
 type Proxy struct {
 	config   ProxyConfig
 	connPool *ConnectionPool
-
-	logger *slogger.Logger
+	logger   grip.Journaler
 }
 
 type ProxySession struct {
-	proxy      *Proxy
-	conn       io.ReadWriteCloser
-	remoteAddr net.Addr
-
+	proxy       *Proxy
+	conn        io.ReadWriteCloser
+	remoteAddr  net.Addr
 	interceptor ProxyInterceptor
-
-	logger *slogger.Logger
+	logger      grip.Journaler
 
 	SSLServerName string
 }
@@ -86,7 +87,7 @@ func (ps *ProxySession) RemoteAddr() net.Addr {
 	return ps.remoteAddr
 }
 
-func (ps *ProxySession) GetLogger() *slogger.Logger {
+func (ps *ProxySession) GetLogger() grip.Journaler {
 	return ps.logger
 }
 
@@ -95,12 +96,7 @@ func (ps *ProxySession) ServerPort() int {
 }
 
 func (ps *ProxySession) Stats() bson.D {
-	return bson.D{
-		{"connectionPool", bson.D{
-			{"totalCreated", ps.proxy.connPool.totalCreated},
-		},
-		},
-	}
+	return bson.D{{"connectionPool", bson.D{{"totalCreated", ps.proxy.connPool.totalCreated}}}}
 }
 
 func (ps *ProxySession) RespondToCommand(clientMessage Message, doc SimpleBSON) error {
@@ -137,7 +133,7 @@ func (ps *ProxySession) RespondToCommand(clientMessage Message, doc SimpleBSON) 
 }
 
 func (ps *ProxySession) respondWithError(clientMessage Message, err error) error {
-	ps.logger.Logf(slogger.INFO, "respondWithError %v", err)
+	ps.logger.Info(errors.Wrap(err, "respondWithError"))
 
 	var errBSON bson.D
 	if err == nil {
@@ -201,7 +197,7 @@ func (ps *ProxySession) doLoop(pooledConn *PooledConnection) (*PooledConnection,
 		if err == io.EOF {
 			return pooledConn, err
 		}
-		return pooledConn, NewStackErrorf("got error reading from client: %s", err)
+		return pooledConn, errors.Wrap(err, "got error reading from client")
 	}
 
 	var respInter ResponseInterceptor
@@ -222,7 +218,7 @@ func (ps *ProxySession) doLoop(pooledConn *PooledConnection) (*PooledConnection,
 			}
 			err = ps.respondWithError(m, err)
 			if err != nil {
-				return pooledConn, NewStackErrorf("couldn't send error response to client %s", err)
+				return pooledConn, errors.Wrap(err, "couldn't send error response to client")
 			}
 			return pooledConn, nil
 		}
@@ -235,7 +231,7 @@ func (ps *ProxySession) doLoop(pooledConn *PooledConnection) (*PooledConnection,
 	if pooledConn == nil {
 		pooledConn, err = ps.proxy.connPool.Get()
 		if err != nil {
-			return nil, NewStackErrorf("cannot get connection to mongo %s", err)
+			return nil, errors.Wrap(err, "cannot get connection to mongo")
 		}
 	}
 
@@ -246,7 +242,7 @@ func (ps *ProxySession) doLoop(pooledConn *PooledConnection) (*PooledConnection,
 
 	err = SendMessage(m, mongoConn)
 	if err != nil {
-		return nil, NewStackErrorf("error writing to mongo: %s", err)
+		return nil, errors.Wrap(err, "error writing to mongo")
 	}
 
 	if !m.HasResponse() {
@@ -263,19 +259,19 @@ func (ps *ProxySession) doLoop(pooledConn *PooledConnection) (*PooledConnection,
 		resp, err := ReadMessage(mongoConn)
 		if err != nil {
 			pooledConn.bad = true
-			return nil, NewStackErrorf("got error reading response from mongo %s", err)
+			return nil, errors.Wrap(err, "got error reading response from mongo")
 		}
 
 		if respInter != nil {
 			resp, err = respInter.InterceptMongoToClient(resp)
 			if err != nil {
-				return nil, NewStackErrorf("error intercepting message %s", err)
+				return nil, errors.Wrap(err, "error intercepting message")
 			}
 		}
 
 		err = SendMessage(resp, ps.conn)
 		if err != nil {
-			return nil, NewStackErrorf("got error sending response to client %s", err)
+			return nil, errors.Wrap(err, "got error sending response to client")
 		}
 
 		if ps.interceptor != nil {
@@ -301,18 +297,18 @@ func (ps *ProxySession) Run(conn net.Conn) {
 		// we do this here so that we can get the SNI server name
 		err = c.Handshake()
 		if err != nil {
-			ps.logger.Logf(slogger.WARN, "error doing tls handshake %s", err)
+			ps.logger.Warning(errors.Wrap(err, "error doing tls handshake"))
 			return
 		}
 		ps.SSLServerName = c.ConnectionState().ServerName
 	}
 
-	ps.logger.Logf(slogger.INFO, "new connection SSLServerName [%s]", ps.SSLServerName)
+	ps.logger.Infof("new connection SSLServerName [%s]", ps.SSLServerName)
 
 	if ps.proxy.config.InterceptorFactory != nil {
 		ps.interceptor, err = ps.proxy.config.InterceptorFactory.NewInterceptor(ps)
 		if err != nil {
-			ps.logger.Logf(slogger.INFO, "error creating new interceptor because: %s", err)
+			ps.logger.Info(errors.Wrap(err, "error creating new interceptor because"))
 			return
 		}
 		defer ps.interceptor.Close()
@@ -320,9 +316,9 @@ func (ps *ProxySession) Run(conn net.Conn) {
 		ps.conn = CheckedConn{conn, ps.interceptor}
 	}
 
-	defer ps.logger.Logf(slogger.INFO, "socket closed")
+	defer ps.logger.Info("socket closed")
 
-	var pooledConn *PooledConnection = nil
+	var pooledConn *PooledConnection
 
 	for {
 		pooledConn, err = ps.doLoop(pooledConn)
@@ -331,7 +327,7 @@ func (ps *ProxySession) Run(conn net.Conn) {
 				pooledConn.Close()
 			}
 			if err != io.EOF {
-				ps.logger.Logf(slogger.WARN, "error doing loop: %s", err)
+				ps.logger.Warning(errors.Wrap(err, "error doing loop"))
 			}
 			return
 		}
@@ -340,34 +336,25 @@ func (ps *ProxySession) Run(conn net.Conn) {
 	if pooledConn != nil {
 		pooledConn.Close()
 	}
-
 }
 
 // -------
 
 func NewProxy(pc ProxyConfig) Proxy {
-	p := Proxy{pc, NewConnectionPool(pc.MongoAddress(), pc.MongoSSL, pc.MongoRootCAs, pc.MongoSSLSkipVerify, pc.ConnectionPoolHook), nil}
+	p := Proxy{
+		config:   pc,
+		connPool: NewConnectionPool(pc.MongoAddress(), pc.MongoSSL, pc.MongoRootCAs, pc.MongoSSLSkipVerify, pc.ConnectionPoolHook),
+		logger:   &logging.Grip{send.MakeNative()},
+	}
 
-	p.logger = p.NewLogger("proxy")
+	p.logger.SetName("proxy")
 
 	return p
 }
 
-func (p *Proxy) NewLogger(prefix string) *slogger.Logger {
-	filters := []slogger.TurboFilter{slogger.TurboLevelFilter(p.config.LogLevel)}
-
-	appenders := p.config.Appenders
-	if appenders == nil {
-		appenders = []slogger.Appender{slogger.StdOutAppender()}
-	}
-
-	return &slogger.Logger{prefix, appenders, 0, filters}
-}
-
 func (p *Proxy) Run() error {
-
 	bindTo := fmt.Sprintf("%s:%d", p.config.BindHost, p.config.BindPort)
-	p.logger.Logf(slogger.WARN, "listening on %s", bindTo)
+	p.logger.Warningf("listening on %s", bindTo)
 
 	var tlsConfig *tls.Config
 
@@ -380,7 +367,7 @@ func (p *Proxy) Run() error {
 		for _, pair := range p.config.SSLKeys {
 			cer, err := tls.LoadX509KeyPair(pair.CertFile, pair.KeyFile)
 			if err != nil {
-				return fmt.Errorf("cannot LoadX509KeyPair from %s %s %s", pair.CertFile, pair.KeyFile, err)
+				return errors.Wrapf(err, "cannot LoadX509KeyPair from %s %s", pair.CertFile, pair.KeyFile)
 			}
 			certs = append(certs, cer)
 		}
@@ -392,7 +379,7 @@ func (p *Proxy) Run() error {
 
 	ln, err := net.Listen("tcp", bindTo)
 	if err != nil {
-		return NewStackErrorf("cannot start listening in proxy: %s", err)
+		return errors.Wrap(err, "cannot start listening in proxy")
 	}
 
 	defer ln.Close()
@@ -400,7 +387,7 @@ func (p *Proxy) Run() error {
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			return NewStackErrorf("could not accept in proxy: %s", err)
+			return errors.Wrap(err, "could not accept in proxy")
 		}
 
 		if p.config.TCPKeepAlivePeriod > 0 {
@@ -409,7 +396,7 @@ func (p *Proxy) Run() error {
 				conn.SetKeepAlive(true)
 				conn.SetKeepAlivePeriod(p.config.TCPKeepAlivePeriod)
 			default:
-				p.logger.Logf(slogger.WARN, "Want to set TCP keep alive on accepted connection but connection is not *net.TCPConn.  It is %T", conn)
+				p.logger.Warningf("Want to set TCP keep alive on accepted connection but connection is not *net.TCPConn. It is %T", conn)
 			}
 		}
 
@@ -417,9 +404,15 @@ func (p *Proxy) Run() error {
 			conn = tls.Server(conn, tlsConfig)
 		}
 
+		logger := &logging.Grip{send.MakeNative()}
 		remoteAddr := conn.RemoteAddr()
-		c := &ProxySession{p, nil, remoteAddr, nil, p.NewLogger(fmt.Sprintf("ProxySession %s", remoteAddr)), ""}
+		logger.SetName(fmt.Sprintf("ProxySession %s", remoteAddr))
+		c := &ProxySession{
+			proxy:      p,
+			remoteAddr: remoteAddr,
+			logger:     logger,
+		}
+
 		go c.Run(conn)
 	}
-
 }

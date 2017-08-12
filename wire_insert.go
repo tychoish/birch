@@ -1,5 +1,10 @@
 package mongonet
 
+import (
+	"github.com/mongodb/grip"
+	"github.com/pkg/errors"
+)
+
 func (m *InsertMessage) HasResponse() bool {
 	return false
 }
@@ -42,8 +47,10 @@ func parseInsertMessage(header MessageHeader, buf []byte) (Message, error) {
 	loc := 0
 
 	if len(buf) < 4 {
-		return m, NewStackErrorf("invalid insert message -- message must have length of at least 4 bytes.")
+		return m, errors.New("invalid insert message -- message must have length of at least 4 bytes")
 	}
+
+	grip.Debug("ConnectionPool::Get")
 
 	m.Flags = readInt32(buf[loc:])
 	loc += 4

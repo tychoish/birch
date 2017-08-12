@@ -1,5 +1,7 @@
 package mongonet
 
+import "github.com/pkg/errors"
+
 func readInt32(b []byte) int32 {
 	return (int32(b[0])) |
 		(int32(b[1]) << 8) |
@@ -43,7 +45,7 @@ func readCString(b []byte) (string, error) {
 		}
 	}
 
-	return "", NewStackErrorf("c string with no terminator")
+	return "", errors.New("c string with no terminator")
 }
 
 func writeCString(s string, buf []byte, loc *int) {

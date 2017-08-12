@@ -1,8 +1,10 @@
 package mongonet
 
-import "net"
-import "time"
-import "crypto/tls"
+import (
+	"crypto/tls"
+	"net"
+	"time"
+)
 
 type ConnChecker interface {
 	CheckConnection() error
@@ -18,12 +20,11 @@ func (c CheckedConn) Read(b []byte) (n int, err error) {
 	for {
 		interval := c.checker.CheckConnectionInterval()
 		if interval > 0 {
-			if err := c.checker.CheckConnection(); err != nil {
+			if err = c.checker.CheckConnection(); err != nil {
 				return n, err
 			}
 
-			deadline := time.Now().Add(interval)
-			if err = c.conn.SetReadDeadline(deadline); err != nil {
+			if err = c.conn.SetReadDeadline(time.Now().Add(interval)); err != nil {
 				return n, err
 			}
 		}
@@ -47,12 +48,11 @@ func (c CheckedConn) Write(b []byte) (n int, err error) {
 	for {
 		interval := c.checker.CheckConnectionInterval()
 		if interval > 0 {
-			if err := c.checker.CheckConnection(); err != nil {
+			if err = c.checker.CheckConnection(); err != nil {
 				return n, err
 			}
 
-			deadline := time.Now().Add(interval)
-			if err = c.conn.SetWriteDeadline(deadline); err != nil {
+			if err = c.conn.SetWriteDeadline(time.Now().Add(interval)); err != nil {
 				return n, err
 			}
 		}
