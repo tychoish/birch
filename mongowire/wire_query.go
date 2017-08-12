@@ -1,8 +1,11 @@
 package mongowire
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+	"github.com/tychoish/mongorpc/bson"
+)
 
-func NewQuery(ns string, flags, skip, toReturn int32, query, project SimpleBSON) Message {
+func NewQuery(ns string, flags, skip, toReturn int32, query, project bson.Simple) Message {
 	return &queryMessage{
 		header: MessageHeader{
 			RequestID: 19,
@@ -76,14 +79,14 @@ func (h *MessageHeader) parseQueryMessage(buf []byte) (Message, error) {
 	qm.NReturn = readInt32(buf[loc:])
 	loc += 4
 
-	qm.Query, err = parseSimpleBSON(buf[loc:])
+	qm.Query, err = bson.ParseSimple(buf[loc:])
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	loc += int(qm.Query.Size)
 
 	if loc < len(buf) {
-		qm.Project, err = parseSimpleBSON(buf[loc:])
+		qm.Project, err = bson.ParseSimple(buf[loc:])
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}

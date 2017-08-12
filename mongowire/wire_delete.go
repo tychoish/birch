@@ -1,8 +1,11 @@
 package mongowire
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+	"github.com/tychoish/mongorpc/bson"
+)
 
-func NewDelete(ns string, flags int32, filter SimpleBSON) Message {
+func NewDelete(ns string, flags int32, filter bson.Simple) Message {
 	return &deleteMessage{
 		header: MessageHeader{
 			RequestID: 19,
@@ -69,7 +72,7 @@ func (h *MessageHeader) parseDeleteMessage(buf []byte) (Message, error) {
 	m.Flags = readInt32(buf[loc:])
 	loc += 4
 
-	m.Filter, err = parseSimpleBSON(buf[loc:])
+	m.Filter, err = bson.ParseSimple(buf[loc:])
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

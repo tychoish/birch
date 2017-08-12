@@ -8,7 +8,7 @@ func NewKillCursors(ids ...int64) Message {
 			RequestID: 19,
 			OpCode:    OP_KILL_CURSORS,
 		},
-		NumCursors: int64(len(ids)),
+		NumCursors: int32(len(ids)),
 		CursorIds:  ids,
 	}
 }

@@ -1,4 +1,4 @@
-package mongowire
+package bson
 
 import (
 	"strings"
@@ -7,61 +7,87 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type SimpleBSON struct {
+type Simple struct {
 	Size int32
 	BSON []byte
 }
 
-func SimpleBSONConvert(d interface{}) (SimpleBSON, error) {
+func SimpleConvert(d interface{}) (Simple, error) {
 	raw, err := bson.Marshal(d)
 	if err != nil {
-		return SimpleBSON{}, err
+		return Simple{}, err
 	}
-	return SimpleBSON{int32(len(raw)), raw}, nil
+	return Simple{int32(len(raw)), raw}, nil
 }
 
-func SimpleBSONConvertOrPanic(d interface{}) SimpleBSON {
+func SimpleConvertOrPanic(d interface{}) Simple {
 	raw, err := bson.Marshal(d)
 	if err != nil {
 		panic(err)
 	}
-	return SimpleBSON{int32(len(raw)), raw}
+	return Simple{int32(len(raw)), raw}
 }
 
-func (sb SimpleBSON) ToBSOND() (bson.D, error) {
+func (sb Simple) Export(d interface{}) error {
+	err := bson.Unmarshal(sb.BSON, d)
+
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return err
+}
+
+func (sb Simple) ToBSOND() (bson.D, error) {
 	t := bson.D{}
-	err := bson.Unmarshal(sb.BSON, &t)
-	return t, err
+	err := sb.Export(&t)
+
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return t, nil
 }
 
-func (sb SimpleBSON) Copy(loc *int, buf []byte) {
+func (sb Simple) ToBSONM() (bson.M, error) {
+	t := bson.M{}
+	err := sb.Export(t)
+
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return t, nil
+}
+
+func (sb Simple) Copy(loc *int, buf []byte) {
 	copy(buf[*loc:], sb.BSON)
 	*loc = *loc + int(sb.Size)
 }
 
-func parseSimpleBSON(b []byte) (SimpleBSON, error) {
+func ParseSimple(b []byte) (Simple, error) {
 	if len(b) < 4 {
-		return SimpleBSON{}, errors.Errorf("invalid bson -- length of bytes must be at least 4, not %v", len(b))
+		return Simple{}, errors.Errorf("invalid bson -- length of bytes must be at least 4, not %v", len(b))
 	}
 	size := readInt32(b)
 	if int(size) == 0 {
 		// shortcut in wire protocol
-		return SimpleBSON{4, b}, nil
+		return Simple{4, b}, nil
 	}
 
 	if int(size) > (128 * 1024 * 1024) {
-		return SimpleBSON{}, errors.Errorf("bson size invalid %d", size)
+		return Simple{}, errors.Errorf("bson size invalid %d", size)
 	}
 
 	if int(size) > len(b) {
-		return SimpleBSON{}, errors.Errorf("invalid bson -- size = %v is greater than length of bytes = %v", size, len(b))
+		return Simple{}, errors.Errorf("invalid bson -- size = %v is greater than length of bytes = %v", size, len(b))
 	}
 
-	return SimpleBSON{size, b[0:int(size)]}, nil
+	return Simple{size, b[0:int(size)]}, nil
 }
 
-func SimpleBSONEmpty() SimpleBSON {
-	return SimpleBSON{int32(5), []byte{5, 0, 0, 0, 0}}
+func Empty() Simple {
+	return Simple{int32(5), []byte{5, 0, 0, 0, 0}}
 }
 
 // ---------
@@ -277,4 +303,12 @@ func walkBSON(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bool) 
 	}
 
 	return doc, nil
+}
+
+// utility function duplicated from mongowire
+func readInt32(b []byte) int32 {
+	return (int32(b[0])) |
+		(int32(b[1]) << 8) |
+		(int32(b[2]) << 16) |
+		(int32(b[3]) << 24)
 }

@@ -1,6 +1,9 @@
 package mongowire
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+	"github.com/tychoish/mongorpc/bson"
+)
 
 func (m *commandReplyMessage) HasResponse() bool     { return false }
 func (m *commandReplyMessage) Header() MessageHeader { return m.header }
@@ -36,7 +39,7 @@ func (h *MessageHeader) parseCommandReplyMessage(buf []byte) (Message, error) {
 
 	var err error
 
-	rm.CommandReply, err = parseSimpleBSON(buf)
+	rm.CommandReply, err = bson.ParseSimple(buf)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -45,7 +48,7 @@ func (h *MessageHeader) parseCommandReplyMessage(buf []byte) (Message, error) {
 	}
 	buf = buf[rm.CommandReply.Size:]
 
-	rm.Metadata, err = parseSimpleBSON(buf)
+	rm.Metadata, err = bson.ParseSimple(buf)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +58,7 @@ func (h *MessageHeader) parseCommandReplyMessage(buf []byte) (Message, error) {
 	buf = buf[rm.Metadata.Size:]
 
 	for len(buf) > 0 {
-		doc, err := parseSimpleBSON(buf)
+		doc, err := bson.ParseSimple(buf)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}

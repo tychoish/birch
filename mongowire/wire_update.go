@@ -1,8 +1,11 @@
 package mongowire
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+	"github.com/tychoish/mongorpc/bson"
+)
 
-func NewUpdate(ns string, flags int32, filter, update SimpleBSON) Message {
+func NewUpdate(ns string, flags int32, filter, update bson.Simple) Message {
 	return &updateMessage{
 		header: MessageHeader{
 			RequestID: 19,
@@ -75,7 +78,7 @@ func (h *MessageHeader) parseUpdateMessage(buf []byte) (Message, error) {
 	m.Flags = readInt32(buf[loc:])
 	loc += 4
 
-	m.Filter, err = parseSimpleBSON(buf[loc:])
+	m.Filter, err = bson.ParseSimple(buf[loc:])
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +88,7 @@ func (h *MessageHeader) parseUpdateMessage(buf []byte) (Message, error) {
 		return m, errors.New("invalid update message -- message length is too short")
 	}
 
-	m.Update, err = parseSimpleBSON(buf[loc:])
+	m.Update, err = bson.ParseSimple(buf[loc:])
 	if err != nil {
 		return nil, err
 	}

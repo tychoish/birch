@@ -1,8 +1,11 @@
 package mongowire
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+	"github.com/tychoish/mongorpc/bson"
+)
 
-func NewReply(cursorID in64, flags, startingFrom, numReturned int32) Message {
+func NewReply(cursorID int64, flags, startingFrom, numReturned int32) Message {
 	return &replyMessage{
 		header: MessageHeader{
 			RequestID: 19,
@@ -67,7 +70,7 @@ func (h *MessageHeader) parseReplyMessage(buf []byte) (Message, error) {
 	loc += 4
 
 	for loc < len(buf) {
-		doc, err := parseSimpleBSON(buf[loc:])
+		doc, err := bson.ParseSimple(buf[loc:])
 		if err != nil {
 			return nil, err
 		}

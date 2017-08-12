@@ -1,8 +1,11 @@
 package mongowire
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+	"github.com/tychoish/mongorpc/bson"
+)
 
-func NewCommand(db, name string, args, metadata SimpleBSON, inputs []SimpleBSON) Message {
+func NewCommand(db, name string, args, metadata bson.Simple, inputs []bson.Simple) Message {
 	return &commandMessage{
 		header: MessageHeader{
 			OpCode:    OP_COMMAND,
@@ -73,7 +76,7 @@ func (h *MessageHeader) parseCommandMessage(buf []byte) (Message, error) {
 	}
 	buf = buf[len(cmd.CmdName)+1:]
 
-	cmd.CommandArgs, err = parseSimpleBSON(buf)
+	cmd.CommandArgs, err = bson.ParseSimple(buf)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +85,7 @@ func (h *MessageHeader) parseCommandMessage(buf []byte) (Message, error) {
 	}
 	buf = buf[cmd.CommandArgs.Size:]
 
-	cmd.Metadata, err = parseSimpleBSON(buf)
+	cmd.Metadata, err = bson.ParseSimple(buf)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +95,7 @@ func (h *MessageHeader) parseCommandMessage(buf []byte) (Message, error) {
 	buf = buf[cmd.Metadata.Size:]
 
 	for len(buf) > 0 {
-		doc, err := parseSimpleBSON(buf)
+		doc, err := bson.ParseSimple(buf)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}

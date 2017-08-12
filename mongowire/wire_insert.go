@@ -3,9 +3,10 @@ package mongowire
 import (
 	"github.com/mongodb/grip"
 	"github.com/pkg/errors"
+	"github.com/tychoish/mongorpc/bson"
 )
 
-func NewInsertM(ns string, docs ...SimpleBSON) Message {
+func NewInsertM(ns string, docs ...bson.Simple) Message {
 	return &insertMessage{
 		header: MessageHeader{
 			RequestID: 19,
@@ -69,7 +70,7 @@ func (h *MessageHeader) parseInsertMessage(buf []byte) (Message, error) {
 	loc += len(m.Namespace) + 1
 
 	for loc < len(buf) {
-		doc, err := parseSimpleBSON(buf[loc:])
+		doc, err := bson.ParseSimple(buf[loc:])
 		if err != nil {
 			return nil, err
 		}

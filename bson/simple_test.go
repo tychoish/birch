@@ -1,4 +1,4 @@
-package mongowire
+package bson
 
 import (
 	"testing"
