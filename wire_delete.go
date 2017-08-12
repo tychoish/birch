@@ -1,16 +1,22 @@
 package mongonet
 
-import "errors"
+import "github.com/pkg/errors"
 
-func (m *DeleteMessage) HasResponse() bool {
-	return false
+func NewDelete(ns string, flags int32, filter SimpleBSON) Message {
+	return &deleteMessage{
+		header: MessageHeader{
+			RequestID: 19,
+			OpCode:    OP_DELETE,
+		},
+		Namespace: ns,
+		Flags:     flags,
+		Filter:    filter,
+	}
 }
 
-func (m *DeleteMessage) Header() MessageHeader {
-	return m.header
-}
-
-func (m *DeleteMessage) Serialize() []byte {
+func (m *deleteMessage) HasResponse() bool     { return false }
+func (m *deleteMessage) Header() MessageHeader { return m.header }
+func (m *deleteMessage) Serialize() []byte {
 	size := 16 /* header */ + 8 /* update header */
 	size += len(m.Namespace) + 1
 	size += int(m.Filter.Size)
@@ -35,22 +41,25 @@ func (m *DeleteMessage) Serialize() []byte {
 	return buf
 }
 
-func parseDeleteMessage(header MessageHeader, buf []byte) (Message, error) {
-	m := &DeleteMessage{}
-	m.header = header
+func (h *MessageHeader) parseDeleteMessage(buf []byte) (Message, error) {
+	var (
+		err error
+		loc int
+	)
 
-	var err error
-	loc := 0
+	m := &deleteMessage{
+		header: *h,
+	}
 
 	if len(buf) < 4 {
-		return m, errors.New("invalid delete message -- message must have length of at least 4 bytes")
+		return nil, errors.New("invalid delete message -- message must have length of at least 4 bytes")
 	}
 	m.Reserved = readInt32(buf[loc:])
 	loc += 4
 
 	m.Namespace, err = readCString(buf[loc:])
 	if err != nil {
-		return m, err
+		return nil, errors.WithStack(err)
 	}
 	loc += len(m.Namespace) + 1
 
@@ -62,9 +71,9 @@ func parseDeleteMessage(header MessageHeader, buf []byte) (Message, error) {
 
 	m.Filter, err = parseSimpleBSON(buf[loc:])
 	if err != nil {
-		return m, err
+		return nil, errors.WithStack(err)
 	}
-	loc += int(m.Filter.Size)
+	loc += int(m.Filter.Size) // nolint
 
 	return m, nil
 }

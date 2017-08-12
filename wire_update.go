@@ -2,15 +2,23 @@ package mongonet
 
 import "github.com/pkg/errors"
 
-func (m *UpdateMessage) HasResponse() bool {
-	return false
+func NewUpdate(ns string, flags int32, filter, update SimpleBSON) Message {
+	return &updateMessage{
+		header: MessageHeader{
+			RequestID: 19,
+			OpCode:    OP_UPDATE,
+		},
+		Namespace: ns,
+		Flags:     flags,
+		Filter:    filter,
+		Update:    update,
+	}
 }
 
-func (m *UpdateMessage) Header() MessageHeader {
-	return m.header
-}
+func (m *updateMessage) HasResponse() bool     { return false }
+func (m *updateMessage) Header() MessageHeader { return m.header }
 
-func (m *UpdateMessage) Serialize() []byte {
+func (m *updateMessage) Serialize() []byte {
 	size := 16 /* header */ + 8 /* update header */
 	size += len(m.Namespace) + 1
 	size += int(m.Filter.Size)
@@ -37,45 +45,51 @@ func (m *UpdateMessage) Serialize() []byte {
 	return buf
 }
 
-func parseUpdateMessage(header MessageHeader, buf []byte) (Message, error) {
-	m := &UpdateMessage{}
-	m.header = header
-
-	var err error
-	loc := 0
+func (h *MessageHeader) parseUpdateMessage(buf []byte) (Message, error) {
+	var (
+		err error
+		loc int
+	)
 
 	if len(buf) < 4 {
-		return m, errors.New("invalid update message -- message must have length of at least 4 bytes")
+		return nil, errors.New("invalid update message -- message must have length of at least 4 bytes")
 	}
+
+	m := &updateMessage{
+		header: *h,
+	}
+
 	m.Reserved = readInt32(buf[loc:])
 	loc += 4
 
 	m.Namespace, err = readCString(buf[loc:])
 	if err != nil {
-		return m, err
+		return nil, err
 	}
 	loc += len(m.Namespace) + 1
 
 	if len(buf) < (loc + 4) {
-		return m, errors.New("invalid update message -- message length is too short")
+		return nil, errors.New("invalid update message -- message length is too short")
 	}
+
 	m.Flags = readInt32(buf[loc:])
 	loc += 4
 
 	m.Filter, err = parseSimpleBSON(buf[loc:])
 	if err != nil {
-		return m, err
+		return nil, err
 	}
 	loc += int(m.Filter.Size)
 
 	if len(buf) < loc {
 		return m, errors.New("invalid update message -- message length is too short")
 	}
+
 	m.Update, err = parseSimpleBSON(buf[loc:])
 	if err != nil {
-		return m, err
+		return nil, err
 	}
-	loc += int(m.Filter.Size)
+	loc += int(m.Filter.Size) // nolint
 
 	return m, nil
 }

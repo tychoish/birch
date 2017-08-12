@@ -8,28 +8,12 @@ import (
 
 const MaxInt32 = 2147483647
 
-func sendBytes(writer io.Writer, buf []byte) error {
-	for {
-		written, err := writer.Write(buf)
-		if err != nil {
-			return errors.Wrap(err, "error writing to client")
-		}
-
-		if written == len(buf) {
-			return nil
-		}
-
-		buf = buf[written:]
-	}
-
-}
-
 func ReadMessage(reader io.Reader) (Message, error) {
 	// read header
 	sizeBuf := make([]byte, 4)
 	n, err := reader.Read(sizeBuf)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	if n != 4 {
 		return nil, errors.Errorf("didn't read message size from socket, got %d", n)
@@ -47,14 +31,14 @@ func ReadMessage(reader io.Reader) (Message, error) {
 	}
 
 	if header.Size < 0 || header.Size-4 > MaxInt32 {
-		return nil, errors.New("message header has invalid size.")
+		return nil, errors.New("message header has invalid size")
 	}
 	restBuf := make([]byte, header.Size-4)
 
 	for read := 0; int32(read) < header.Size-4; {
 		n, err := reader.Read(restBuf[read:])
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 		if n == 0 {
 			break
@@ -67,35 +51,26 @@ func ReadMessage(reader io.Reader) (Message, error) {
 	}
 	header.RequestID = readInt32(restBuf)
 	header.ResponseTo = readInt32(restBuf[4:])
-	header.OpCode = readInt32(restBuf[8:])
+	header.OpCode = OpType(readInt32(restBuf[8:]))
 
-	body := restBuf[12:]
-
-	switch header.OpCode {
-	case OP_REPLY:
-		return parseReplyMessage(header, body)
-	case OP_UPDATE:
-		return parseUpdateMessage(header, body)
-	case OP_INSERT:
-		return parseInsertMessage(header, body)
-	case OP_QUERY:
-		return parseQueryMessage(header, body)
-	case OP_GET_MORE:
-		return parseGetMoreMessage(header, body)
-	case OP_DELETE:
-		return parseDeleteMessage(header, body)
-	case OP_KILL_CURSORS:
-		return parseKillCursorsMessage(header, body)
-	case OP_COMMAND:
-		return parseCommandMessage(header, body)
-	case OP_COMMAND_REPLY:
-		return parseCommandReplyMessage(header, body)
-	default:
-		return nil, errors.Errorf("unknown op code: %s", header.OpCode)
-	}
-
+	return header.Parse(restBuf[12:])
 }
 
 func SendMessage(m Message, writer io.Writer) error {
 	return sendBytes(writer, m.Serialize())
+}
+
+func sendBytes(writer io.Writer, buf []byte) error {
+	for {
+		written, err := writer.Write(buf)
+		if err != nil {
+			return errors.Wrap(err, "error writing to client")
+		}
+
+		if written == len(buf) {
+			return nil
+		}
+
+		buf = buf[written:]
+	}
 }

@@ -2,15 +2,21 @@ package mongonet
 
 import "github.com/pkg/errors"
 
-func (m *KillCursorsMessage) HasResponse() bool {
-	return false
+func NewKillCursors(ids ...int64) Message {
+	return &killCursorsMessage{
+		header: MessageHeader{
+			RequestID: 19,
+			OpCode:    OP_KILL_CURSORS,
+		},
+		NumCursors: int64(len(ids)),
+		CursorIds:  ids,
+	}
 }
 
-func (m *KillCursorsMessage) Header() MessageHeader {
-	return m.header
-}
+func (m *killCursorsMessage) HasResponse() bool     { return false }
+func (m *killCursorsMessage) Header() MessageHeader { return m.header }
 
-func (m *KillCursorsMessage) Serialize() []byte {
+func (m *killCursorsMessage) Serialize() []byte {
 	size := 16 /* header */ + 8 /* header */ + (8 * int(m.NumCursors))
 
 	m.header.Size = int32(size)
@@ -31,15 +37,16 @@ func (m *KillCursorsMessage) Serialize() []byte {
 	return buf
 }
 
-func parseKillCursorsMessage(header MessageHeader, buf []byte) (Message, error) {
-	m := &KillCursorsMessage{}
-	m.header = header
+func (h *MessageHeader) parseKillCursorsMessage(buf []byte) (Message, error) {
+	if len(buf) < 8 {
+		return nil, errors.New("invalid kill cursors message -- message must have length of at least 8 bytes")
+	}
 
 	loc := 0
-
-	if len(buf) < 8 {
-		return m, errors.New("invalid kill cursors message -- message must have length of at least 8 bytes")
+	m := &killCursorsMessage{
+		header: *h,
 	}
+
 	m.Reserved = readInt32(buf)
 	loc += 4
 
@@ -47,8 +54,9 @@ func parseKillCursorsMessage(header MessageHeader, buf []byte) (Message, error) 
 	loc += 4
 
 	if len(buf[loc:]) < int(m.NumCursors)*8 {
-		return m, errors.Errorf("invalid kill cursors message -- NumCursors = %v is larger than number of cursors in message", m.NumCursors)
+		return nil, errors.Errorf("invalid kill cursors message -- NumCursors = %d is larger than number of cursors in message", m.NumCursors)
 	}
+
 	m.CursorIds = make([]int64, int(m.NumCursors))
 
 	for i := 0; i < int(m.NumCursors); i++ {

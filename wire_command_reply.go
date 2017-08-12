@@ -2,15 +2,10 @@ package mongonet
 
 import "github.com/pkg/errors"
 
-func (m *CommandReplyMessage) HasResponse() bool {
-	return false // because its a response
-}
+func (m *commandReplyMessage) HasResponse() bool     { return false }
+func (m *commandReplyMessage) Header() MessageHeader { return m.header }
 
-func (m *CommandReplyMessage) Header() MessageHeader {
-	return m.header
-}
-
-func (m *CommandReplyMessage) Serialize() []byte {
+func (m *commandReplyMessage) Serialize() []byte {
 	size := 16 /* header */
 	size += int(m.CommandReply.Size)
 	size += int(m.Metadata.Size)
@@ -34,34 +29,35 @@ func (m *CommandReplyMessage) Serialize() []byte {
 	return buf
 }
 
-func parseCommandReplyMessage(header MessageHeader, buf []byte) (Message, error) {
-	rm := &CommandReplyMessage{}
-	rm.header = header
+func (h *MessageHeader) parseCommandReplyMessage(buf []byte) (Message, error) {
+	rm := &commandReplyMessage{
+		header: *h,
+	}
 
 	var err error
 
 	rm.CommandReply, err = parseSimpleBSON(buf)
 	if err != nil {
-		return rm, err
+		return nil, errors.WithStack(err)
 	}
 	if len(buf) < int(rm.CommandReply.Size) {
-		return rm, errors.New("invalid command message -- message length is too short")
+		return nil, errors.New("invalid command message -- message length is too short")
 	}
 	buf = buf[rm.CommandReply.Size:]
 
 	rm.Metadata, err = parseSimpleBSON(buf)
 	if err != nil {
-		return rm, err
+		return nil, err
 	}
 	if len(buf) < int(rm.Metadata.Size) {
-		return rm, errors.New("invalid command message -- message length is too short")
+		return nil, errors.New("invalid command message -- message length is too short")
 	}
 	buf = buf[rm.Metadata.Size:]
 
 	for len(buf) > 0 {
 		doc, err := parseSimpleBSON(buf)
 		if err != nil {
-			return rm, err
+			return nil, errors.WithStack(err)
 		}
 		buf = buf[doc.Size:]
 		rm.OutputDocs = append(rm.OutputDocs, doc)

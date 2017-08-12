@@ -5,15 +5,21 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (m *InsertMessage) HasResponse() bool {
-	return false
+func NewInsertM(ns string, docs ...SimpleBSON) Message {
+	return &insertMessage{
+		header: MessageHeader{
+			RequestID: 19,
+			OpCode:    OP_INSERT,
+		},
+		Namespace: ns,
+		Docs:      docs,
+	}
 }
 
-func (m *InsertMessage) Header() MessageHeader {
-	return m.header
-}
+func (m *insertMessage) HasResponse() bool     { return false }
+func (m *insertMessage) Header() MessageHeader { return m.header }
 
-func (m *InsertMessage) Serialize() []byte {
+func (m *insertMessage) Serialize() []byte {
 	size := 16 /* header */ + 4 /* update header */
 	size += len(m.Namespace) + 1
 	for _, d := range m.Docs {
@@ -39,9 +45,10 @@ func (m *InsertMessage) Serialize() []byte {
 	return buf
 }
 
-func parseInsertMessage(header MessageHeader, buf []byte) (Message, error) {
-	m := &InsertMessage{}
-	m.header = header
+func (h *MessageHeader) parseInsertMessage(buf []byte) (Message, error) {
+	m := &insertMessage{
+		header: *h,
+	}
 
 	var err error
 	loc := 0
@@ -71,19 +78,4 @@ func parseInsertMessage(header MessageHeader, buf []byte) (Message, error) {
 	}
 
 	return m, nil
-}
-
-func NewInsertMessage(namespace string, docs ...SimpleBSON) *InsertMessage {
-	im := &InsertMessage{}
-
-	im.header.RequestID = 17 // TODO
-	im.header.ResponseTo = 0
-	im.header.OpCode = OP_INSERT
-
-	im.Flags = 0
-	im.Namespace = namespace
-
-	im.Docs = docs
-
-	return im
 }

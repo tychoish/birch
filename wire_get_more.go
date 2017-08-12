@@ -2,15 +2,22 @@ package mongonet
 
 import "github.com/pkg/errors"
 
-func (m *GetMoreMessage) HasResponse() bool {
-	return true
+func NewGetMore(ns string, number int32, cursorID int64) Message {
+	return &getMoreMessage{
+		header: MessageHeader{
+			RequestID: 19,
+			OpCode:    OP_GET_MORE,
+		},
+		Namespace: ns,
+		NReturn:   number,
+		CursorId:  cursorID,
+	}
 }
 
-func (m *GetMoreMessage) Header() MessageHeader {
-	return m.header
-}
+func (m *getMoreMessage) HasResponse() bool     { return true }
+func (m *getMoreMessage) Header() MessageHeader { return m.header }
 
-func (m *GetMoreMessage) Serialize() []byte {
+func (m *getMoreMessage) Serialize() []byte {
 	size := 16 /* header */ + 16 /* query header */
 	size += len(m.Namespace) + 1
 
@@ -32,33 +39,37 @@ func (m *GetMoreMessage) Serialize() []byte {
 	return buf
 }
 
-func parseGetMoreMessage(header MessageHeader, buf []byte) (Message, error) {
-	qm := &GetMoreMessage{}
-	qm.header = header
-
-	loc := 0
+func (h *MessageHeader) parseGetMoreMessage(buf []byte) (Message, error) {
+	var (
+		err error
+		loc int
+	)
 
 	if len(buf) < 4 {
-		return qm, errors.New("invalid get more message -- message must have length of at least 4 bytes")
+		return nil, errors.New("invalid get more message -- message must have length of at least 4 bytes")
 	}
+
+	qm := &getMoreMessage{
+		header: *h,
+	}
+
 	qm.Reserved = readInt32(buf)
 	loc += 4
 
-	tmp, err := readCString(buf[loc:])
-	qm.Namespace = tmp
+	qm.Namespace, err = readCString(buf[loc:])
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	loc += len(qm.Namespace) + 1
 
 	if len(buf) < loc+12 {
-		return qm, errors.New("invalid get more message -- message length is too short")
+		return nil, errors.New("invalid get more message -- message length is too short")
 	}
 	qm.NReturn = readInt32(buf[loc:])
 	loc += 4
 
 	qm.CursorId = readInt64(buf[loc:])
-	loc += 8
+	loc += 8 // nolint
 
 	return qm, nil
 }

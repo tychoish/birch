@@ -1,16 +1,25 @@
 package mongonet
 
-import "errors"
+import "github.com/pkg/errors"
 
-func (m *CommandMessage) HasResponse() bool {
-	return true
+func NewCommand(db, name string, args, metadata SimpleBSON, inputs []SimpleBSON) Message {
+	return &commandMessage{
+		header: MessageHeader{
+			OpCode:    OP_COMMAND,
+			RequestID: 19,
+		},
+		DB:          db,
+		CmdName:     name,
+		CommandArgs: args,
+		Metadata:    metadata,
+		InputDocs:   inputs,
+	}
 }
 
-func (m *CommandMessage) Header() MessageHeader {
-	return m.header
-}
+func (m *commandMessage) HasResponse() bool     { return true }
+func (m *commandMessage) Header() MessageHeader { return m.header }
 
-func (m *CommandMessage) Serialize() []byte {
+func (m *commandMessage) Serialize() []byte {
 	size := 16 /* header */
 	size += len(m.DB) + 1
 	size += len(m.CmdName) + 1
@@ -38,53 +47,54 @@ func (m *CommandMessage) Serialize() []byte {
 	return buf
 }
 
-func parseCommandMessage(header MessageHeader, buf []byte) (Message, error) {
-
-	cmd := &CommandMessage{}
-	cmd.header = header
-
+func (h *MessageHeader) parseCommandMessage(buf []byte) (Message, error) {
 	var err error
+
+	cmd := &commandMessage{
+		header: *h,
+	}
 
 	cmd.DB, err = readCString(buf)
 	if err != nil {
 		return cmd, err
 	}
+
 	if len(buf) < len(cmd.DB)+1 {
-		return cmd, errors.New("invalid command message -- message length is too short.")
+		return nil, errors.New("invalid command message -- message length is too short")
 	}
 	buf = buf[len(cmd.DB)+1:]
 
 	cmd.CmdName, err = readCString(buf)
 	if err != nil {
-		return cmd, err
+		return nil, err
 	}
 	if len(buf) < len(cmd.CmdName)+1 {
-		return cmd, errors.New("invalid command message -- message length is too short.")
+		return nil, errors.New("invalid command message -- message length is too short")
 	}
 	buf = buf[len(cmd.CmdName)+1:]
 
 	cmd.CommandArgs, err = parseSimpleBSON(buf)
 	if err != nil {
-		return cmd, err
+		return nil, err
 	}
 	if len(buf) < int(cmd.CommandArgs.Size) {
-		return cmd, errors.New("invalid command message -- message length is too short.")
+		return cmd, errors.New("invalid command message -- message length is too short")
 	}
 	buf = buf[cmd.CommandArgs.Size:]
 
 	cmd.Metadata, err = parseSimpleBSON(buf)
 	if err != nil {
-		return cmd, err
+		return nil, err
 	}
 	if len(buf) < int(cmd.Metadata.Size) {
-		return cmd, errors.New("invalid command message -- message length is too short.")
+		return cmd, errors.New("invalid command message -- message length is too short")
 	}
 	buf = buf[cmd.Metadata.Size:]
 
 	for len(buf) > 0 {
 		doc, err := parseSimpleBSON(buf)
 		if err != nil {
-			return cmd, err
+			return nil, errors.WithStack(err)
 		}
 		buf = buf[doc.Size:]
 		cmd.InputDocs = append(cmd.InputDocs, doc)

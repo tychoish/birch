@@ -1,31 +1,67 @@
 package mongonet
 
+import "github.com/pkg/errors"
+
+type OpType int32
+
 const (
-	OP_REPLY         = 1
-	OP_MSG           = 1000
-	OP_UPDATE        = 2001
-	OP_INSERT        = 2002
-	RESERVED         = 2003
-	OP_QUERY         = 2004
-	OP_GET_MORE      = 2005
-	OP_DELETE        = 2006
-	OP_KILL_CURSORS  = 2007
-	OP_COMMAND       = 2010
-	OP_COMMAND_REPLY = 2011
+	OP_REPLY         OpType = 1
+	OP_MSG                  = 1000
+	OP_UPDATE               = 2001
+	OP_INSERT               = 2002
+	RESERVED                = 2003
+	OP_QUERY                = 2004
+	OP_GET_MORE             = 2005
+	OP_DELETE               = 2006
+	OP_KILL_CURSORS         = 2007
+	OP_COMMAND              = 2010
+	OP_COMMAND_REPLY        = 2011
 )
 
 type MessageHeader struct {
 	Size       int32 // total message size
 	RequestID  int32
 	ResponseTo int32
-	OpCode     int32
+	OpCode     OpType
 }
 
 func (h *MessageHeader) WriteInto(buf []byte) {
 	writeInt32(h.Size, buf, 0)
 	writeInt32(h.RequestID, buf, 4)
 	writeInt32(h.ResponseTo, buf, 8)
-	writeInt32(h.OpCode, buf, 12)
+	writeInt32(int32(h.OpCode), buf, 12)
+}
+
+func (h *MessageHeader) Parse(body []byte) (Message, error) {
+	var (
+		m   Message
+		err error
+	)
+
+	switch h.OpCode {
+	case OP_REPLY:
+		m, err = h.parseReplyMessage(body)
+	case OP_UPDATE:
+		m, err = h.parseUpdateMessage(body)
+	case OP_INSERT:
+		m, err = h.parseInsertMessage(body)
+	case OP_QUERY:
+		m, err = h.parseQueryMessage(body)
+	case OP_GET_MORE:
+		m, err = h.parseGetMoreMessage(body)
+	case OP_DELETE:
+		m, err = h.parseDeleteMessage(body)
+	case OP_KILL_CURSORS:
+		m, err = h.parseKillCursorsMessage(body)
+	case OP_COMMAND:
+		m, err = h.parseCommandMessage(body)
+	case OP_COMMAND_REPLY:
+		m, err = h.parseCommandReplyMessage(body)
+	default:
+		return nil, errors.Errorf("unknown op code: %s", h.OpCode)
+	}
+
+	return m, errors.WithStack(err)
 }
 
 // ------------
@@ -37,7 +73,7 @@ type Message interface {
 }
 
 // OP_REPLY
-type ReplyMessage struct {
+type replyMessage struct {
 	header MessageHeader
 
 	Flags          int32
@@ -49,7 +85,7 @@ type ReplyMessage struct {
 }
 
 // OP_UPDATE
-type UpdateMessage struct {
+type updateMessage struct {
 	header MessageHeader
 
 	Reserved  int32
@@ -61,7 +97,7 @@ type UpdateMessage struct {
 }
 
 // OP_QUERY
-type QueryMessage struct {
+type queryMessage struct {
 	header MessageHeader
 
 	Flags     int32
@@ -74,7 +110,7 @@ type QueryMessage struct {
 }
 
 // OP_GET_MORE
-type GetMoreMessage struct {
+type getMoreMessage struct {
 	header MessageHeader
 
 	Reserved  int32
@@ -84,7 +120,7 @@ type GetMoreMessage struct {
 }
 
 // OP_INSERT
-type InsertMessage struct {
+type insertMessage struct {
 	header MessageHeader
 
 	Flags     int32
@@ -94,7 +130,7 @@ type InsertMessage struct {
 }
 
 // OP_DELETE
-type DeleteMessage struct {
+type deleteMessage struct {
 	header MessageHeader
 
 	Reserved  int32
@@ -105,7 +141,7 @@ type DeleteMessage struct {
 }
 
 // OP_KILL_CURSORS
-type KillCursorsMessage struct {
+type killCursorsMessage struct {
 	header MessageHeader
 
 	Reserved   int32
@@ -114,7 +150,7 @@ type KillCursorsMessage struct {
 }
 
 // OP_COMMAND
-type CommandMessage struct {
+type commandMessage struct {
 	header MessageHeader
 
 	DB          string
@@ -125,7 +161,7 @@ type CommandMessage struct {
 }
 
 // OP_COMMAND_REPLY
-type CommandReplyMessage struct {
+type commandReplyMessage struct {
 	header MessageHeader
 
 	CommandReply SimpleBSON

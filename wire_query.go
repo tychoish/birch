@@ -2,15 +2,25 @@ package mongonet
 
 import "github.com/pkg/errors"
 
-func (m *QueryMessage) HasResponse() bool {
-	return true
+func NewQuery(ns string, flags, skip, toReturn int32, query, project SimpleBSON) Message {
+	return &queryMessage{
+		header: MessageHeader{
+			RequestID: 19,
+			OpCode:    OP_QUERY,
+		},
+		Flags:     flags,
+		Namespace: ns,
+		Skip:      skip,
+		NReturn:   toReturn,
+		Query:     query,
+		Project:   project,
+	}
 }
 
-func (m *QueryMessage) Header() MessageHeader {
-	return m.header
-}
+func (m *queryMessage) HasResponse() bool     { return true }
+func (m *queryMessage) Header() MessageHeader { return m.header }
 
-func (m *QueryMessage) Serialize() []byte {
+func (m *queryMessage) Serialize() []byte {
 	size := 16 /* header */ + 12 /* query header */
 	size += len(m.Namespace) + 1
 	size += int(m.Query.Size)
@@ -37,22 +47,23 @@ func (m *QueryMessage) Serialize() []byte {
 	return buf
 }
 
-func parseQueryMessage(header MessageHeader, buf []byte) (Message, error) {
-	qm := &QueryMessage{}
-	qm.header = header
+func (h *MessageHeader) parseQueryMessage(buf []byte) (Message, error) {
+	if len(buf) < 4 {
+		return nil, errors.New("invalid query message -- message must have length of at least 4 bytes")
+	}
 
 	loc := 0
-
-	if len(buf) < 4 {
-		return qm, errors.New("invalid query message -- message must have length of at least 4 bytes")
+	qm := &queryMessage{
+		header: *h,
 	}
+
 	qm.Flags = readInt32(buf)
 	loc += 4
 
 	tmp, err := readCString(buf[loc:])
 	qm.Namespace = tmp
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	loc += len(qm.Namespace) + 1
 
@@ -67,30 +78,17 @@ func parseQueryMessage(header MessageHeader, buf []byte) (Message, error) {
 
 	qm.Query, err = parseSimpleBSON(buf[loc:])
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	loc += int(qm.Query.Size)
 
 	if loc < len(buf) {
 		qm.Project, err = parseSimpleBSON(buf[loc:])
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
-		loc += int(qm.Project.Size)
+		loc += int(qm.Project.Size) // nolint
 	}
 
 	return qm, nil
-}
-
-func NewQueryMessage(ns string, flags int32, skip int32, toReturn int32, query SimpleBSON, project SimpleBSON) *QueryMessage {
-	qm := &QueryMessage{}
-	qm.header.RequestID = 17 // TODO
-	qm.header.OpCode = OP_QUERY
-	qm.Flags = flags
-	qm.Namespace = ns
-	qm.Skip = skip
-	qm.NReturn = toReturn
-	qm.Query = query
-	qm.Project = project
-	return qm
 }

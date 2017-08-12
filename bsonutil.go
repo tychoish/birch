@@ -213,7 +213,7 @@ func walkBSON(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bool) 
 			numDeleted := 0
 
 			for arrayOffset, sub := range val {
-				newDoc, err := BSONWalkHelp(sub, path[pieceOffset+1:], visitor, true)
+				newDoc, err := walkBSON(sub, path[pieceOffset+1:], visitor, true)
 				if err == walkAbortSignal {
 					newDoc = nil
 					numDeleted++
@@ -244,7 +244,7 @@ func walkBSON(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bool) 
 
 				switch sub := subRaw.(type) {
 				case bson.D:
-					newDoc, err := BSONWalkHelp(sub, path[pieceOffset+1:], visitor, true)
+					newDoc, err := walkBSON(sub, path[pieceOffset+1:], visitor, true)
 					if err == walkAbortSignal {
 						newDoc = nil
 						numDeleted++

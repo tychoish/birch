@@ -2,15 +2,24 @@ package mongonet
 
 import "github.com/pkg/errors"
 
-func (m *ReplyMessage) HasResponse() bool {
-	return false // because its a response
+func NewReply(cursorID in64, flags, startingFrom, numReturned int32) Message {
+	return &replyMessage{
+		header: MessageHeader{
+			RequestID: 19,
+			OpCode:    OP_REPLY,
+		},
+		Flags:          flags,
+		CursorId:       cursorID,
+		StartingFrom:   startingFrom,
+		NumberReturned: numReturned,
+	}
 }
 
-func (m *ReplyMessage) Header() MessageHeader {
-	return m.header
-}
+// because its a response
+func (m *replyMessage) HasResponse() bool     { return false }
+func (m *replyMessage) Header() MessageHeader { return m.header }
 
-func (m *ReplyMessage) Serialize() []byte {
+func (m *replyMessage) Serialize() []byte {
 	size := 16 /* header */ + 20 /* reply header */
 	for _, d := range m.Docs {
 		size += int(d.Size)
@@ -34,15 +43,17 @@ func (m *ReplyMessage) Serialize() []byte {
 	return buf
 }
 
-func parseReplyMessage(header MessageHeader, buf []byte) (Message, error) {
-	rm := &ReplyMessage{}
-	rm.header = header
-
-	loc := 0
+func (h *MessageHeader) parseReplyMessage(buf []byte) (Message, error) {
+	var loc int
 
 	if len(buf) < 20 {
-		return rm, errors.New("invalid reply message -- message must have length of at least 20 bytes")
+		return nil, errors.New("invalid reply message -- message must have length of at least 20 bytes")
 	}
+
+	rm := &replyMessage{
+		header: *h,
+	}
+
 	rm.Flags = readInt32(buf[loc:])
 	loc += 4
 
