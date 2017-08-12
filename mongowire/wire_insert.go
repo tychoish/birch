@@ -1,4 +1,4 @@
-package mongonet
+package mongowire
 
 import (
 	"github.com/mongodb/grip"
