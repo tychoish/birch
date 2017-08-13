@@ -21,6 +21,7 @@ func NewReply(cursorID int64, flags, startingFrom, numReturned int32) Message {
 // because its a response
 func (m *replyMessage) HasResponse() bool     { return false }
 func (m *replyMessage) Header() MessageHeader { return m.header }
+func (m *replyMessage) Scope() *OpScope       { return nil }
 
 func (m *replyMessage) Serialize() []byte {
 	size := 16 /* header */ + 20 /* reply header */

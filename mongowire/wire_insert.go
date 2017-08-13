@@ -19,6 +19,7 @@ func NewInsertM(ns string, docs ...bson.Simple) Message {
 
 func (m *insertMessage) HasResponse() bool     { return false }
 func (m *insertMessage) Header() MessageHeader { return m.header }
+func (m *insertMessage) Scope() *OpScope       { return &OpScope{Type: m.header.OpCode, Context: m.Namespace} }
 
 func (m *insertMessage) Serialize() []byte {
 	size := 16 /* header */ + 4 /* update header */

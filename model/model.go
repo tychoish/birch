@@ -3,11 +3,12 @@ package model
 import "github.com/tychoish/mongorpc/bson"
 
 type Command struct {
-	DB        string
-	Command   string
-	Arguments bson.Simple
-	Metadata  bson.Simple
-	Inputs    []bson.Simple
+	DB                 string
+	Command            string
+	Arguments          bson.Simple
+	Metadata           bson.Simple
+	Inputs             []bson.Simple
+	ConvertedFromQuery bool
 }
 
 type Delete struct {

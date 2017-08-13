@@ -15,6 +15,7 @@ func NewKillCursors(ids ...int64) Message {
 
 func (m *killCursorsMessage) HasResponse() bool     { return false }
 func (m *killCursorsMessage) Header() MessageHeader { return m.header }
+func (m *killCursorsMessage) Scope() *OpScope       { return &OpScope{Type: m.header.OpCode} }
 
 func (m *killCursorsMessage) Serialize() []byte {
 	size := 16 /* header */ + 8 /* header */ + (8 * int(m.NumCursors))

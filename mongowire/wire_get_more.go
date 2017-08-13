@@ -17,6 +17,13 @@ func NewGetMore(ns string, number int32, cursorID int64) Message {
 func (m *getMoreMessage) HasResponse() bool     { return true }
 func (m *getMoreMessage) Header() MessageHeader { return m.header }
 
+func (m *getMoreMessage) Scope() *OpScope {
+	return &OpScope{
+		Type:    m.header.OpCode,
+		Context: m.Namespace,
+	}
+}
+
 func (m *getMoreMessage) Serialize() []byte {
 	size := 16 /* header */ + 16 /* query header */
 	size += len(m.Namespace) + 1

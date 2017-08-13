@@ -7,6 +7,7 @@ import (
 
 func (m *commandReplyMessage) HasResponse() bool     { return false }
 func (m *commandReplyMessage) Header() MessageHeader { return m.header }
+func (m *commandReplyMessage) Scope() *OpScope       { return nil }
 
 func (m *commandReplyMessage) Serialize() []byte {
 	size := 16 /* header */

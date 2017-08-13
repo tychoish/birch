@@ -22,6 +22,14 @@ func NewCommand(db, name string, args, metadata bson.Simple, inputs []bson.Simpl
 func (m *commandMessage) HasResponse() bool     { return true }
 func (m *commandMessage) Header() MessageHeader { return m.header }
 
+func (m *commandMessage) Scope() *OpScope {
+	return &OpScope{
+		Type:    m.header.OpCode,
+		Context: m.DB,
+		Command: m.CmdName,
+	}
+}
+
 func (m *commandMessage) Serialize() []byte {
 	size := 16 /* header */
 	size += len(m.DB) + 1

@@ -20,6 +20,7 @@ func NewUpdate(ns string, flags int32, filter, update bson.Simple) Message {
 
 func (m *updateMessage) HasResponse() bool     { return false }
 func (m *updateMessage) Header() MessageHeader { return m.header }
+func (m *updateMessage) Scope() *OpScope       { return &OpScope{Type: m.header.OpCode, Context: m.Namespace} }
 
 func (m *updateMessage) Serialize() []byte {
 	size := 16 /* header */ + 8 /* update header */

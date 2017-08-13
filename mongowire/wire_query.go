@@ -22,6 +22,7 @@ func NewQuery(ns string, flags, skip, toReturn int32, query, project bson.Simple
 
 func (m *queryMessage) HasResponse() bool     { return true }
 func (m *queryMessage) Header() MessageHeader { return m.header }
+func (m *queryMessage) Scope() *OpScope       { return &OpScope{Type: m.header.OpCode, Context: m.Namespace} }
 
 func (m *queryMessage) Serialize() []byte {
 	size := 16 /* header */ + 12 /* query header */
@@ -50,12 +51,42 @@ func (m *queryMessage) Serialize() []byte {
 	return buf
 }
 
+func (m *queryMessage) convertToCommand() *commandMessage {
+	if !NamespaceIsCommand(m.Namespace) {
+		return nil
+	}
+
+	docs, err := m.Query.ToBSOND()
+	if err != nil {
+		return nil
+	}
+
+	if len(docs) == 0 {
+		return nil
+	}
+
+	return &commandMessage{
+		header: MessageHeader{
+			OpCode:    OP_COMMAND,
+			RequestID: 19,
+		},
+		DB:          NamespaceToDB(m.Namespace),
+		CmdName:     docs[0].Name,
+		CommandArgs: m.Query,
+		upconverted: true,
+	}
+}
+
 func (h *MessageHeader) parseQueryMessage(buf []byte) (Message, error) {
 	if len(buf) < 4 {
 		return nil, errors.New("invalid query message -- message must have length of at least 4 bytes")
 	}
 
-	loc := 0
+	var (
+		loc int
+		err error
+	)
+
 	qm := &queryMessage{
 		header: *h,
 	}
@@ -63,8 +94,7 @@ func (h *MessageHeader) parseQueryMessage(buf []byte) (Message, error) {
 	qm.Flags = readInt32(buf)
 	loc += 4
 
-	tmp, err := readCString(buf[loc:])
-	qm.Namespace = tmp
+	qm.Namespace, err = readCString(buf[loc:])
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -91,6 +121,10 @@ func (h *MessageHeader) parseQueryMessage(buf []byte) (Message, error) {
 			return nil, errors.WithStack(err)
 		}
 		loc += int(qm.Project.Size) // nolint
+	}
+
+	if NamespaceIsCommand(qm.Namespace) {
+		return qm.convertToCommand(), nil
 	}
 
 	return qm, nil

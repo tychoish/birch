@@ -9,6 +9,7 @@ type Message interface {
 	Header() MessageHeader
 	Serialize() []byte
 	HasResponse() bool
+	Scope() *OpScope
 }
 
 // OP_REPLY
@@ -97,6 +98,9 @@ type commandMessage struct {
 	CommandArgs bson.Simple
 	Metadata    bson.Simple
 	InputDocs   []bson.Simple
+
+	// internal bookekeeping
+	upconverted bool
 }
 
 // OP_COMMAND_REPLY
@@ -108,26 +112,27 @@ type commandReplyMessage struct {
 	OutputDocs   []bson.Simple
 }
 
-func GetModel(m Message) (interface{}, bool) {
+func GetModel(m Message) (interface{}, OpType) {
 	switch m := m.(type) {
 	case *commandMessage:
 		return &model.Command{
-			DB:        m.DB,
-			Command:   m.CmdName,
-			Arguments: m.CommandArgs,
-			Metadata:  m.Metadata,
-			Inputs:    m.InputDocs,
-		}, true
+			DB:                 m.DB,
+			Command:            m.CmdName,
+			Arguments:          m.CommandArgs,
+			Metadata:           m.Metadata,
+			Inputs:             m.InputDocs,
+			ConvertedFromQuery: m.upconverted,
+		}, OP_COMMAND
 	case *deleteMessage:
 		return &model.Delete{
 			Namespace: m.Namespace,
 			Filter:    m.Filter,
-		}, true
+		}, OP_DELETE
 	case *insertMessage:
 		return &model.Insert{
 			Namespace: m.Namespace,
 			Documents: m.Docs,
-		}, true
+		}, OP_INSERT
 	case *queryMessage:
 		return &model.Query{
 			Namespace: m.Namespace,
@@ -135,7 +140,7 @@ func GetModel(m Message) (interface{}, bool) {
 			NReturn:   m.NReturn,
 			Query:     m.Query,
 			Project:   m.Project,
-		}, true
+		}, OP_QUERY
 	case *updateMessage:
 		update := &model.Update{
 			Namespace: m.Namespace,
@@ -153,7 +158,7 @@ func GetModel(m Message) (interface{}, bool) {
 			update.Multi = true
 		}
 
-		return update, true
+		return update, OP_UPDATE
 	case *replyMessage:
 		reply := &model.Reply{
 			StartingFrom: m.StartingFrom,
@@ -168,8 +173,8 @@ func GetModel(m Message) (interface{}, bool) {
 			reply.CursorNotFound = true
 		}
 
-		return reply, true
+		return reply, OP_REPLY
 	default:
-		return nil, false
+		return nil, OpType(0)
 	}
 }
