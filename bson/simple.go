@@ -12,7 +12,7 @@ type Simple struct {
 	BSON []byte
 }
 
-func (sb Simple) Export(d interface{}) error {
+func (sb Simple) Unmarshal(d interface{}) error {
 	err := bson.Unmarshal(sb.BSON, d)
 
 	if err != nil {
@@ -24,7 +24,7 @@ func (sb Simple) Export(d interface{}) error {
 
 func (sb Simple) ToBSOND() (bson.D, error) {
 	t := bson.D{}
-	err := sb.Export(&t)
+	err := sb.Unmarshal(&t)
 
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -35,7 +35,7 @@ func (sb Simple) ToBSOND() (bson.D, error) {
 
 func (sb Simple) ToBSONM() (bson.M, error) {
 	t := bson.M{}
-	err := sb.Export(t)
+	err := sb.Unmarshal(t)
 
 	if err != nil {
 		return nil, errors.WithStack(err)
