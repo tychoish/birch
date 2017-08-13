@@ -7,17 +7,17 @@ import (
 )
 
 func TestBSONIndexOf(test *testing.T) {
-	doc := bson.D{{"a", 1}, {"b", 3}}
+	doc := bson.D{{Name: "a", Value: 1}, {Name: "b", Value: 3}}
 
-	if 0 != BSONIndexOf(doc, "a") {
+	if 0 != bsonIndexOf(doc, "a") {
 		test.Errorf("index of a is wrong")
 	}
 
-	if 1 != BSONIndexOf(doc, "b") {
+	if 1 != bsonIndexOf(doc, "b") {
 		test.Errorf("index of b is wrong")
 	}
 
-	if -1 != BSONIndexOf(doc, "c") {
+	if -1 != bsonIndexOf(doc, "c") {
 		test.Errorf("index of c is wrong")
 	}
 }
@@ -36,7 +36,7 @@ func (tw *testWalker) Visit(elem *bson.DocElem) error {
 }
 
 func TestBSONWalk1(test *testing.T) {
-	doc := bson.D{{"a", 1}, {"b", 3}}
+	doc := bson.D{{Name: "a", Value: 1}, {Name: "b", Value: 3}}
 	walker := &testWalker{}
 	doc, err := BSONWalk(doc, "b", walker.Visit)
 	if err != nil {
@@ -76,7 +76,7 @@ func TestBSONWalk2(test *testing.T) {
 func TestBSONWalk3(test *testing.T) {
 	doc := bson.D{{"a", 1}, {"b", 3}, {"c", []bson.D{bson.D{{"x", 5}}, bson.D{{"x", 7}}}}}
 	walker := &testWalker{}
-	doc, err := BSONWalk(doc, "c.x", walker.Visit)
+	_, err := BSONWalk(doc, "c.x", walker.Visit)
 	if err != nil {
 		test.Errorf("why did we get an error %s", err)
 		return
@@ -96,7 +96,7 @@ func TestBSONWalk3(test *testing.T) {
 func TestBSONWalk4(test *testing.T) {
 	doc := bson.D{{"a", 1}, {"b", 3}, {"c", []interface{}{bson.D{{"x", 5}}, bson.D{{"x", 7}}}}}
 	walker := &testWalker{}
-	doc, err := BSONWalk(doc, "c.x", walker.Visit)
+	_, err := BSONWalk(doc, "c.x", walker.Visit)
 	if err != nil {
 		test.Errorf("why did we get an error %s", err)
 		return

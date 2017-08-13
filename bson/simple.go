@@ -12,22 +12,6 @@ type Simple struct {
 	BSON []byte
 }
 
-func SimpleConvert(d interface{}) (Simple, error) {
-	raw, err := bson.Marshal(d)
-	if err != nil {
-		return Simple{}, err
-	}
-	return Simple{int32(len(raw)), raw}, nil
-}
-
-func SimpleConvertOrPanic(d interface{}) Simple {
-	raw, err := bson.Marshal(d)
-	if err != nil {
-		panic(err)
-	}
-	return Simple{int32(len(raw)), raw}
-}
-
 func (sb Simple) Export(d interface{}) error {
 	err := bson.Unmarshal(sb.BSON, d)
 
@@ -92,7 +76,7 @@ func Empty() Simple {
 
 // ---------
 
-func BSONIndexOf(doc bson.D, name string) int {
+func bsonIndexOf(doc bson.D, name string) int {
 	for i, elem := range doc {
 		if elem.Name == name {
 			return i
@@ -100,78 +84,6 @@ func BSONIndexOf(doc bson.D, name string) int {
 	}
 
 	return -1
-}
-
-func GetAsString(elem bson.DocElem) (string, error) {
-	switch val := elem.Value.(type) {
-	case string:
-		return val, nil
-	default:
-		return "", errors.Errorf("not a string %T %s", val, val)
-	}
-}
-
-func GetAsInt(elem bson.DocElem) (int, error) {
-	switch val := elem.Value.(type) {
-	case int:
-		return val, nil
-	case int32:
-		return int(val), nil
-	case int64:
-		return int(val), nil
-	case float64:
-		return int(val), nil
-	default:
-		return 0, errors.Errorf("not a number %T %s", val, val)
-	}
-}
-
-func GetAsBool(elem bson.DocElem) (bool, error) {
-	switch val := elem.Value.(type) {
-	case bool:
-		return val, nil
-	case int:
-		return val != 0, nil
-	case int32:
-		return int(val) != 0, nil
-	case int64:
-		return int(val) != 0, nil
-	case float64:
-		return val != 0.0, nil
-	default:
-		return false, errors.Errorf("not a bool %T %s", val, val)
-	}
-}
-
-func GetAsBSON(elem bson.DocElem) (bson.D, error) {
-	switch val := elem.Value.(type) {
-	case bson.D:
-		return val, nil
-	default:
-		return bson.D{}, errors.Errorf("not bson %T %s", val, val)
-	}
-}
-
-func GetAsBSONDocs(elem bson.DocElem) ([]bson.D, error) {
-	switch val := elem.Value.(type) {
-	case []bson.D:
-		return val, nil
-
-	case []interface{}:
-		a := make([]bson.D, len(val))
-		for num, raw := range val {
-			switch fixed := raw.(type) {
-			case bson.D:
-				a[num] = fixed
-			default:
-				return []bson.D{}, errors.Errorf("not bson.D %T %s", raw, raw)
-			}
-		}
-		return a, nil
-
-	default:
-		return []bson.D{}, errors.Errorf("not an array %T", elem.Value)
-	}
 }
 
 // ---
@@ -192,7 +104,7 @@ func walkBSON(doc bson.D, path []string, visitor BSONWalkVisitor, inArray bool) 
 	docPath := []int{}
 
 	for pieceOffset, piece := range path {
-		idx := BSONIndexOf(current, piece)
+		idx := bsonIndexOf(current, piece)
 		//fmt.Printf("XX %d %s %d\n", pieceOffset, piece, idx)
 
 		if idx < 0 {

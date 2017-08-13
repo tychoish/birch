@@ -20,23 +20,14 @@ type Service struct {
 }
 
 func NewService(listenAddr string, port int) *Service {
-	s := &Service{
+	return &Service{
 		addr:     fmt.Sprintf("%s:%d", listenAddr, port),
 		registry: &OperationRegistry{ops: make(map[mongowire.OpScope]HandlerFunc)},
 	}
-
 }
 
-func (s *Service) RegisterOperation(scope *mongowire.OpScope) error {
-	if err := scope.Validate(); err != nil {
-		return errors.Wrap(err, "scope does not validate")
-	}
-
-	if err := s.registry.Add(scope); err != nil {
-		return errors.Wrap(err, "problem adding scope to registry")
-	}
-
-	return nil
+func (s *Service) RegisterOperation(scope *mongowire.OpScope, h HandlerFunc) error {
+	return errors.WithStack(s.registry.Add(*scope, h))
 }
 
 func (s *Service) Run(ctx context.Context) error {
@@ -49,8 +40,15 @@ func (s *Service) Run(ctx context.Context) error {
 	grip.Infof("listening for connections on %s", s.addr)
 
 	for {
+		if ctx.Err() != nil {
+			return errors.New("service terminated by canceled context")
+		}
+
 		conn, err := l.Accept()
-		grip.Warning(errors.Wrap(err, "problem accepting connection"))
+		if err != nil {
+			grip.Warning(errors.Wrap(err, "problem accepting connection"))
+			continue
+		}
 
 		go s.dispatchRequest(ctx, conn)
 	}
@@ -68,7 +66,7 @@ func (s *Service) dispatchRequest(ctx context.Context, conn net.Conn) {
 			grip.Warning(errors.Wrap(err, "error doing tls handshake"))
 			return
 		}
-		// SSLServerName = c.ConnectionState().ServerName
+		grip.Debugf("ssl connection to %s", c.ConnectionState().ServerName)
 	}
 
 	m, err := mongowire.ReadMessage(conn)
@@ -83,7 +81,7 @@ func (s *Service) dispatchRequest(ctx context.Context, conn net.Conn) {
 
 	handler, ok := s.registry.Get(scope)
 	if !ok {
-		grip.Warning("undefined command scope: %+v", scope)
+		grip.Warningf("undefined command scope: %+v", scope)
 		return
 	}
 

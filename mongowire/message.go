@@ -29,8 +29,8 @@ type updateMessage struct {
 	header MessageHeader
 
 	Reserved  int32
-	Namespace string
 	Flags     int32
+	Namespace string
 
 	Filter bson.Simple
 	Update bson.Simple
@@ -41,9 +41,9 @@ type queryMessage struct {
 	header MessageHeader
 
 	Flags     int32
-	Namespace string
 	Skip      int32
 	NReturn   int32
+	Namespace string
 
 	Query   bson.Simple
 	Project bson.Simple
@@ -54,9 +54,9 @@ type getMoreMessage struct {
 	header MessageHeader
 
 	Reserved  int32
-	Namespace string
 	NReturn   int32
 	CursorId  int64
+	Namespace string
 }
 
 // OP_INSERT
@@ -74,8 +74,8 @@ type deleteMessage struct {
 	header MessageHeader
 
 	Reserved  int32
-	Namespace string
 	Flags     int32
+	Namespace string
 
 	Filter bson.Simple
 }

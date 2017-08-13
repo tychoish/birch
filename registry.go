@@ -20,6 +20,10 @@ func (o *OperationRegistry) Add(op mongowire.OpScope, h HandlerFunc) error {
 		return errors.Wrap(err, "could not add operation, it failed to validate")
 	}
 
+	if h == nil {
+		return errors.Errorf("cannot define nil handler function for %+v", op)
+	}
+
 	if _, ok := o.ops[op]; ok {
 		return errors.Errorf("operation '%+v' is already defined", op)
 	}

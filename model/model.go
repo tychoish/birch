@@ -45,9 +45,9 @@ type Update struct {
 }
 
 type Reply struct {
-	StartingFrom   int32
+	Contents       []bson.Simple
 	CursorID       int64
+	StartingFrom   int32
 	CursorNotFound bool
 	QueryFailure   bool
-	Contents       []bson.Simple
 }
