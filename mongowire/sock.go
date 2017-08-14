@@ -57,10 +57,8 @@ func ReadMessage(reader io.Reader) (Message, error) {
 }
 
 func SendMessage(m Message, writer io.Writer) error {
-	return sendBytes(writer, m.Serialize())
-}
+	buf := m.Serialize()
 
-func sendBytes(writer io.Writer, buf []byte) error {
 	for {
 		written, err := writer.Write(buf)
 		if err != nil {
