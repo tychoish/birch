@@ -19,7 +19,7 @@ History
 -------
 
 The "mongowire" and "bson" packages are heavily adapted from
-`github.com/erh/mongotet <https://github.com/erh/mongonet>`_. Indeed
+`github.com/erh/mongonet <https://github.com/erh/mongonet>`_. Indeed
 this repository retains that history.
 
 Use
