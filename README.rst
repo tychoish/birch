@@ -1,11 +1,11 @@
 ==============================================
-``bsonx`` -- Go Lang BSON Manipulation Package
+``birch`` -- Go Lang BSON Manipulation Package
 ==============================================
 
 Overview
 --------
 
-The ``bsonx`` package provides an API for manipulating bson in Go programs
+The ``birch`` package provides an API for manipulating bson in Go programs
 without needing to handle byte slices or maintain types for marshalling bson
 into using reflection.
 
@@ -22,7 +22,7 @@ API and Documentation
 ---------------------
 
 See the `godoc API documentation
-<http://godoc.org/github.com/mongodb/ftdc/bsonx>` for more information
+<http://godoc.org/github.com/evergreen-ci/birch>` for more information
 about amboy interfaces and internals.
 
 

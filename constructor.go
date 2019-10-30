@@ -4,15 +4,15 @@
 // not use this file except in compliance with the License. You may obtain
 // a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-package bsonx
+package birch
 
 import (
 	"math"
 	"time"
 
-	"github.com/mongodb/ftdc/bsonx/decimal"
-	"github.com/mongodb/ftdc/bsonx/elements"
-	"github.com/mongodb/ftdc/bsonx/types"
+	"github.com/evergreen-ci/birch/decimal"
+	"github.com/evergreen-ci/birch/elements"
+	"github.com/evergreen-ci/birch/types"
 	"github.com/pkg/errors"
 )
 

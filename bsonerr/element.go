@@ -1,7 +1,7 @@
 package bsonerr
 
 import (
-	"github.com/mongodb/ftdc/bsonx/bsontype"
+	"github.com/evergreen-ci/birch/bsontype"
 	"github.com/pkg/errors"
 )
 

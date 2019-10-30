@@ -1,9 +1,9 @@
-package bsonx
+package birch
 
 import (
 	"bytes"
 
-	"github.com/mongodb/ftdc/bsonx/bsontype"
+	"github.com/evergreen-ci/birch/bsontype"
 )
 
 func readValue(src []byte, t bsontype.Type) ([]byte, []byte, bool) {

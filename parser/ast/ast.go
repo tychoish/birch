@@ -9,8 +9,8 @@ package ast
 import (
 	"fmt"
 
-	"github.com/mongodb/ftdc/bsonx/decimal"
-	"github.com/mongodb/ftdc/bsonx/objectid"
+	"github.com/evergreen-ci/birch/decimal"
+	"github.com/evergreen-ci/birch/objectid"
 )
 
 // Document represents a BSON Document.

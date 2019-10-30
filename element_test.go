@@ -4,7 +4,7 @@
 // not use this file except in compliance with the License. You may obtain
 // a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-package bsonx
+package birch
 
 import (
 	"bytes"
@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mongodb/ftdc/bsonx/bsonerr"
-	"github.com/mongodb/ftdc/bsonx/bsontype"
-	"github.com/mongodb/ftdc/bsonx/decimal"
-	"github.com/mongodb/ftdc/bsonx/types"
+	"github.com/evergreen-ci/birch/bsonerr"
+	"github.com/evergreen-ci/birch/bsontype"
+	"github.com/evergreen-ci/birch/decimal"
+	"github.com/evergreen-ci/birch/types"
 	"github.com/stretchr/testify/assert"
 )
 

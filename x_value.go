@@ -1,9 +1,9 @@
-package bsonx
+package birch
 
 import (
 	"bytes"
 
-	"github.com/mongodb/ftdc/bsonx/bsontype"
+	"github.com/evergreen-ci/birch/bsontype"
 )
 
 // EqualValue will return true if the two values are equal.

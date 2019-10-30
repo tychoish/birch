@@ -15,8 +15,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/mongodb/ftdc/bsonx/decimal"
-	"github.com/mongodb/ftdc/bsonx/parser/ast"
+	"github.com/evergreen-ci/birch/decimal"
+	"github.com/evergreen-ci/birch/parser/ast"
 	"github.com/pkg/errors"
 )
 

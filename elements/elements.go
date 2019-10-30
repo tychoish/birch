@@ -20,7 +20,7 @@ import (
 	"math"
 	"unsafe"
 
-	"github.com/mongodb/ftdc/bsonx/decimal"
+	"github.com/evergreen-ci/birch/decimal"
 	"github.com/pkg/errors"
 )
 

@@ -4,7 +4,7 @@
 // not use this file except in compliance with the License. You may obtain
 // a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-package bsonx
+package birch
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/mongodb/ftdc/bsonx/bsonerr"
+	"github.com/evergreen-ci/birch/bsonerr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

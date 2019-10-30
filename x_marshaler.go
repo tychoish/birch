@@ -1,4 +1,4 @@
-package bsonx
+package birch
 
 // Marshaler describes types that know how to marshal a document
 // representation of themselves into bson. Do not use this interface

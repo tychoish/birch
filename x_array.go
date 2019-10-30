@@ -1,4 +1,4 @@
-package bsonx
+package birch
 
 // Interface returns a slice of interface{} typed values for every
 // element in the array using the Value.Interface() method to

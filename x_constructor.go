@@ -1,4 +1,4 @@
-package bsonx
+package birch
 
 import (
 	"math"

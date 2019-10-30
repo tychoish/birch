@@ -1,10 +1,10 @@
-package bsonx
+package birch
 
 import (
 	"sort"
 
-	"github.com/mongodb/ftdc/bsonx/bsonerr"
-	"github.com/mongodb/ftdc/bsonx/bsontype"
+	"github.com/evergreen-ci/birch/bsonerr"
+	"github.com/evergreen-ci/birch/bsontype"
 )
 
 // ExportMap converts the values of the document to a map of strings

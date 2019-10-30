@@ -1,12 +1,12 @@
-package bsonx
+package birch
 
 import (
 	"encoding/binary"
 	"math"
 	"testing"
 
-	"github.com/mongodb/ftdc/bsonx/bsonerr"
-	"github.com/mongodb/ftdc/bsonx/bsontype"
+	"github.com/evergreen-ci/birch/bsonerr"
+	"github.com/evergreen-ci/birch/bsontype"
 )
 
 func TestValue(t *testing.T) {

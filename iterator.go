@@ -4,9 +4,9 @@
 // not use this file except in compliance with the License. You may obtain
 // a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-package bsonx
+package birch
 
-import "github.com/mongodb/ftdc/bsonx/bsonerr"
+import "github.com/evergreen-ci/birch/bsonerr"
 
 // Iterator describes the types used to iterate over a bson Document.
 type Iterator interface {
