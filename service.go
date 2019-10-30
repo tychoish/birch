@@ -1,6 +1,7 @@
 package mongorpc
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -11,7 +12,6 @@ import (
 	"github.com/mongodb/grip/recovery"
 	"github.com/pkg/errors"
 	"github.com/tychoish/mongorpc/mongowire"
-	"golang.org/x/net/context"
 )
 
 type HandlerFunc func(context.Context, io.Writer, mongowire.Message)
