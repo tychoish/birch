@@ -17,10 +17,6 @@ func (s *OpScope) Validate() error {
 			return errors.New("commands much identify a named command")
 		}
 
-		if s.Context == "" {
-			return errors.New("command ops must specify a scope (dbname only)")
-		}
-
 		return nil
 	case OP_DELETE:
 		if s.Context == "" {
