@@ -6,8 +6,11 @@ import (
 	"io"
 	"net"
 
+	"github.com/mongodb/ftdc/bsonx"
 	"github.com/mongodb/grip"
+	"github.com/mongodb/grip/recovery"
 	"github.com/pkg/errors"
+	"github.com/tychoish/mongorpc/bson"
 	"github.com/tychoish/mongorpc/mongowire"
 	"golang.org/x/net/context"
 )
@@ -54,7 +57,29 @@ func (s *Service) Run(ctx context.Context) error {
 	}
 }
 
+func writeErrorReply(w io.Writer, err error) error {
+	responseNotOk := bsonx.EC.Int32("ok", 0)
+	errorDoc := bsonx.EC.String("error", err.Error())
+	doc := bsonx.NewDocument(responseNotOk, errorDoc)
+
+	resp, err := doc.MarshalBSON()
+	if err != nil {
+		return errors.Wrap(err, "problem marshalling response")
+	}
+	simpleResp := bson.Simple{BSON: resp, Size: int32(len(resp))}
+
+	reply := mongowire.NewReply(int64(0), int32(0), int32(0), int32(1), []bson.Simple{simpleResp})
+	_, err = w.Write(reply.Serialize())
+	return errors.Wrap(err, "could not write response")
+}
+
 func (s *Service) dispatchRequest(ctx context.Context, conn net.Conn) {
+	defer func() {
+		err := recovery.HandlePanicWithError(recover(), nil, "request handling")
+		if err != nil {
+			grip.Error(errors.Wrap(writeErrorReply(conn, err), "error writing reply after panic recovery"))
+		}
+	}()
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
 	defer cancel()
