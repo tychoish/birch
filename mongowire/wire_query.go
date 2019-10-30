@@ -1,11 +1,11 @@
 package mongowire
 
 import (
-	"github.com/mongodb/ftdc/bsonx"
+	"github.com/evergreen-ci/birch"
 	"github.com/pkg/errors"
 )
 
-func NewQuery(ns string, flags, skip, toReturn int32, query, project *bsonx.Document) Message {
+func NewQuery(ns string, flags, skip, toReturn int32, query, project *birch.Document) Message {
 	return &queryMessage{
 		header: MessageHeader{
 			RequestID: 19,
@@ -100,14 +100,14 @@ func (h *MessageHeader) parseQueryMessage(buf []byte) (Message, error) {
 	qm.NReturn = readInt32(buf[loc:])
 	loc += 4
 
-	qm.Query, err = bsonx.ReadDocument(buf[loc:])
+	qm.Query, err = birch.ReadDocument(buf[loc:])
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	loc += getDocSize(qm.Query)
 
 	if loc < len(buf) {
-		qm.Project, err = bsonx.ReadDocument(buf[loc:])
+		qm.Project, err = birch.ReadDocument(buf[loc:])
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}

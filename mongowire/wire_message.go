@@ -1,7 +1,7 @@
 package mongowire
 
 import (
-	"github.com/mongodb/ftdc/bsonx"
+	"github.com/evergreen-ci/birch"
 	"github.com/pkg/errors"
 	"github.com/tychoish/mongorpc/model"
 )
@@ -10,18 +10,18 @@ type opMessageSection interface {
 	Type() uint8
 	Name() string
 	DB() string
-	Documents() []*bsonx.Document
+	Documents() []*birch.Document
 	Serialize() []byte
 }
 
 type opMessagePayloadType0 struct {
 	PayloadType uint8
-	Document    *bsonx.Document
+	Document    *birch.Document
 }
 
 func (p *opMessagePayloadType0) Type() uint8                  { return 0 }
 func (p *opMessagePayloadType0) Name() string                 { return "" }
-func (p *opMessagePayloadType0) Documents() []*bsonx.Document { return []*bsonx.Document{p.Document} }
+func (p *opMessagePayloadType0) Documents() []*birch.Document { return []*birch.Document{p.Document} }
 func (p *opMessagePayloadType0) Serialize() []byte            { return nil }
 func (p *opMessagePayloadType0) DB() string {
 	key, err := p.Document.LookupErr("$db")
@@ -41,13 +41,13 @@ type opMessagePayloadType1 struct {
 	PayloadType uint8
 	Size        int32
 	Identifier  string
-	Payload     []*bsonx.Document
+	Payload     []*birch.Document
 }
 
 func (p *opMessagePayloadType1) Type() uint8                  { return 1 }
 func (p *opMessagePayloadType1) Name() string                 { return p.Identifier }
 func (p *opMessagePayloadType1) DB() string                   { return "" }
-func (p *opMessagePayloadType1) Documents() []*bsonx.Document { return p.Payload }
+func (p *opMessagePayloadType1) Documents() []*birch.Document { return p.Payload }
 func (p *opMessagePayloadType1) Serialize() []byte            { return nil }
 
 func (m *opMessage) Header() MessageHeader { return m.header }
@@ -65,7 +65,7 @@ func (m *opMessage) Serialize() []byte { return nil }
 //   - implement message interface
 //      - Serialize
 
-func NewOpMessage(moreToCome bool, documents []*bsonx.Document, items ...model.SequenceItem) Message {
+func NewOpMessage(moreToCome bool, documents []*birch.Document, items ...model.SequenceItem) Message {
 	msg := &opMessage{
 		header: MessageHeader{
 			OpCode:    OP_MSG,

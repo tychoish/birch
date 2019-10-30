@@ -1,7 +1,7 @@
 package mongowire
 
 import (
-	"github.com/mongodb/ftdc/bsonx"
+	"github.com/evergreen-ci/birch"
 	"github.com/pkg/errors"
 )
 
@@ -9,7 +9,7 @@ type OpScope struct {
 	Type    OpType
 	Context string
 	Command string
-	Payload *bsonx.Document
+	Payload *birch.Document
 }
 
 func (s *OpScope) Validate() error {

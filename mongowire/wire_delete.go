@@ -1,11 +1,11 @@
 package mongowire
 
 import (
-	"github.com/mongodb/ftdc/bsonx"
+	"github.com/evergreen-ci/birch"
 	"github.com/pkg/errors"
 )
 
-func NewDelete(ns string, flags int32, filter *bsonx.Document) Message {
+func NewDelete(ns string, flags int32, filter *birch.Document) Message {
 	return &deleteMessage{
 		header: MessageHeader{
 			RequestID: 19,
@@ -73,7 +73,7 @@ func (h *MessageHeader) parseDeleteMessage(buf []byte) (Message, error) {
 	m.Flags = readInt32(buf[loc:])
 	loc += 4
 
-	m.Filter, err = bsonx.ReadDocument(buf[loc:])
+	m.Filter, err = birch.ReadDocument(buf[loc:])
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

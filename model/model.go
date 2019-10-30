@@ -1,24 +1,24 @@
 package model
 
-import "github.com/mongodb/ftdc/bsonx"
+import "github.com/evergreen-ci/birch"
 
 type Command struct {
 	DB                 string
 	Command            string
-	Arguments          *bsonx.Document
-	Metadata           *bsonx.Document
-	Inputs             []bsonx.Document
+	Arguments          *birch.Document
+	Metadata           *birch.Document
+	Inputs             []birch.Document
 	ConvertedFromQuery bool
 }
 
 type Delete struct {
 	Namespace string
-	Filter    *bsonx.Document
+	Filter    *birch.Document
 }
 
 type Insert struct {
 	Namespace string
-	Documents []*bsonx.Document
+	Documents []*birch.Document
 }
 
 type GetMore struct {
@@ -31,21 +31,21 @@ type Query struct {
 	Namespace string
 	Skip      int32
 	NReturn   int32
-	Query     *bsonx.Document
-	Project   *bsonx.Document
+	Query     *birch.Document
+	Project   *birch.Document
 }
 
 type Update struct {
 	Namespace string
-	Filter    *bsonx.Document
-	Update    *bsonx.Document
+	Filter    *birch.Document
+	Update    *birch.Document
 
 	Upsert bool
 	Multi  bool
 }
 
 type Reply struct {
-	Contents       []*bsonx.Document
+	Contents       []*birch.Document
 	CursorID       int64
 	StartingFrom   int32
 	CursorNotFound bool
@@ -63,5 +63,5 @@ type Message struct {
 
 type SequenceItem struct {
 	Identifier string
-	Documents  []*bsonx.Document
+	Documents  []*birch.Document
 }

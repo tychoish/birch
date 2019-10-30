@@ -1,7 +1,7 @@
 package mongowire
 
 import (
-	"github.com/mongodb/ftdc/bsonx"
+	"github.com/evergreen-ci/birch"
 	"github.com/tychoish/mongorpc/model"
 )
 
@@ -21,7 +21,7 @@ type replyMessage struct {
 	StartingFrom   int32
 	NumberReturned int32
 
-	Docs []*bsonx.Document
+	Docs []*birch.Document
 }
 
 // OP_UPDATE
@@ -32,8 +32,8 @@ type updateMessage struct {
 	Flags     int32
 	Namespace string
 
-	Filter *bsonx.Document
-	Update *bsonx.Document
+	Filter *birch.Document
+	Update *birch.Document
 }
 
 // OP_QUERY
@@ -45,8 +45,8 @@ type queryMessage struct {
 	NReturn   int32
 	Namespace string
 
-	Query   *bsonx.Document
-	Project *bsonx.Document
+	Query   *birch.Document
+	Project *birch.Document
 }
 
 // OP_GET_MORE
@@ -66,7 +66,7 @@ type insertMessage struct {
 	Flags     int32
 	Namespace string
 
-	Docs []*bsonx.Document
+	Docs []*birch.Document
 }
 
 // OP_DELETE
@@ -77,7 +77,7 @@ type deleteMessage struct {
 	Flags     int32
 	Namespace string
 
-	Filter *bsonx.Document
+	Filter *birch.Document
 }
 
 // OP_KILL_CURSORS
@@ -95,9 +95,9 @@ type CommandMessage struct {
 
 	DB          string
 	CmdName     string
-	CommandArgs *bsonx.Document
-	Metadata    *bsonx.Document
-	InputDocs   []bsonx.Document
+	CommandArgs *birch.Document
+	Metadata    *birch.Document
+	InputDocs   []birch.Document
 
 	// internal bookekeeping
 	upconverted bool
@@ -107,9 +107,9 @@ type CommandMessage struct {
 type commandReplyMessage struct {
 	header MessageHeader
 
-	CommandReply *bsonx.Document
-	Metadata     *bsonx.Document
-	OutputDocs   []bsonx.Document
+	CommandReply *birch.Document
+	Metadata     *birch.Document
+	OutputDocs   []birch.Document
 }
 
 // OP_MSG

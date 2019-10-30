@@ -1,11 +1,11 @@
 package mongowire
 
 import (
-	"github.com/mongodb/ftdc/bsonx"
+	"github.com/evergreen-ci/birch"
 	"github.com/pkg/errors"
 )
 
-func NewUpdate(ns string, flags int32, filter, update *bsonx.Document) Message {
+func NewUpdate(ns string, flags int32, filter, update *birch.Document) Message {
 	return &updateMessage{
 		header: MessageHeader{
 			RequestID: 19,
@@ -79,7 +79,7 @@ func (h *MessageHeader) parseUpdateMessage(buf []byte) (Message, error) {
 	m.Flags = readInt32(buf[loc:])
 	loc += 4
 
-	m.Filter, err = bsonx.ReadDocument(buf[loc:])
+	m.Filter, err = birch.ReadDocument(buf[loc:])
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (h *MessageHeader) parseUpdateMessage(buf []byte) (Message, error) {
 		return m, errors.New("invalid update message -- message length is too short")
 	}
 
-	m.Update, err = bsonx.ReadDocument(buf[loc:])
+	m.Update, err = birch.ReadDocument(buf[loc:])
 	if err != nil {
 		return nil, err
 	}

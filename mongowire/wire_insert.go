@@ -1,12 +1,12 @@
 package mongowire
 
 import (
-	"github.com/mongodb/ftdc/bsonx"
+	"github.com/evergreen-ci/birch"
 	"github.com/mongodb/grip"
 	"github.com/pkg/errors"
 )
 
-func NewInsert(ns string, docs ...*bsonx.Document) Message {
+func NewInsert(ns string, docs ...*birch.Document) Message {
 	return &insertMessage{
 		header: MessageHeader{
 			RequestID: 19,
@@ -71,7 +71,7 @@ func (h *MessageHeader) parseInsertMessage(buf []byte) (Message, error) {
 	loc += len(m.Namespace) + 1
 
 	for loc < len(buf) {
-		doc, err := bsonx.ReadDocument(buf[loc:])
+		doc, err := birch.ReadDocument(buf[loc:])
 		if err != nil {
 			return nil, err
 		}

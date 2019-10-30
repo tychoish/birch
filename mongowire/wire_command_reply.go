@@ -1,7 +1,7 @@
 package mongowire
 
 import (
-	"github.com/mongodb/ftdc/bsonx"
+	"github.com/evergreen-ci/birch"
 	"github.com/pkg/errors"
 )
 
@@ -40,7 +40,7 @@ func (h *MessageHeader) parseCommandReplyMessage(buf []byte) (Message, error) {
 
 	var err error
 
-	rm.CommandReply, err = bsonx.ReadDocument(buf)
+	rm.CommandReply, err = birch.ReadDocument(buf)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -51,7 +51,7 @@ func (h *MessageHeader) parseCommandReplyMessage(buf []byte) (Message, error) {
 	}
 	buf = buf[replySize:]
 
-	rm.Metadata, err = bsonx.ReadDocument(buf)
+	rm.Metadata, err = birch.ReadDocument(buf)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (h *MessageHeader) parseCommandReplyMessage(buf []byte) (Message, error) {
 	buf = buf[metaSize:]
 
 	for len(buf) > 0 {
-		doc, err := bsonx.ReadDocument(buf)
+		doc, err := birch.ReadDocument(buf)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}

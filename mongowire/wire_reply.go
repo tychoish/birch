@@ -1,11 +1,11 @@
 package mongowire
 
 import (
-	"github.com/mongodb/ftdc/bsonx"
+	"github.com/evergreen-ci/birch"
 	"github.com/pkg/errors"
 )
 
-func NewReply(cursorID int64, flags, startingFrom, numReturned int32, docs []*bsonx.Document) Message {
+func NewReply(cursorID int64, flags, startingFrom, numReturned int32, docs []*birch.Document) Message {
 	return &replyMessage{
 		header: MessageHeader{
 			RequestID: 19,
@@ -71,7 +71,7 @@ func (h *MessageHeader) parseReplyMessage(buf []byte) (Message, error) {
 	loc += 4
 
 	for loc < len(buf) {
-		doc, err := bsonx.ReadDocument(buf[loc:])
+		doc, err := birch.ReadDocument(buf[loc:])
 		if err != nil {
 			return nil, err
 		}

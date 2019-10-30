@@ -1,7 +1,7 @@
 package mongowire
 
 import (
-	"github.com/mongodb/ftdc/bsonx"
+	"github.com/evergreen-ci/birch"
 	"github.com/pkg/errors"
 )
 
@@ -58,12 +58,12 @@ func writeCString(s string, buf []byte, loc *int) {
 	*loc = *loc + 1
 }
 
-func getDocSize(doc *bsonx.Document) int {
+func getDocSize(doc *birch.Document) int {
 	size, _ := doc.Validate()
 	return int(size)
 }
 
-func writeDocAt(loc int, doc *bsonx.Document, buf []byte) int {
+func writeDocAt(loc int, doc *birch.Document, buf []byte) int {
 	out, _ := doc.WriteDocument(uint(loc), buf)
 	return int(out)
 }

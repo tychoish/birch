@@ -1,11 +1,11 @@
 package mongowire
 
 import (
-	"github.com/mongodb/ftdc/bsonx"
+	"github.com/evergreen-ci/birch"
 	"github.com/pkg/errors"
 )
 
-func NewCommand(db, name string, args, metadata *bsonx.Document, inputs []bsonx.Document) Message {
+func NewCommand(db, name string, args, metadata *birch.Document, inputs []birch.Document) Message {
 	return &CommandMessage{
 		header: MessageHeader{
 			OpCode:    OP_COMMAND,
@@ -85,7 +85,7 @@ func (h *MessageHeader) parseCommandMessage(buf []byte) (Message, error) {
 	}
 	buf = buf[len(cmd.CmdName)+1:]
 
-	cmd.CommandArgs, err = bsonx.ReadDocument(buf)
+	cmd.CommandArgs, err = birch.ReadDocument(buf)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (h *MessageHeader) parseCommandMessage(buf []byte) (Message, error) {
 	}
 	buf = buf[size:]
 
-	cmd.Metadata, err = bsonx.ReadDocument(buf)
+	cmd.Metadata, err = birch.ReadDocument(buf)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (h *MessageHeader) parseCommandMessage(buf []byte) (Message, error) {
 	buf = buf[size:]
 
 	for len(buf) > 0 {
-		doc, err := bsonx.ReadDocument(buf)
+		doc, err := birch.ReadDocument(buf)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
