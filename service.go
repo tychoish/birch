@@ -29,6 +29,8 @@ func NewService(listenAddr string, port int) *Service {
 	}
 }
 
+func (s *Service) Address() string { return s.addr }
+
 func (s *Service) RegisterOperation(scope *mongowire.OpScope, h HandlerFunc) error {
 	return errors.WithStack(s.registry.Add(*scope, h))
 }
