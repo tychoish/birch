@@ -1,6 +1,9 @@
 package mongowire
 
-import "github.com/pkg/errors"
+import (
+	"github.com/mongodb/ftdc/bsonx"
+	"github.com/pkg/errors"
+)
 
 func readInt32(b []byte) int32 {
 	return (int32(b[0])) |
@@ -53,4 +56,14 @@ func writeCString(s string, buf []byte, loc *int) {
 	*loc = *loc + len(s)
 	buf[*loc] = 0
 	*loc = *loc + 1
+}
+
+func getDocSize(doc *bsonx.Document) int {
+	size, _ := doc.Validate()
+	return int(size)
+}
+
+func writeDocAt(loc int, doc *bsonx.Document, buf []byte) int {
+	out, _ := doc.WriteDocument(uint(loc), buf)
+	return int(out)
 }
