@@ -1,10 +1,10 @@
-package mongorpc
+package mrpc
 
 import (
 	"sync"
 
 	"github.com/pkg/errors"
-	"github.com/tychoish/mongorpc/mongowire"
+	"github.com/tychoish/mrpc/mongowire"
 )
 
 type OperationRegistry struct {

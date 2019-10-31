@@ -1,4 +1,4 @@
-package mongorpc
+package mrpc
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/mongodb/grip/message"
 	"github.com/mongodb/grip/recovery"
 	"github.com/pkg/errors"
-	"github.com/tychoish/mongorpc/mongowire"
+	"github.com/tychoish/mrpc/mongowire"
 )
 
 type HandlerFunc func(context.Context, io.Writer, mongowire.Message)
