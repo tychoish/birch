@@ -9,6 +9,7 @@ import (
 
 	"github.com/evergreen-ci/birch"
 	"github.com/mongodb/grip"
+	"github.com/mongodb/grip/message"
 	"github.com/mongodb/grip/recovery"
 	"github.com/pkg/errors"
 	"github.com/tychoish/mongorpc/mongowire"
@@ -50,7 +51,7 @@ func (s *Service) Run(ctx context.Context) error {
 
 		conn, err := l.Accept()
 		if err != nil {
-			grip.Warning(errors.Wrap(err, "problem accepting connection"))
+			grip.Warning(message.WrapError(err, "problem accepting connection"))
 			continue
 		}
 
@@ -69,21 +70,29 @@ func writeErrorReply(w io.Writer, err error) error {
 }
 
 func (s *Service) dispatchRequest(ctx context.Context, conn net.Conn) {
-	defer func() {
-		err := recovery.HandlePanicWithError(recover(), nil, "request handling")
-		if err != nil {
-			grip.Error(errors.Wrap(writeErrorReply(conn, err), "error writing reply after panic recovery"))
-		}
-	}()
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
 	defer cancel()
-	defer conn.Close()
+	defer func() {
+		err := recovery.HandlePanicWithError(recover(), nil, "request handling")
+		if err != nil {
+			grip.Error(message.WrapError(err, "error during request handling"))
+			if writeErr := writeErrorReply(conn, err); writeErr != nil {
+				grip.Error(message.WrapError(writeErr, "error writing reply after panic recovery"))
+				return
+			}
+		}
+		if err := conn.Close(); err != nil {
+			grip.Error(message.WrapErrorf(err, "error closing connection from %s", conn.RemoteAddr()))
+			return
+		}
+		grip.Infof("closed connection from %s", conn.RemoteAddr())
+	}()
 
 	if c, ok := conn.(*tls.Conn); ok {
 		// we do this here so that we can get the SNI server name
 		if err := c.Handshake(); err != nil {
-			grip.Warning(errors.Wrap(err, "error doing tls handshake"))
+			grip.Warning(message.WrapError(err, "error doing tls handshake"))
 			return
 		}
 		grip.Debugf("ssl connection to %s", c.ConnectionState().ServerName)
@@ -92,10 +101,11 @@ func (s *Service) dispatchRequest(ctx context.Context, conn net.Conn) {
 	for {
 		m, err := mongowire.ReadMessage(conn)
 		if err != nil {
-			if err == io.EOF {
+			if errors.Cause(err) == io.EOF {
 				return
 			}
-			grip.Warning("problem reading message")
+			grip.Error(message.WrapError(err, "problem reading message"))
+			return
 		}
 
 		scope := m.Scope()
