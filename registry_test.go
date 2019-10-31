@@ -8,7 +8,7 @@ import (
 
 	"github.com/mongodb/grip"
 	"github.com/stretchr/testify/suite"
-	"github.com/tychoish/mrpc/mongowire"
+	"github.com/evergreen-ci/mrpc/mongowire"
 )
 
 type RegistrySuite struct {

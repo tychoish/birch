@@ -12,7 +12,7 @@ import (
 	"github.com/mongodb/grip/message"
 	"github.com/mongodb/grip/recovery"
 	"github.com/pkg/errors"
-	"github.com/tychoish/mrpc/mongowire"
+	"github.com/evergreen-ci/mrpc/mongowire"
 )
 
 type HandlerFunc func(context.Context, io.Writer, mongowire.Message)
