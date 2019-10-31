@@ -5,6 +5,18 @@ import (
 	"github.com/pkg/errors"
 )
 
+func NewCommandReply(reply, metadata *birch.Document, output []birch.Document) Message {
+	return &commandReplyMessage{
+		header: MessageHeader{
+			OpCode:    OP_COMMAND_REPLY,
+			RequestID: 19,
+		},
+		CommandReply: reply,
+		Metadata:     metadata,
+		OutputDocs:   output,
+	}
+}
+
 func (m *commandReplyMessage) HasResponse() bool     { return false }
 func (m *commandReplyMessage) Header() MessageHeader { return m.header }
 func (m *commandReplyMessage) Scope() *OpScope       { return nil }
