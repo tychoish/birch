@@ -13,7 +13,7 @@ type Message interface {
 }
 
 // OP_REPLY
-type replyMessage struct {
+type ReplyMessage struct {
 	header MessageHeader
 
 	Flags          int32
@@ -191,7 +191,7 @@ func GetModel(msg Message) (interface{}, OpType) {
 		}
 
 		return update, OP_UPDATE
-	case *replyMessage:
+	case *ReplyMessage:
 		reply := &model.Reply{
 			StartingFrom: m.StartingFrom,
 			CursorID:     m.CursorId,
