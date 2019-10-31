@@ -6,7 +6,7 @@ import (
 )
 
 func NewCommandReply(reply, metadata *birch.Document, output []birch.Document) Message {
-	return &commandReplyMessage{
+	return &CommandReplyMessage{
 		header: MessageHeader{
 			OpCode:    OP_COMMAND_REPLY,
 			RequestID: 19,
@@ -17,11 +17,11 @@ func NewCommandReply(reply, metadata *birch.Document, output []birch.Document) M
 	}
 }
 
-func (m *commandReplyMessage) HasResponse() bool     { return false }
-func (m *commandReplyMessage) Header() MessageHeader { return m.header }
-func (m *commandReplyMessage) Scope() *OpScope       { return nil }
+func (m *CommandReplyMessage) HasResponse() bool     { return false }
+func (m *CommandReplyMessage) Header() MessageHeader { return m.header }
+func (m *CommandReplyMessage) Scope() *OpScope       { return nil }
 
-func (m *commandReplyMessage) Serialize() []byte {
+func (m *CommandReplyMessage) Serialize() []byte {
 	size := 16 /* header */
 
 	size += getDocSize(m.CommandReply)
@@ -46,7 +46,7 @@ func (m *commandReplyMessage) Serialize() []byte {
 }
 
 func (h *MessageHeader) parseCommandReplyMessage(buf []byte) (Message, error) {
-	rm := &commandReplyMessage{
+	rm := &CommandReplyMessage{
 		header: *h,
 	}
 

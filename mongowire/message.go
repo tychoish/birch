@@ -104,7 +104,7 @@ type CommandMessage struct {
 }
 
 // OP_COMMAND_REPLY
-type commandReplyMessage struct {
+type CommandReplyMessage struct {
 	header MessageHeader
 
 	CommandReply *birch.Document
