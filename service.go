@@ -8,11 +8,11 @@ import (
 	"net"
 
 	"github.com/evergreen-ci/birch"
+	"github.com/evergreen-ci/mrpc/mongowire"
 	"github.com/mongodb/grip"
 	"github.com/mongodb/grip/message"
 	"github.com/mongodb/grip/recovery"
 	"github.com/pkg/errors"
-	"github.com/evergreen-ci/mrpc/mongowire"
 )
 
 type HandlerFunc func(context.Context, io.Writer, mongowire.Message)
@@ -64,7 +64,8 @@ func writeErrorReply(w io.Writer, err error) error {
 	errorDoc := birch.EC.String("error", err.Error())
 	doc := birch.NewDocument(responseNotOk, errorDoc)
 
-	reply := mongowire.NewReply(int64(0), int32(0), int32(0), int32(1), []*birch.Document{doc})
+	// TODO: handle OP_MSG replies for newer protocol versions.
+	reply := mongowire.NewReply(int64(0), int32(0), int32(0), int32(1), []birch.Document{*doc.Copy()})
 	_, err = w.Write(reply.Serialize())
 	return errors.Wrap(err, "could not write response")
 }
