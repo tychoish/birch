@@ -1,4 +1,4 @@
-package ftdc
+package metrics
 
 import (
 	"bufio"
@@ -10,8 +10,7 @@ import (
 	"time"
 
 	"github.com/evergreen-ci/birch"
-	"github.com/mongodb/grip"
-	"github.com/mongodb/grip/message"
+	"github.com/mongodb/ftdc"
 	"github.com/papertrail/go-tail/follower"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -133,12 +132,11 @@ func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 	}
 
 	outputCount := 0
-	collector := NewDynamicCollector(opts.SampleCount)
+	collector := ftdc.NewDynamicCollector(opts.SampleCount)
 	flushTimer := time.NewTimer(opts.FlushInterval)
 	defer flushTimer.Stop()
 
 	flusher := func() error {
-		startAt := time.Now()
 		fn := fmt.Sprintf("%s.%d", opts.OutputFilePrefix, outputCount)
 		info := collector.Info()
 
@@ -155,14 +153,6 @@ func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 		if err = ioutil.WriteFile(fn, output, 0600); err != nil {
 			return errors.Wrapf(err, "problem writing data to file %s", fn)
 		}
-
-		grip.Debug(message.Fields{
-			"op":            "writing ftdc data from stream",
-			"samples":       info.SampleCount,
-			"metrics":       info.MetricsCount,
-			"file":          fn,
-			"duration_secs": time.Since(startAt).Seconds(),
-		})
 
 		outputCount++
 		collector.Reset()

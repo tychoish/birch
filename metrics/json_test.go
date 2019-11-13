@@ -1,4 +1,4 @@
-package ftdc
+package metrics
 
 import (
 	"bytes"
@@ -12,7 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mongodb/grip"
+	"github.com/mongodb/ftdc"
+	"github.com/mongodb/ftdc/testutil"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -81,7 +82,7 @@ func makeJSONRandComplex(num int) ([][]byte, error) {
 	out := [][]byte{}
 
 	for i := 0; i < num; i++ {
-		doc := randComplexDocument(100, 2)
+		doc := testutil.RandComplexDocument(100, 2)
 		data, err := json.Marshal(doc)
 		if err != nil {
 			return nil, errors.WithStack(err)
@@ -110,13 +111,17 @@ func writeStream(docs [][]byte, writer io.Writer) error {
 func TestCollectJSON(t *testing.T) {
 	t.Parallel()
 
-	dir, err := ioutil.TempDir("build", "ftdc-")
+	buildDir, err := filepath.Abs(filepath.Join("..", "build"))
+	require.NoError(t, err)
+	dir, err := ioutil.TempDir(buildDir, "ftdc-")
 	require.NoError(t, err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	defer func() {
-		grip.Alert(os.RemoveAll(dir))
+		if err := os.RemoveAll(dir); err != nil {
+			fmt.Println(err)
+		}
 	}()
 
 	hundredDocs, err := makeJSONRandComplex(100)
@@ -124,7 +129,6 @@ func TestCollectJSON(t *testing.T) {
 
 	t.Run("SingleReaderIdealCase", func(t *testing.T) {
 		buf := &bytes.Buffer{}
-
 		err = writeStream(hundredDocs, buf)
 		require.NoError(t, err)
 
@@ -263,7 +267,7 @@ func TestCollectJSON(t *testing.T) {
 		fn, err := os.Open(filepath.Join(dir, "roundtrip.0"))
 		require.NoError(t, err)
 
-		iter := ReadMetrics(ctx, fn)
+		iter := ftdc.ReadMetrics(ctx, fn)
 		idx := -1
 		for iter.Next() {
 			idx++
