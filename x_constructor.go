@@ -51,6 +51,9 @@ func (DocumentConstructor) ReadFrom(in io.Reader) *Document {
 func (DocumentConstructor) ReadFromErr(in io.Reader) (*Document, error) {
 	doc := DC.New()
 	_, err := doc.ReadFrom(in)
+	if err == io.EOF {
+		return nil, err
+	}
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
