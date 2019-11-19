@@ -39,6 +39,9 @@ func (DocumentConstructor) Reader(r Reader) *Document {
 
 func (DocumentConstructor) ReadFrom(in io.Reader) *Document {
 	doc, err := DC.ReadFromErr(in)
+	if err == io.EOF {
+		return nil
+	}
 	if err != nil {
 		panic(err)
 	}
