@@ -120,7 +120,7 @@ type opMessage struct {
 	DB         string
 	Collection string
 	Operation  string
-	Items      []opMessageSection
+	Items      []OpMessageSection
 	Checksum   int32
 }
 

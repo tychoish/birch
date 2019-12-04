@@ -33,15 +33,13 @@ func (m *getMoreMessage) Serialize() []byte {
 	buf := make([]byte, size)
 	m.header.WriteInto(buf)
 
-	writeInt32(0, buf, 16)
+	loc := 16
+	loc += writeInt32(0, buf, loc)
 
-	loc := 20
-	writeCString(m.Namespace, buf, &loc)
-	writeInt32(m.NReturn, buf, loc)
-	loc += 4
+	loc += writeCString(m.Namespace, buf, loc)
+	loc += writeInt32(m.NReturn, buf, loc)
 
-	writeInt64(m.CursorId, buf, loc)
-	loc += 8
+	loc += writeInt64(m.CursorId, buf, loc)
 
 	return buf
 }
