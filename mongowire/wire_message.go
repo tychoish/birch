@@ -88,9 +88,10 @@ func (p *opMessagePayloadType1) Serialize() []byte {
 	return buf
 }
 
-func (m *opMessage) Header() MessageHeader { return m.header }
-func (m *opMessage) HasResponse() bool     { return m.Flags > 1 }
-func (m *opMessage) Scope() *OpScope {
+func (m *OpMessage) Header() MessageHeader { return m.header }
+func (m *OpMessage) HasResponse() bool     { return m.Flags > 1 }
+
+func (m *OpMessage) Scope() *OpScope {
 	var cmd string
 	var db string
 	// OP_MSG is expected to have exactly one body section.
@@ -108,7 +109,7 @@ func (m *opMessage) Scope() *OpScope {
 	}
 }
 
-func (m *opMessage) Serialize() []byte {
+func (m *OpMessage) Serialize() []byte {
 	size := 16 // header
 	size += 4  // flags
 	for _, section := range m.Items {
@@ -145,7 +146,7 @@ func (m *opMessage) Serialize() []byte {
 }
 
 func NewOpMessage(moreToCome bool, documents []birch.Document, items ...model.SequenceItem) Message {
-	msg := &opMessage{
+	msg := &OpMessage{
 		header: MessageHeader{
 			OpCode:    OP_MSG,
 			RequestID: 19,
@@ -182,7 +183,7 @@ func (h *MessageHeader) parseMsgBody(body []byte) (Message, error) {
 		return nil, errors.New("invalid op message - message must have length of at least 4 bytes")
 	}
 
-	msg := &opMessage{
+	msg := &OpMessage{
 		header: *h,
 	}
 
