@@ -60,9 +60,9 @@ func (id ObjectID) IsZero() bool {
 	return bytes.Equal(id[:], NilObjectID[:])
 }
 
-// FromHex creates a new ObjectID from a hex string. It returns an error if the hex string is not a
+// ObjectIDFromHex creates a new ObjectID from a hex string. It returns an error if the hex string is not a
 // valid ObjectID.
-func FromHex(s string) (ObjectID, error) {
+func ObjectIDFromHex(s string) (ObjectID, error) {
 	b, err := hex.DecodeString(s)
 	if err != nil {
 		return NilObjectID, err
@@ -77,6 +77,17 @@ func FromHex(s string) (ObjectID, error) {
 	copy(oid[:], b)
 
 	return oid, nil
+}
+
+// MustObjectIDFromHex builds an ObjectID, panicing if the hex string
+// isn't valid
+func MustObjectIDFromHex(s string) ObjectID {
+	oid, err := ObjectIDFromHex(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return oid
 }
 
 // MarshalJSON returns the ObjectID as a string

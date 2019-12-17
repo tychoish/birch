@@ -40,7 +40,7 @@ type Value struct {
 	d *Document
 }
 
-// Copy constructs an entirely new valueobject with the same data as
+// Copy constructs an entirely new value object with the same data as
 // the original.
 func (v *Value) Copy() *Value {
 	return &Value{
@@ -49,6 +49,15 @@ func (v *Value) Copy() *Value {
 		data:   v.data,
 		d:      v.d.Copy(),
 	}
+}
+
+// Set changes the internal representation of a value to have the
+// internal representation of a second value
+func (v *Value) Set(v2 *Value) {
+	v.start = v2.start
+	v.offset = v2.offset
+	v.data = v2.data
+	v.d = v2.d
 }
 
 // Interface returns the Go value of this Value as an empty interface.
