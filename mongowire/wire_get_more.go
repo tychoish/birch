@@ -1,6 +1,8 @@
 package mongowire
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 func NewGetMore(ns string, number int32, cursorID int64) Message {
 	return &getMoreMessage{

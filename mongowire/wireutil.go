@@ -55,9 +55,8 @@ func readCString(b []byte) (string, error) {
 
 func writeCString(s string, buf []byte, loc int) int {
 	copy(buf[loc:], s)
-	loc += len(s)
 	buf[loc+len(s)] = 0
-	return loc + len(s) + 1
+	return len(s) + 1
 }
 
 func getDocSize(doc *birch.Document) int {

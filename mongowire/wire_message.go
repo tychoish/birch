@@ -110,15 +110,20 @@ func (m *OpMessage) Scope() *OpScope {
 }
 
 func (m *OpMessage) Serialize() []byte {
+	if len(m.serialized) > 0 {
+		return m.serialized
+	}
+
 	size := 16 // header
 	size += 4  // flags
+	sections := []byte{}
 	for _, section := range m.Items {
+		sections = append(sections, section.Serialize()...)
 		switch p := section.(type) {
 		case *opMessagePayloadType0:
 			size += 1 // kind
 			size += getDocSize(p.Document)
 		case *opMessagePayloadType1:
-			size += 1 // kind
 			size += int(p.Size)
 		}
 	}
@@ -132,16 +137,14 @@ func (m *OpMessage) Serialize() []byte {
 	loc := 16 // header
 	loc += writeInt32(int32(m.Flags), buf, loc)
 
-	for _, section := range m.Items {
-		b := section.Serialize()
-		copy(buf[loc:], b)
-		loc += len(b)
-	}
+	copy(buf[loc:], sections)
+	loc += len(sections)
 
 	if m.Checksum != 0 && (m.Flags&1) == 1 {
 		loc += writeInt32(m.Checksum, buf, loc)
 	}
 
+	m.serialized = buf
 	return buf
 }
 
@@ -169,8 +172,9 @@ func NewOpMessage(moreToCome bool, documents []birch.Document, items ...model.Se
 		it := &opMessagePayloadType1{
 			Identifier: item.Identifier,
 		}
-		for _, i := range item.Documents {
-			it.Size += int32(getDocSize(&i))
+		for jdx := range item.Documents {
+			it.Payload = append(it.Payload, *item.Documents[jdx].Copy())
+			it.Size += int32(getDocSize(&item.Documents[jdx]))
 		}
 		msg.Items = append(msg.Items, it)
 	}
@@ -212,10 +216,10 @@ func (h *MessageHeader) parseMsgBody(body []byte) (Message, error) {
 			if err != nil {
 				return nil, errors.Wrap(err, "could not read identifier")
 			}
-			loc += len(section.Identifier)
+			loc += len(section.Identifier) + 1 // c string null terminator
 
-			for remaining := int(section.Size) - 4 - len(section.Identifier); remaining > 0; {
-				docSize := int(readInt32(body[loc+1:]))
+			for remaining := int(section.Size) - 1 - 4 - len(section.Identifier) - 1; remaining > 0; {
+				docSize := int(readInt32(body[loc:]))
 				doc, err := birch.ReadDocument(body[loc : loc+docSize])
 				if err != nil {
 					return nil, errors.Wrap(err, "could not read payload document")

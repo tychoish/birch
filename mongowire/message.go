@@ -114,7 +114,8 @@ type CommandReplyMessage struct {
 
 // OP_MSG
 type OpMessage struct {
-	header MessageHeader
+	header     MessageHeader
+	serialized []byte
 
 	Flags      uint32
 	DB         string
