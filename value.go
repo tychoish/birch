@@ -11,10 +11,10 @@ import (
 	"math"
 	"time"
 
-	"github.com/evergreen-ci/birch/bsonerr"
-	"github.com/evergreen-ci/birch/bsontype"
-	"github.com/evergreen-ci/birch/decimal"
-	"github.com/evergreen-ci/birch/types"
+	"github.com/deciduosity/birch/bsonerr"
+	"github.com/deciduosity/birch/bsontype"
+	"github.com/deciduosity/birch/decimal"
+	"github.com/deciduosity/birch/types"
 	"github.com/pkg/errors"
 )
 

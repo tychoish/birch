@@ -20,7 +20,7 @@ import (
 	"math"
 	"unsafe"
 
-	"github.com/evergreen-ci/birch/decimal"
+	"github.com/deciduosity/birch/decimal"
 	"github.com/pkg/errors"
 )
 

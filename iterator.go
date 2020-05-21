@@ -6,7 +6,7 @@
 
 package birch
 
-import "github.com/evergreen-ci/birch/bsonerr"
+import "github.com/deciduosity/birch/bsonerr"
 
 // Iterator describes the types used to iterate over a bson Document.
 type Iterator interface {

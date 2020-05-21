@@ -5,8 +5,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/evergreen-ci/birch/bsonerr"
-	"github.com/evergreen-ci/birch/bsontype"
+	"github.com/deciduosity/birch/bsonerr"
+	"github.com/deciduosity/birch/bsontype"
 )
 
 func TestValue(t *testing.T) {

@@ -11,9 +11,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/evergreen-ci/birch/bsonerr"
-	"github.com/evergreen-ci/birch/bsontype"
-	"github.com/evergreen-ci/birch/elements"
+	"github.com/deciduosity/birch/bsonerr"
+	"github.com/deciduosity/birch/bsontype"
+	"github.com/deciduosity/birch/elements"
 	"github.com/pkg/errors"
 )
 

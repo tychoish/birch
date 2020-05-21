@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/evergreen-ci/birch/bsonerr"
+	"github.com/deciduosity/birch/bsonerr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

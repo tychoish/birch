@@ -3,8 +3,8 @@ package birch
 import (
 	"time"
 
-	"github.com/evergreen-ci/birch/bsontype"
-	"github.com/evergreen-ci/birch/jsonx"
+	"github.com/deciduosity/birch/bsontype"
+	"github.com/deciduosity/birch/jsonx"
 )
 
 // MarshalJSON produces a JSON representation of the Document,

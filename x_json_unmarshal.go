@@ -3,9 +3,9 @@ package birch
 import (
 	"time"
 
-	"github.com/evergreen-ci/birch/decimal"
-	"github.com/evergreen-ci/birch/jsonx"
-	"github.com/evergreen-ci/birch/types"
+	"github.com/deciduosity/birch/decimal"
+	"github.com/deciduosity/birch/jsonx"
+	"github.com/deciduosity/birch/types"
 	"github.com/pkg/errors"
 )
 

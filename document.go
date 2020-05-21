@@ -13,8 +13,8 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/evergreen-ci/birch/bsonerr"
-	"github.com/evergreen-ci/birch/elements"
+	"github.com/deciduosity/birch/bsonerr"
+	"github.com/deciduosity/birch/elements"
 )
 
 // Document is a mutable ordered map that compactly represents a BSON document.

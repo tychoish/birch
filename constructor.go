@@ -10,9 +10,9 @@ import (
 	"math"
 	"time"
 
-	"github.com/evergreen-ci/birch/decimal"
-	"github.com/evergreen-ci/birch/elements"
-	"github.com/evergreen-ci/birch/types"
+	"github.com/deciduosity/birch/decimal"
+	"github.com/deciduosity/birch/elements"
+	"github.com/deciduosity/birch/types"
 	"github.com/pkg/errors"
 )
 

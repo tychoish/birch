@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/evergreen-ci/birch/bsontype"
-	"github.com/evergreen-ci/birch/decimal"
+	"github.com/deciduosity/birch/bsontype"
+	"github.com/deciduosity/birch/decimal"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

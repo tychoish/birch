@@ -12,7 +12,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/evergreen-ci/birch/bsonerr"
+	"github.com/deciduosity/birch/bsonerr"
 	"github.com/pkg/errors"
 )
 
