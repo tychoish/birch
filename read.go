@@ -8,8 +8,8 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/evergreen-ci/birch/bsontype"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/birch/bsontype"
 	"github.com/pkg/errors"
 )
 

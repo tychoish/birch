@@ -9,8 +9,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/mongodb/ftdc"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/ftdc"
 	"github.com/papertrail/go-tail/follower"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"

@@ -3,7 +3,7 @@ package hdrhist_test
 import (
 	"testing"
 
-	"github.com/mongodb/ftdc/hdrhist"
+	"github.com/deciduosity/ftdc/hdrhist"
 	"github.com/stretchr/testify/assert"
 )
 

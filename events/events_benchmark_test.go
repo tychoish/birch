@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mongodb/ftdc"
+	"github.com/deciduosity/ftdc"
 )
 
 func BenchmarkEventCollection(b *testing.B) {

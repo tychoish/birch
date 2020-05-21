@@ -5,9 +5,9 @@ import (
 	"io"
 	"time"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/evergreen-ci/birch/bsontype"
-	"github.com/mongodb/ftdc/util"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/birch/bsontype"
+	"github.com/deciduosity/ftdc/util"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 )

@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/mongodb/ftdc"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/ftdc"
 	"github.com/stretchr/testify/assert"
 )
 

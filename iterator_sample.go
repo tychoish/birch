@@ -3,7 +3,7 @@ package ftdc
 import (
 	"context"
 
-	"github.com/evergreen-ci/birch"
+	"github.com/deciduosity/birch"
 )
 
 // sampleIterator provides an iterator for iterating through the

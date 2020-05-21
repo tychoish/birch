@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mongodb/ftdc/testutil"
+	"github.com/deciduosity/ftdc/testutil"
 	"github.com/stretchr/testify/assert"
 )
 

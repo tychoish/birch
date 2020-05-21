@@ -3,8 +3,8 @@ package ftdc
 import (
 	"context"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/mongodb/ftdc/util"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/ftdc/util"
 	"github.com/pkg/errors"
 )
 

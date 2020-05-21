@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/evergreen-ci/birch"
+	"github.com/deciduosity/birch"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 )

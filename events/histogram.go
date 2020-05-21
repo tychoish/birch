@@ -10,8 +10,8 @@ package events
 import (
 	"time"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/mongodb/ftdc/hdrhist"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/ftdc/hdrhist"
 )
 
 // PerformanceHDR the same as the Performance structure, but with all time

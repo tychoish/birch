@@ -3,7 +3,7 @@ package ftdc
 import (
 	"context"
 
-	"github.com/mongodb/ftdc/util"
+	"github.com/deciduosity/ftdc/util"
 )
 
 type bufferedCollector struct {

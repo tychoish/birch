@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/mongodb/ftdc/util"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/ftdc/util"
 )
 
 // ChunkIterator is a simple iterator for reading off of an FTDC data

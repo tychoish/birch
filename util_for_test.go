@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/mongodb/ftdc/testutil"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/ftdc/testutil"
 	"github.com/pkg/errors"
 )
 

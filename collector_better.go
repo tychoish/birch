@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"time"
 
-	"github.com/evergreen-ci/birch"
+	"github.com/deciduosity/birch"
 	"github.com/pkg/errors"
 )
 

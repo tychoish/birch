@@ -3,8 +3,8 @@ package events
 import (
 	"time"
 
-	"github.com/mongodb/ftdc"
-	"github.com/mongodb/ftdc/util"
+	"github.com/deciduosity/ftdc"
+	"github.com/deciduosity/ftdc/util"
 	"github.com/pkg/errors"
 )
 

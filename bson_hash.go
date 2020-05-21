@@ -5,8 +5,8 @@ import (
 	"hash"
 	"hash/fnv"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/evergreen-ci/birch/bsontype"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/birch/bsontype"
 )
 
 func metricKeyHash(doc *birch.Document) (string, int) {

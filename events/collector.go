@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mongodb/ftdc"
+	"github.com/deciduosity/ftdc"
 	"github.com/pkg/errors"
 )
 

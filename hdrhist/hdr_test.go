@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/mongodb/ftdc/hdrhist"
+	"github.com/deciduosity/ftdc/hdrhist"
 	"github.com/stretchr/testify/assert"
 )
 

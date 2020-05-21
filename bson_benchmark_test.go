@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/mongodb/ftdc/testutil"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/ftdc/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

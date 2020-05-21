@@ -11,11 +11,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/mongodb/ftdc"
-	"github.com/mongodb/ftdc/util"
-	"github.com/mongodb/grip/message"
-	"github.com/mongodb/grip/recovery"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/ftdc"
+	"github.com/deciduosity/ftdc/util"
+	"github.com/deciduosity/grip/message"
+	"github.com/deciduosity/grip/recovery"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 )

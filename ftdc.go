@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/evergreen-ci/birch/bsontype"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/birch/bsontype"
 )
 
 // Chunk represents a 'metric chunk' of data in the FTDC.

@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mongodb/ftdc"
-	"github.com/mongodb/ftdc/testutil"
+	"github.com/deciduosity/ftdc"
+	"github.com/deciduosity/ftdc/testutil"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
