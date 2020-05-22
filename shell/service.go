@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 
-	"github.com/evergreen-ci/mrpc"
-	"github.com/evergreen-ci/mrpc/mongowire"
+	"github.com/deciduosity/mrpc"
+	"github.com/deciduosity/mrpc/mongowire"
 	"github.com/pkg/errors"
 )
 

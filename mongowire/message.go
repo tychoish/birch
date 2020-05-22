@@ -1,8 +1,8 @@
 package mongowire
 
 import (
-	"github.com/evergreen-ci/birch"
-	"github.com/evergreen-ci/mrpc/model"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/mrpc/model"
 )
 
 type Message interface {

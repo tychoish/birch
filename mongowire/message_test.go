@@ -3,8 +3,8 @@ package mongowire
 import (
 	"testing"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/evergreen-ci/mrpc/model"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/mrpc/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/mgo.v2/bson"

@@ -6,9 +6,9 @@ import (
 	"io"
 	"testing"
 
-	"github.com/mongodb/grip"
+	"github.com/deciduosity/grip"
 	"github.com/stretchr/testify/suite"
-	"github.com/evergreen-ci/mrpc/mongowire"
+	"github.com/deciduosity/mrpc/mongowire"
 )
 
 type RegistrySuite struct {

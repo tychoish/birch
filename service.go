@@ -7,10 +7,10 @@ import (
 	"io"
 	"net"
 
-	"github.com/evergreen-ci/mrpc/mongowire"
-	"github.com/mongodb/grip"
-	"github.com/mongodb/grip/message"
-	"github.com/mongodb/grip/recovery"
+	"github.com/deciduosity/mrpc/mongowire"
+	"github.com/deciduosity/grip"
+	"github.com/deciduosity/grip/message"
+	"github.com/deciduosity/grip/recovery"
 	"github.com/pkg/errors"
 )
 

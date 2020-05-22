@@ -1,6 +1,6 @@
 package model
 
-import "github.com/evergreen-ci/birch"
+import "github.com/deciduosity/birch"
 
 type Command struct {
 	DB                 string

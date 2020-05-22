@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
-	"github.com/evergreen-ci/mrpc/mongowire"
+	"github.com/deciduosity/mrpc/mongowire"
 )
 
 type OperationRegistry struct {

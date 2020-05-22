@@ -4,10 +4,10 @@ import (
 	"context"
 	"io"
 
-	"github.com/evergreen-ci/birch"
-	"github.com/evergreen-ci/mrpc/mongowire"
-	"github.com/mongodb/grip"
-	"github.com/mongodb/grip/message"
+	"github.com/deciduosity/grip"
+	"github.com/deciduosity/grip/message"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/mrpc/mongowire"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 )

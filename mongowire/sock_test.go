@@ -6,7 +6,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/evergreen-ci/birch"
+	"github.com/deciduosity/birch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/mgo.v2/bson"
