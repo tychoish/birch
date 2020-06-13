@@ -3,6 +3,7 @@ module github.com/deciduosity/birch
 go 1.14
 
 require (
-	github.com/evergreen-ci/birch v0.0.0-20200414210913-9279ecfa8907
+	github.com/google/go-cmp v0.4.1
 	github.com/pkg/errors v0.9.1
+	github.com/stretchr/testify v1.6.1
 )
