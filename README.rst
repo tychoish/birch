@@ -15,13 +15,6 @@ and utility.
 Furthermore, it should be trivially easy to use this kind of interface
 to wrap up functionality for arbitrary tools.
 
-History
--------
-
-The "mongowire" and "bson" packages are heavily adapted from
-`github.com/erh/mongonet <https://github.com/erh/mongonet>`_. Indeed
-this repository retains that history.
-
 Use
 ---
 
@@ -72,11 +65,34 @@ Quirks
   get OP_COMMAND_REPLY messages.
 
 
+Development
+-----------
+
+mrpc is available for use under the terms of the Apache License (v2). 
+
+If you encounter a problem or have a feature that you'd like to see added to
+``mrpc``, please feel free to create an issue or file a pull request.
+
+For complete API documentation see the `godoc
+<https://godoc.org/github.com/deciduosity/mrpc>`. 
+
+To run tests please use the ``makefile`` which has targets to support most
+developer workflows.
+
+History
+~~~~~~~
+
+The "mongowire" package is heavily adapted from `github.com/erh/mongonet
+<https://github.com/erh/mongonet>`_. Indeed this repository retains that
+history.
+
 Dependencies
-------------
+~~~~~~~~~~~~
 
-Currently, ``mrpc`` does not vendor its dependencies, and uses:
+All dependencies are managed with go modules, but principally, mrpc uses the
+following core libraries: 
 
-- `github.com/mongodb/grip <https://github.com/mongodb/grip>`_ (for logging)
+- `github.com/deciduosity/grip <https://github.com/deciduosity/grip>`_ (for logging)
 - `github.com/pkg/errors <https;//github.com/pkg/errors>`_ (for error annotation.)
-- `github.com/evergreen-ci/birch <https://github.com/evergreen-ci/birch>`_ (for bson parsing)
+- `github.com/deciduosity/birch <https://github.com/deciduosity/birch>`_ (for bson parsing)
+
