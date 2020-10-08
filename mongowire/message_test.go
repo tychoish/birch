@@ -7,7 +7,7 @@ import (
 	"github.com/deciduosity/mrpc/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func TestMessage(t *testing.T) {

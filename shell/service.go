@@ -80,7 +80,8 @@ const opMsgWireVersion = 6
 
 func (s *shellService) isMaster(ctx context.Context, w io.Writer, msg mongowire.Message) {
 	t := msg.Header().OpCode
-	resp, err := ResponseToMessage(t, makeIsMasterResponse(0, opMsgWireVersion))
+	doc, _ := makeIsMasterResponse(0, opMsgWireVersion).MarshalDocument()
+	resp, err := ResponseToMessage(t, doc)
 	if err != nil {
 		WriteErrorResponse(ctx, w, t, errors.Wrap(err, "could not make response"), isMasterCommand)
 		return
@@ -90,7 +91,8 @@ func (s *shellService) isMaster(ctx context.Context, w io.Writer, msg mongowire.
 
 func (s *shellService) whatsMyURI(ctx context.Context, w io.Writer, msg mongowire.Message) {
 	t := msg.Header().OpCode
-	resp, err := ResponseToMessage(t, makeWhatsMyURIResponse(s.Address()))
+	doc, _ := makeWhatsMyURIResponse(s.Address()).MarshalDocument()
+	resp, err := ResponseToMessage(t, doc)
 	if err != nil {
 		WriteErrorResponse(ctx, w, t, errors.Wrap(err, "could not make response"), whatsMyURICommand)
 		return
@@ -99,7 +101,8 @@ func (s *shellService) whatsMyURI(ctx context.Context, w io.Writer, msg mongowir
 }
 
 func (s *shellService) buildInfo(ctx context.Context, w io.Writer, msg mongowire.Message) {
-	resp, err := ResponseToMessage(msg.Header().OpCode, makeBuildInfoResponse("0.0.0"))
+	doc, _ := makeBuildInfoResponse("0.0.0").MarshalDocument()
+	resp, err := ResponseToMessage(msg.Header().OpCode, doc)
 	if err != nil {
 		WriteErrorResponse(ctx, w, msg.Header().OpCode, errors.Wrap(err, "could not make response"), buildInfoCommand)
 		return
@@ -120,7 +123,8 @@ func (s *shellService) getFreeMonitoringStatus(ctx context.Context, w io.Writer,
 }
 
 func (s *shellService) getLog(ctx context.Context, w io.Writer, msg mongowire.Message) {
-	resp, err := ResponseToMessage(msg.Header().OpCode, makeGetLogResponse([]string{}))
+	doc, _ := makeGetLogResponse([]string{}).MarshalDocument()
+	resp, err := ResponseToMessage(msg.Header().OpCode, doc)
 	if err != nil {
 		return
 	}

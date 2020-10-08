@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"github.com/deciduosity/birch"
 	"github.com/pkg/errors"
 )
 
@@ -28,6 +29,12 @@ func MakeErrorResponse(ok bool, err error) ErrorResponse {
 	return resp
 }
 
+func (r ErrorResponse) MarshalDocument() (*birch.Document, error) {
+	return birch.DC.Elements(
+		birch.EC.Int("ok", r.OK),
+		birch.EC.String("errmsg", r.ErrorMessage)), nil
+}
+
 // MakeSuccessResponse returns an ErrorResponse that is ok and has no error.
 func MakeSuccessResponse() ErrorResponse {
 	return ErrorResponse{OK: intOK(true)}
@@ -49,6 +56,13 @@ type isMasterResponse struct {
 	MaxWireVersion int `bson:"maxWireVersion"`
 }
 
+func (imr isMasterResponse) MarshalDocument() (*birch.Document, error) {
+	doc, _ := imr.ErrorResponse.MarshalDocument()
+	return doc.Append(
+		birch.EC.Int("minWireVersion", imr.MinWireVersion),
+		birch.EC.Int("maxWireVersion", imr.MaxWireVersion)), nil
+}
+
 func makeIsMasterResponse(minWireVersion, maxWireVersion int) isMasterResponse {
 	return isMasterResponse{
 		MinWireVersion: minWireVersion,
@@ -63,6 +77,11 @@ type whatsMyURIResponse struct {
 	You           string `bson:"you"`
 }
 
+func (resp whatsMyURIResponse) MarshalDocument() (*birch.Document, error) {
+	doc, _ := resp.ErrorResponse.MarshalDocument()
+	return doc.Append(birch.EC.String("you", resp.You)), nil
+}
+
 func makeWhatsMyURIResponse(uri string) whatsMyURIResponse {
 	return whatsMyURIResponse{You: uri, ErrorResponse: MakeSuccessResponse()}
 }
@@ -74,6 +93,11 @@ type buildInfoResponse struct {
 	Version       string `bson:"version"`
 }
 
+func (resp buildInfoResponse) MarshalDocument() (*birch.Document, error) {
+	doc, _ := resp.ErrorResponse.MarshalDocument()
+	return doc.Append(birch.EC.String("version", resp.Version)), nil
+}
+
 func makeBuildInfoResponse(version string) buildInfoResponse {
 	return buildInfoResponse{Version: version, ErrorResponse: MakeSuccessResponse()}
 }
@@ -83,6 +107,11 @@ func makeBuildInfoResponse(version string) buildInfoResponse {
 type getLogResponse struct {
 	ErrorResponse `bson:"error_response,inline"`
 	Log           []string `bson:"log"`
+}
+
+func (resp getLogResponse) MarshalDocument() (*birch.Document, error) {
+	doc, _ := resp.ErrorResponse.MarshalDocument()
+	return doc.Append(birch.EC.SliceString("log", resp.Log)), nil
 }
 
 func makeGetLogResponse(log []string) getLogResponse {
