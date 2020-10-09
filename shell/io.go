@@ -213,14 +213,13 @@ func (resp *getLogResponse) UnmarshalDocument(in *birch.Document) error {
 		return errors.WithStack(err)
 	}
 
-	var ok bool
 	iter := in.Iterator()
 	for iter.Next() {
 		elem := iter.Element()
 
 		switch elem.Key() {
 		case "version":
-			array, ok := elem.Value().ReaderArrayOK()
+			array, ok := elem.Value().MutableArrayOK()
 			if !ok {
 				return errors.Errorf("could not parse value of correct type [%s] for key %s",
 					elem.Value().Type().String(), elem.Key())
@@ -235,7 +234,7 @@ func (resp *getLogResponse) UnmarshalDocument(in *birch.Document) error {
 						aiter.Value().Type().String())
 				}
 
-				resp.Log = append(resp.Log)
+				resp.Log = append(resp.Log, str)
 			}
 		}
 	}
