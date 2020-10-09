@@ -35,6 +35,29 @@ func (r ErrorResponse) MarshalDocument() (*birch.Document, error) {
 		birch.EC.String("errmsg", r.ErrorMessage)), nil
 }
 
+func (r *ErrorResponse) UnmarshalDocument(in *birch.Document) error {
+	var ok bool
+	iter := in.Iterator()
+	for iter.Next() {
+		elem := iter.Element()
+
+		switch elem.Key() {
+		case "ok":
+			if r.OK, ok = elem.Value().IntOK(); !ok {
+				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+					elem.Value().Type().String(), elem.Key())
+			}
+		case "errmsg":
+			if r.ErrorMessage, ok = elem.Value().StringValueOK(); !ok {
+				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+					elem.Value().Type().String(), elem.Key())
+			}
+		}
+	}
+
+	return nil
+}
+
 // MakeSuccessResponse returns an ErrorResponse that is ok and has no error.
 func MakeSuccessResponse() ErrorResponse {
 	return ErrorResponse{OK: intOK(true)}
@@ -63,6 +86,33 @@ func (imr isMasterResponse) MarshalDocument() (*birch.Document, error) {
 		birch.EC.Int("maxWireVersion", imr.MaxWireVersion)), nil
 }
 
+func (imr *isMasterResponse) UnmarshalDocument(in *birch.Document) error {
+	if err := imr.ErrorResponse.UnmarshalDocument(in); err != nil {
+		return errors.WithStack(err)
+	}
+
+	var ok bool
+	iter := in.Iterator()
+	for iter.Next() {
+		elem := iter.Element()
+
+		switch elem.Key() {
+		case "minWireVersion":
+			if imr.MinWireVersion, ok = elem.Value().IntOK(); !ok {
+				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+					elem.Value().Type().String(), elem.Key())
+			}
+		case "maxWireVersion":
+			if imr.MaxWireVersion, ok = elem.Value().IntOK(); !ok {
+				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+					elem.Value().Type().String(), elem.Key())
+			}
+		}
+	}
+
+	return nil
+}
+
 func makeIsMasterResponse(minWireVersion, maxWireVersion int) isMasterResponse {
 	return isMasterResponse{
 		MinWireVersion: minWireVersion,
@@ -82,6 +132,28 @@ func (resp whatsMyURIResponse) MarshalDocument() (*birch.Document, error) {
 	return doc.Append(birch.EC.String("you", resp.You)), nil
 }
 
+func (resp *whatsMyURIResponse) UnmarshalDocument(in *birch.Document) error {
+	if err := resp.ErrorResponse.UnmarshalDocument(in); err != nil {
+		return errors.WithStack(err)
+	}
+
+	var ok bool
+	iter := in.Iterator()
+	for iter.Next() {
+		elem := iter.Element()
+
+		switch elem.Key() {
+		case "you":
+			if resp.You, ok = elem.Value().StringValueOK(); !ok {
+				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+					elem.Value().Type().String(), elem.Key())
+			}
+		}
+	}
+
+	return nil
+}
+
 func makeWhatsMyURIResponse(uri string) whatsMyURIResponse {
 	return whatsMyURIResponse{You: uri, ErrorResponse: MakeSuccessResponse()}
 }
@@ -98,6 +170,28 @@ func (resp buildInfoResponse) MarshalDocument() (*birch.Document, error) {
 	return doc.Append(birch.EC.String("version", resp.Version)), nil
 }
 
+func (resp *buildInfoResponse) UnmarshalDocument(in *birch.Document) error {
+	if err := resp.ErrorResponse.UnmarshalDocument(in); err != nil {
+		return errors.WithStack(err)
+	}
+
+	var ok bool
+	iter := in.Iterator()
+	for iter.Next() {
+		elem := iter.Element()
+
+		switch elem.Key() {
+		case "version":
+			if resp.Version, ok = elem.Value().StringValueOK(); !ok {
+				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+					elem.Value().Type().String(), elem.Key())
+			}
+		}
+	}
+
+	return nil
+}
+
 func makeBuildInfoResponse(version string) buildInfoResponse {
 	return buildInfoResponse{Version: version, ErrorResponse: MakeSuccessResponse()}
 }
@@ -112,6 +206,41 @@ type getLogResponse struct {
 func (resp getLogResponse) MarshalDocument() (*birch.Document, error) {
 	doc, _ := resp.ErrorResponse.MarshalDocument()
 	return doc.Append(birch.EC.SliceString("log", resp.Log)), nil
+}
+
+func (resp *getLogResponse) UnmarshalDocument(in *birch.Document) error {
+	if err := resp.ErrorResponse.UnmarshalDocument(in); err != nil {
+		return errors.WithStack(err)
+	}
+
+	var ok bool
+	iter := in.Iterator()
+	for iter.Next() {
+		elem := iter.Element()
+
+		switch elem.Key() {
+		case "version":
+			array, ok := elem.Value().ReaderArrayOK()
+			if !ok {
+				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+					elem.Value().Type().String(), elem.Key())
+			}
+
+			resp.Log = make([]string, 0, array.Len())
+			aiter := array.Iterator()
+			for aiter.Next() {
+				str, ok := aiter.Value().StringValueOK()
+				if !ok {
+					return errors.Errorf("could not parse value of correct type [%s] in array",
+						aiter.Value().Type().String())
+				}
+
+				resp.Log = append(resp.Log)
+			}
+		}
+	}
+
+	return nil
 }
 
 func makeGetLogResponse(log []string) getLogResponse {
