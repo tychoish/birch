@@ -141,9 +141,9 @@ func (v *Value) IsEmpty() bool {
 	case bsontype.String:
 		return v.StringValue() == ""
 	case bsontype.EmbeddedDocument:
-		return len(v.MutableDocument().ExportMap()) == 0
+		return v.MutableDocument().Len() == 0
 	case bsontype.Array:
-		return len(v.MutableArray().Interface()) == 0
+		return v.MutableArray().Len() == 0
 	case bsontype.Binary:
 		_, data := v.Binary()
 		return len(data) == 0
