@@ -27,19 +27,19 @@ func TestString(t *testing.T) {
 
 func TestFromHex_RoundTrip(t *testing.T) {
 	before := NewObjectID()
-	after, err := FromHex(before.Hex())
+	after, err := ObjectIDFromHex(before.Hex())
 	require.NoError(t, err)
 
 	require.Equal(t, before, after)
 }
 
 func TestFromHex_InvalidHex(t *testing.T) {
-	_, err := FromHex("this is not a valid hex string!")
+	_, err := ObjectIDFromHex("this is not a valid hex string!")
 	require.Error(t, err)
 }
 
 func TestFromHex_WrongLength(t *testing.T) {
-	_, err := FromHex("deadbeef")
+	_, err := ObjectIDFromHex("deadbeef")
 	require.Equal(t, ErrInvalidHex, err)
 }
 
@@ -67,7 +67,7 @@ func TestTimeStamp(t *testing.T) {
 	}
 
 	for _, testcase := range testCases {
-		id, err := FromHex(testcase.Hex)
+		id, err := ObjectIDFromHex(testcase.Hex)
 		require.NoError(t, err)
 
 		secs := int64(binary.BigEndian.Uint32(id[0:4]))

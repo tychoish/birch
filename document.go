@@ -163,6 +163,18 @@ func (d *Document) Append(elems ...*Element) *Document {
 	return d
 }
 
+// AppendOmitEmpty adds all non-empty values to the document, and has
+// no impact otherwise.
+func (d *Document) AppendOmitEmpty(elems ...*Element) *Document {
+	for _, elem := range elems {
+		if elem.Value().IsEmpty() {
+			continue
+		}
+		d.Append(elem)
+	}
+	return d
+}
+
 // Prepend adds each element to the beginning of the document, in order. If a nil element is passed
 // as a parameter this method will panic. To change this behavior to silently
 // ignore a nil element, set IgnoreNilInsert to true on the Document.

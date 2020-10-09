@@ -91,7 +91,7 @@ func (v *Value) Interface() interface{} {
 	case bsontype.Boolean:
 		return v.Boolean()
 	case bsontype.DateTime:
-		return v.DateTime()
+		return v.Time()
 	case bsontype.Null:
 		return nil
 	case bsontype.Regex:
@@ -124,6 +124,68 @@ func (v *Value) Interface() interface{} {
 		return nil
 	default:
 		return nil
+	}
+}
+
+// IsEmpty returns true if a value held by a bson type is equivalent
+// to it's empty or zero type. Nil-ish types are all not empty. Nil
+// values are always Empty.
+func (v *Value) IsEmpty() bool {
+	if v == nil {
+		return true
+	}
+
+	switch v.Type() {
+	case bsontype.Double:
+		return v.Double() == 0.0
+	case bsontype.String:
+		return v.StringValue() == ""
+	case bsontype.EmbeddedDocument:
+		return len(v.MutableDocument().ExportMap()) == 0
+	case bsontype.Array:
+		return len(v.MutableArray().Interface()) == 0
+	case bsontype.Binary:
+		_, data := v.Binary()
+		return len(data) == 0
+	case bsontype.Undefined:
+		return true
+	case bsontype.ObjectID:
+		return true
+	case bsontype.Boolean:
+		return !v.Boolean()
+	case bsontype.DateTime:
+		return v.DateTime() == 0
+	case bsontype.Null:
+		return false
+	case bsontype.Regex:
+		p, _ := v.Regex()
+		return p == ""
+	case bsontype.DBPointer:
+		db, _ := v.DBPointer()
+		return db == ""
+	case bsontype.JavaScript:
+		return v.JavaScript() == ""
+	case bsontype.Symbol:
+		return v.Symbol() == ""
+	case bsontype.CodeWithScope:
+		code, _ := v.MutableJavaScriptWithScope()
+		return code == ""
+	case bsontype.Int32:
+		return v.Int32() == 0
+	case bsontype.Timestamp:
+		t, i := v.Timestamp()
+		return t == 0 && i == 0
+	case bsontype.Int64:
+		return v.Int64() == 0
+	case bsontype.Decimal128:
+		h, l := v.Decimal128().GetBytes()
+		return h == 0 && l == 0
+	case bsontype.MinKey:
+		return false
+	case bsontype.MaxKey:
+		return false
+	default:
+		return false
 	}
 }
 

@@ -33,6 +33,11 @@ func (DocumentConstructor) Elements(elems ...*Element) *Document {
 	return DC.Make(len(elems)).Append(elems...)
 }
 
+// ElementsOmitEmpty crates a document with all non-empty values.
+func (DocumentConstructor) ElementsOmitEmpty(elems ...*Element) *Document {
+	return DC.New().AppendOmitEmpty(elems...)
+}
+
 // Reader constructs a document from a bson reader, which is a wrapper
 // around a byte slice representation of a bson document. Reader
 // panics if there is a problem reading the document.
