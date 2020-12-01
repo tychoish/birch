@@ -6,7 +6,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/deciduosity/grip"
+	"github.com/cdr/grip"
 	"github.com/stretchr/testify/suite"
 	"github.com/deciduosity/mrpc/mongowire"
 )

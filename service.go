@@ -8,9 +8,9 @@ import (
 	"net"
 
 	"github.com/deciduosity/mrpc/mongowire"
-	"github.com/deciduosity/grip"
-	"github.com/deciduosity/grip/message"
-	"github.com/deciduosity/grip/recovery"
+	"github.com/cdr/grip"
+	"github.com/cdr/grip/message"
+	"github.com/cdr/grip/recovery"
 	"github.com/pkg/errors"
 )
 
