@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/cdr/grip"
+	"github.com/deciduosity/birch/mrpc/mongowire"
 	"github.com/stretchr/testify/suite"
-	"github.com/deciduosity/mrpc/mongowire"
 )
 
 type RegistrySuite struct {

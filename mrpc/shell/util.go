@@ -4,10 +4,10 @@ import (
 	"context"
 	"io"
 
-	"github.com/deciduosity/birch"
 	"github.com/cdr/grip"
 	"github.com/cdr/grip/message"
-	"github.com/deciduosity/mrpc/mongowire"
+	"github.com/deciduosity/birch"
+	"github.com/deciduosity/birch/mrpc/mongowire"
 	"github.com/pkg/errors"
 )
 

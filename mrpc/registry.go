@@ -3,8 +3,8 @@ package mrpc
 import (
 	"sync"
 
+	"github.com/deciduosity/birch/mrpc/mongowire"
 	"github.com/pkg/errors"
-	"github.com/deciduosity/mrpc/mongowire"
 )
 
 type OperationRegistry struct {

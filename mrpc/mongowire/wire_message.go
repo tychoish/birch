@@ -2,7 +2,7 @@ package mongowire
 
 import (
 	"github.com/deciduosity/birch"
-	"github.com/deciduosity/mrpc/model"
+	"github.com/deciduosity/birch/mrpc/model"
 	"github.com/pkg/errors"
 )
 

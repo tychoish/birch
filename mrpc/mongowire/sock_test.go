@@ -9,7 +9,6 @@ import (
 	"github.com/deciduosity/birch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func TestReadMessage(t *testing.T) {
@@ -123,23 +122,20 @@ func (w *mockWriter) Write(p []byte) (int, error) {
 }
 
 func createSmallMessage(t *testing.T) Message {
-	data, err := bson.Marshal(bson.M{"foo": "bar"})
+	bytes, err := birch.DC.Elements(birch.EC.String("foo", "bar")).MarshalBSON()
 	require.NoError(t, err)
-	query, err := birch.ReadDocument(data)
+	query, err := birch.ReadDocument(bytes)
 	require.NoError(t, err)
-	data, err = bson.Marshal(bson.M{"bar": "foo"})
+	bytes, err = birch.DC.Elements(birch.EC.String("bar", "foo")).MarshalBSON()
 	require.NoError(t, err)
-	project, err := birch.ReadDocument(data)
+	project, err := birch.ReadDocument(bytes)
 	require.NoError(t, err)
 
 	return NewQuery("ns", 0, 0, 1, query, project)
 }
 
 func createLargeMessage(t *testing.T, size int) Message {
-	data, err := bson.Marshal(bson.M{"foo": bytes.Repeat([]byte{'a'}, size)})
-	doc, err := birch.ReadDocument(data)
-	require.NoError(t, err)
-
+	doc := birch.DC.Elements(birch.EC.Binary("foo", bytes.Repeat([]byte{'a'}, size)))
 	return NewQuery("ns", 0, 0, 1, doc, nil)
 }
 

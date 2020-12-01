@@ -4,18 +4,17 @@ import (
 	"testing"
 
 	"github.com/deciduosity/birch"
-	"github.com/deciduosity/mrpc/model"
+	"github.com/deciduosity/birch/mrpc/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func TestMessage(t *testing.T) {
-	bytes, err := bson.Marshal(bson.M{"foo": "bar"})
+	bytes, err := birch.DC.Elements(birch.EC.String("foo", "bar")).MarshalBSON()
 	require.NoError(t, err)
 	query, err := birch.ReadDocument(bytes)
 	require.NoError(t, err)
-	bytes, err = bson.Marshal(bson.M{"bar": "foo"})
+	bytes, err = birch.DC.Elements(birch.EC.String("bar", "foo")).MarshalBSON()
 	require.NoError(t, err)
 	project, err := birch.ReadDocument(bytes)
 	require.NoError(t, err)

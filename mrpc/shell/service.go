@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 
-	"github.com/deciduosity/mrpc"
-	"github.com/deciduosity/mrpc/mongowire"
+	"github.com/deciduosity/birch/mrpc"
+	"github.com/deciduosity/birch/mrpc/mongowire"
 	"github.com/pkg/errors"
 )
 

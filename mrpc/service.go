@@ -7,10 +7,10 @@ import (
 	"io"
 	"net"
 
-	"github.com/deciduosity/mrpc/mongowire"
 	"github.com/cdr/grip"
 	"github.com/cdr/grip/message"
 	"github.com/cdr/grip/recovery"
+	"github.com/deciduosity/birch/mrpc/mongowire"
 	"github.com/pkg/errors"
 )
 
