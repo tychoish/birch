@@ -14,8 +14,8 @@ import (
 	"github.com/deciduosity/birch"
 	"github.com/deciduosity/ftdc"
 	"github.com/deciduosity/ftdc/util"
-	"github.com/deciduosity/grip/message"
-	"github.com/deciduosity/grip/recovery"
+	"github.com/cdr/grip/message"
+	"github.com/cdr/grip/recovery"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 )

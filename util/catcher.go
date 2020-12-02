@@ -22,7 +22,7 @@ import (
 // basic catcher calls error.Error() (which should be equvalent to %s
 // for most error implementations.)
 //
-// This interface is lifted from deciduosity/grip with one implementation
+// This interface is lifted from cdr/grip with one implementation
 // to avoid having a dependency between FTDC and grip.
 type Catcher interface {
 	Add(error)
