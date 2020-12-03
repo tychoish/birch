@@ -5,6 +5,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/deciduosity/birch/jsonx"
 	"github.com/pkg/errors"
 )
 
@@ -548,6 +549,18 @@ func (ElementConstructor) DocumentMarshalerErr(key string, val DocumentMarshaler
 	return EC.SubDocument(key, doc), nil
 }
 
+func (ElementConstructor) JSONXErr(key string, val *jsonx.Document) (*Element, error) {
+	doc, err := DC.JSONXErr(val)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return EC.SubDocument(key, doc), nil
+}
+
+func (ElementConstructor) JSONX(key string, val *jsonx.Document) *Element {
+	return EC.SubDocument(key, DC.JSONX(val))
+}
+
 func (ElementConstructor) Int(key string, i int) *Element {
 	if i < math.MaxInt32 {
 		return EC.Int32(key, int32(i))
@@ -762,6 +775,20 @@ func (ValueConstructor) DocumentMarshalerErr(in DocumentMarshaler) (*Value, erro
 	}
 
 	return elem.value, nil
+}
+
+func (ValueConstructor) JSONXErr(in *jsonx.Document) (*Value, error) {
+	elem, err := EC.JSONXErr("", in)
+
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return elem.value, nil
+}
+
+func (ValueConstructor) JSONX(in *jsonx.Document) *Value {
+	return EC.JSONX("", in).value
 }
 
 func (ValueConstructor) Duration(t time.Duration) *Value {

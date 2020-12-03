@@ -66,6 +66,31 @@ func (v *Value) UnmarshalJSON(in []byte) error {
 	return nil
 }
 
+func (DocumentConstructor) JSONXErr(jd *jsonx.Document) (*Document, error) {
+	d := DC.Make(jd.Len())
+
+	iter := jd.Iterator()
+	for iter.Next() {
+		elem, err := convertJSONElements(iter.Element())
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		d.Append(elem)
+	}
+
+	return d, nil
+}
+
+func (DocumentConstructor) JSONX(jd *jsonx.Document) *Document {
+	d, err := DC.JSONXErr(jd)
+	if err != nil {
+		panic(err)
+	}
+
+	return d
+}
+
 func convertJSONElements(in *jsonx.Element) (*Element, error) {
 	inv := in.Value()
 	switch inv.Type() {
