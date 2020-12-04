@@ -3,13 +3,13 @@ package ftdc
 import (
 	"context"
 
-	"github.com/deciduosity/ftdc/util"
+	"github.com/cdr/grip"
 )
 
 type bufferedCollector struct {
 	Collector
 	pipe    chan interface{}
-	catcher util.Catcher
+	catcher grip.Catcher
 	ctx     context.Context
 }
 
@@ -19,7 +19,7 @@ func NewBufferedCollector(ctx context.Context, size int, coll Collector) Collect
 	c := &bufferedCollector{
 		Collector: coll,
 		pipe:      make(chan interface{}, size),
-		catcher:   util.NewCatcher(),
+		catcher:   grip.NewCatcher(),
 		ctx:       ctx,
 	}
 

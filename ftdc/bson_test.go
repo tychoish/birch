@@ -11,8 +11,8 @@ import (
 	"github.com/deciduosity/birch/bsontype"
 	"github.com/deciduosity/birch/decimal"
 	"github.com/deciduosity/birch/types"
-	"github.com/deciduosity/ftdc/testutil"
-	"github.com/deciduosity/ftdc/util"
+	"github.com/deciduosity/birch/ftdc/testutil"
+	"github.com/deciduosity/birch/ftdc/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

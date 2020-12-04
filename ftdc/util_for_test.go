@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/deciduosity/birch"
-	"github.com/deciduosity/ftdc/testutil"
+	"github.com/deciduosity/birch/ftdc/testutil"
 	"github.com/pkg/errors"
 )
 

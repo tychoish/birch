@@ -12,7 +12,7 @@ import (
 	"github.com/cdr/grip/recovery"
 	"github.com/deciduosity/birch"
 	"github.com/deciduosity/birch/jsonx"
-	"github.com/deciduosity/ftdc"
+	"github.com/deciduosity/birch/ftdc"
 	"github.com/papertrail/go-tail/follower"
 	"github.com/pkg/errors"
 )

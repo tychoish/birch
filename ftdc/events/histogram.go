@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/deciduosity/birch"
-	"github.com/deciduosity/ftdc/hdrhist"
+	"github.com/deciduosity/birch/ftdc/hdrhist"
 )
 
 // PerformanceHDR the same as the Performance structure, but with all time

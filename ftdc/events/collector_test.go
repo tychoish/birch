@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/deciduosity/birch"
-	"github.com/deciduosity/ftdc"
+	"github.com/deciduosity/birch/ftdc"
 	"github.com/stretchr/testify/assert"
 )
 

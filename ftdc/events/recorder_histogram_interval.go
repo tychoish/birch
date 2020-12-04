@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/deciduosity/ftdc"
-	"github.com/deciduosity/ftdc/util"
+	"github.com/cdr/grip"
+	"github.com/deciduosity/birch/ftdc"
 	"github.com/pkg/errors"
 )
 
@@ -14,7 +14,7 @@ type intervalHistogramStream struct {
 	point     *PerformanceHDR
 	started   time.Time
 	collector ftdc.Collector
-	catcher   util.Catcher
+	catcher   grip.Catcher
 	sync.Mutex
 
 	interval time.Duration
@@ -34,7 +34,7 @@ func NewIntervalHistogramRecorder(ctx context.Context, collector ftdc.Collector,
 	return &intervalHistogramStream{
 		collector: collector,
 		rootCtx:   ctx,
-		catcher:   util.NewCatcher(),
+		catcher:   grip.NewCatcher(),
 		interval:  interval,
 		point:     NewHistogramMillisecond(PerformanceGauges{}),
 	}
@@ -145,7 +145,7 @@ func (r *intervalHistogramStream) reset() {
 		r.canceler()
 		r.canceler = nil
 	}
-	r.catcher = util.NewCatcher()
+	r.catcher = grip.NewCatcher()
 	r.point = NewHistogramMillisecond(r.point.Gauges)
 	r.started = time.Time{}
 }

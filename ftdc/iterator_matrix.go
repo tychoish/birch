@@ -5,9 +5,10 @@ import (
 	"io"
 	"time"
 
+	"github.com/cdr/grip"
 	"github.com/deciduosity/birch"
 	"github.com/deciduosity/birch/bsontype"
-	"github.com/deciduosity/ftdc/util"
+	"github.com/deciduosity/birch/ftdc/util"
 	"github.com/pkg/errors"
 )
 
@@ -82,7 +83,7 @@ type matrixIterator struct {
 	metadata *birch.Document
 	document *birch.Document
 	pipe     chan *birch.Document
-	catcher  util.Catcher
+	catcher  grip.Catcher
 	reflect  bool
 }
 

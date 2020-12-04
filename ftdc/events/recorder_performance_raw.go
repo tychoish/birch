@@ -3,8 +3,8 @@ package events
 import (
 	"time"
 
-	"github.com/deciduosity/ftdc"
-	"github.com/deciduosity/ftdc/util"
+	"github.com/cdr/grip"
+	"github.com/deciduosity/birch/ftdc"
 	"github.com/pkg/errors"
 )
 
@@ -12,7 +12,7 @@ type rawStream struct {
 	started   time.Time
 	point     *Performance
 	collector ftdc.Collector
-	catcher   util.Catcher
+	catcher   grip.Catcher
 }
 
 // NewRawRecorder records a new event every time that the EndIteration method
@@ -24,7 +24,7 @@ func NewRawRecorder(collector ftdc.Collector) Recorder {
 	return &rawStream{
 		collector: collector,
 		point:     &Performance{Timestamp: time.Time{}},
-		catcher:   util.NewCatcher(),
+		catcher:   grip.NewCatcher(),
 	}
 }
 
@@ -62,7 +62,7 @@ func (r *rawStream) EndTest() error {
 }
 
 func (r *rawStream) Reset() {
-	r.catcher = util.NewCatcher()
+	r.catcher = grip.NewCatcher()
 	r.point = &Performance{
 		Gauges: r.point.Gauges,
 	}

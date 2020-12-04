@@ -3,8 +3,8 @@ package ftdc
 import (
 	"context"
 
+	"github.com/cdr/grip"
 	"github.com/deciduosity/birch"
-	"github.com/deciduosity/ftdc/util"
 	"github.com/pkg/errors"
 )
 
@@ -15,7 +15,7 @@ type combinedIterator struct {
 	metadata *birch.Document
 	document *birch.Document
 	pipe     chan *birch.Document
-	catcher  util.Catcher
+	catcher  grip.Catcher
 	flatten  bool
 }
 

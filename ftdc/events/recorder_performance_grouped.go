@@ -3,8 +3,8 @@ package events
 import (
 	"time"
 
-	"github.com/deciduosity/ftdc"
-	"github.com/deciduosity/ftdc/util"
+	"github.com/cdr/grip"
+	"github.com/deciduosity/birch/ftdc"
 	"github.com/pkg/errors"
 )
 
@@ -14,7 +14,7 @@ type groupStream struct {
 	interval      time.Duration
 	point         *Performance
 	collector     ftdc.Collector
-	catcher       util.Catcher
+	catcher       grip.Catcher
 }
 
 // NewGroupedRecorder blends the single and the interval recorders, but it
@@ -27,7 +27,7 @@ func NewGroupedRecorder(collector ftdc.Collector, interval time.Duration) Record
 	return &groupStream{
 		collector:     collector,
 		point:         &Performance{Timestamp: time.Time{}},
-		catcher:       util.NewCatcher(),
+		catcher:       grip.NewCatcher(),
 		interval:      interval,
 		lastCollected: time.Now(),
 	}
@@ -71,7 +71,7 @@ func (r *groupStream) EndTest() error {
 }
 
 func (r *groupStream) Reset() {
-	r.catcher = util.NewCatcher()
+	r.catcher = grip.NewCatcher()
 	r.point = &Performance{
 		Gauges: r.point.Gauges,
 	}

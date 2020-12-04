@@ -10,7 +10,7 @@ import (
 
 	"github.com/deciduosity/birch"
 	"github.com/deciduosity/birch/bsontype"
-	"github.com/deciduosity/ftdc/util"
+	"github.com/deciduosity/birch/ftdc/util"
 	"github.com/pkg/errors"
 )
 

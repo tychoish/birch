@@ -3,9 +3,9 @@ package ftdc
 import (
 	"time"
 
+	"github.com/cdr/grip"
 	"github.com/deciduosity/birch"
 	"github.com/deciduosity/birch/bsontype"
-	"github.com/deciduosity/ftdc/util"
 	"github.com/pkg/errors"
 )
 
@@ -28,7 +28,7 @@ func extractMetricsFromDocument(doc *birch.Document) (extractedMetrics, error) {
 		data extractedMetrics
 	)
 
-	catcher := util.NewCatcher()
+	catcher := grip.NewCatcher()
 
 	for iter.Next() {
 		data, err = extractMetricsFromValue(iter.Element().Value())
@@ -58,7 +58,7 @@ func extractMetricsFromArray(array *birch.Array) (extractedMetrics, error) {
 		data extractedMetrics
 	)
 
-	catcher := util.NewCatcher()
+	catcher := grip.NewCatcher()
 	iter := array.Iterator()
 
 	for iter.Next() {

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/deciduosity/birch"
-	"github.com/deciduosity/ftdc/util"
+	"github.com/deciduosity/birch/ftdc/util"
 	"github.com/pkg/errors"
 )
 

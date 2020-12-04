@@ -11,11 +11,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cdr/grip"
 	"github.com/cdr/grip/message"
 	"github.com/cdr/grip/recovery"
 	"github.com/deciduosity/birch"
-	"github.com/deciduosity/ftdc"
-	"github.com/deciduosity/ftdc/util"
+	"github.com/deciduosity/birch/ftdc"
 	"github.com/pkg/errors"
 )
 
@@ -145,7 +145,7 @@ func NewCollectOptions(prefix string) CollectOptions {
 // Validate checks the Collect option settings and ensures that all
 // values are reasonable.
 func (opts CollectOptions) Validate() error {
-	catcher := util.NewCatcher()
+	catcher := grip.NewCatcher()
 
 	sort.Stable(opts.Collectors)
 

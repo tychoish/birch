@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/deciduosity/ftdc"
-	"github.com/deciduosity/ftdc/util"
+	"github.com/cdr/grip"
+	"github.com/deciduosity/birch/ftdc"
 	"github.com/pkg/errors"
 )
 
@@ -14,7 +14,7 @@ type intervalStream struct {
 	point     *Performance
 	started   time.Time
 	collector ftdc.Collector
-	catcher   util.Catcher
+	catcher   grip.Catcher
 	sync.Mutex
 
 	interval time.Duration
@@ -35,7 +35,7 @@ func NewIntervalRecorder(ctx context.Context, collector ftdc.Collector, interval
 		collector: collector,
 		rootCtx:   ctx,
 		point:     &Performance{Timestamp: time.Time{}},
-		catcher:   util.NewCatcher(),
+		catcher:   grip.NewCatcher(),
 		interval:  interval,
 	}
 }
@@ -130,7 +130,7 @@ func (r *intervalStream) reset() {
 		r.canceler()
 		r.canceler = nil
 	}
-	r.catcher = util.NewCatcher()
+	r.catcher = grip.NewCatcher()
 	r.point = &Performance{
 		Gauges: r.point.Gauges,
 	}

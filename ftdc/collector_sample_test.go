@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/deciduosity/ftdc/testutil"
+	"github.com/deciduosity/birch/ftdc/testutil"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 
+	"github.com/cdr/grip"
 	"github.com/deciduosity/birch"
-	"github.com/deciduosity/ftdc/util"
 )
 
 type Iterator interface {
@@ -25,7 +25,7 @@ func ReadMetrics(ctx context.Context, r io.Reader) Iterator {
 		chunks:  ReadChunks(iterctx, r),
 		flatten: true,
 		pipe:    make(chan *birch.Document, 100),
-		catcher: util.NewCatcher(),
+		catcher: grip.NewCatcher(),
 	}
 
 	go iter.worker(iterctx)
@@ -42,7 +42,7 @@ func ReadStructuredMetrics(ctx context.Context, r io.Reader) Iterator {
 		chunks:  ReadChunks(iterctx, r),
 		flatten: false,
 		pipe:    make(chan *birch.Document, 100),
-		catcher: util.NewCatcher(),
+		catcher: grip.NewCatcher(),
 	}
 
 	go iter.worker(iterctx)
@@ -62,7 +62,7 @@ func ReadMatrix(ctx context.Context, r io.Reader) Iterator {
 		closer:  cancel,
 		chunks:  ReadChunks(iterctx, r),
 		pipe:    make(chan *birch.Document, 25),
-		catcher: util.NewCatcher(),
+		catcher: grip.NewCatcher(),
 	}
 
 	go iter.worker(iterctx)
@@ -99,7 +99,7 @@ func ReadSeries(ctx context.Context, r io.Reader) Iterator {
 		closer:  cancel,
 		chunks:  ReadChunks(iterctx, r),
 		pipe:    make(chan *birch.Document, 25),
-		catcher: util.NewCatcher(),
+		catcher: grip.NewCatcher(),
 		reflect: true,
 	}
 

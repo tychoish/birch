@@ -3,8 +3,8 @@ package events
 import (
 	"time"
 
-	"github.com/deciduosity/ftdc"
-	"github.com/deciduosity/ftdc/util"
+	"github.com/cdr/grip"
+	"github.com/deciduosity/birch/ftdc"
 	"github.com/pkg/errors"
 )
 
@@ -14,7 +14,7 @@ type histogramGroupedStream struct {
 	started       time.Time
 	interval      time.Duration
 	collector     ftdc.Collector
-	catcher       util.Catcher
+	catcher       grip.Catcher
 }
 
 // NewHistogramGroupedRecorder captures data and stores them with a
@@ -33,7 +33,7 @@ func NewHistogramGroupedRecorder(collector ftdc.Collector, interval time.Duratio
 	return &histogramGroupedStream{
 		point:     NewHistogramMillisecond(PerformanceGauges{}),
 		collector: collector,
-		catcher:   util.NewCatcher(),
+		catcher:   grip.NewCatcher(),
 	}
 }
 
@@ -94,7 +94,7 @@ func (r *histogramGroupedStream) EndTest() error {
 }
 
 func (r *histogramGroupedStream) Reset() {
-	r.catcher = util.NewCatcher()
+	r.catcher = grip.NewCatcher()
 	r.point = NewHistogramMillisecond(r.point.Gauges)
 	r.lastCollected = time.Time{}
 	r.started = time.Time{}
