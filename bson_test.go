@@ -12,9 +12,9 @@ import (
 	"github.com/deciduosity/birch/decimal"
 	"github.com/deciduosity/birch/types"
 	"github.com/deciduosity/ftdc/testutil"
+	"github.com/deciduosity/ftdc/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func TestFlattenArray(t *testing.T) {
@@ -57,6 +57,7 @@ func TestReadDocument(t *testing.T) {
 	for _, test := range []struct {
 		name        string
 		in          interface{}
+		shouldSkip  bool
 		shouldError bool
 		len         int
 	}{
@@ -104,7 +105,8 @@ func TestReadDocument(t *testing.T) {
 				Time:    time.Now(),
 				Counter: 42,
 			},
-			len: 3,
+			len:        3,
+			shouldSkip: util.GlobalMarshaler() == nil,
 		},
 		{
 			name: "StructWithValues",
@@ -117,7 +119,8 @@ func TestReadDocument(t *testing.T) {
 				Time:    time.Now(),
 				Counter: 42,
 			},
-			len: 3,
+			shouldSkip: util.GlobalMarshaler() == nil,
+			len:        3,
 		},
 		{
 			name: "Reader",
@@ -129,19 +132,6 @@ func TestReadDocument(t *testing.T) {
 				return birch.Reader(out)
 			}(),
 			len: 2,
-		},
-		{
-			name: "Raw",
-			in: func() bson.Raw {
-				out, err := birch.NewDocument(
-					birch.EC.String("foo", "bar"),
-					birch.EC.Boolean("wat", false),
-					birch.EC.Time("ts", time.Now()),
-					birch.EC.Int64("baz", 33)).MarshalBSON()
-				require.NoError(t, err)
-				return bson.Raw(out)
-			}(),
-			len: 4,
 		},
 		{
 			name:        "MarshalerError",
@@ -184,6 +174,9 @@ func TestReadDocument(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
+			if test.shouldSkip {
+				t.Skip("test configuration not supported")
+			}
 			doc, err := readDocument(test.in)
 			if test.shouldError {
 				assert.Error(t, err)

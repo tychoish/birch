@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 
 	"github.com/deciduosity/birch"
+	"github.com/deciduosity/ftdc/util"
 	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 // A Snapshot is an exported view of a Histogram, useful for serializing them.
@@ -31,7 +31,7 @@ func (h *Histogram) MarshalJSON() ([]byte, error) { return json.Marshal(h.Export
 
 func (h *Histogram) UnmarshalBSON(in []byte) error {
 	s := &Snapshot{}
-	if err := bson.Unmarshal(in, s); err != nil {
+	if err := util.GlobalUnmarshaler()(in, s); err != nil {
 		return errors.WithStack(err)
 	}
 

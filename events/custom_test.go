@@ -5,7 +5,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func TestRollupRoundTrip(t *testing.T) {
@@ -18,11 +17,11 @@ func TestRollupRoundTrip(t *testing.T) {
 	assert.Len(t, data, 4)
 
 	t.Run("NewBSON", func(t *testing.T) {
-		payload, err := bson.Marshal(data)
+		payload, err := data.MarshalBSON()
 		require.NoError(t, err)
 
 		rt := Custom{}
-		err = bson.Unmarshal(payload, &rt)
+		err = rt.UnmarshalBSON(payload)
 		require.NoError(t, err)
 
 		require.Len(t, rt, 4)

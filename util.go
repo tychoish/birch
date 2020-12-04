@@ -10,8 +10,8 @@ import (
 
 	"github.com/deciduosity/birch"
 	"github.com/deciduosity/birch/bsontype"
+	"github.com/deciduosity/ftdc/util"
 	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func readDocument(in interface{}) (*birch.Document, error) {
@@ -34,8 +34,19 @@ func readDocument(in interface{}) (*birch.Document, error) {
 		return birch.DC.Elements(elems...), nil
 	case map[string]string:
 		return nil, errors.New("cannot use string maps for metrics documents")
+	case nil:
+		return nil, errors.New("cannot read nil document")
+	case struct{}:
+		return birch.NewDocument(), nil
+	case map[string]struct{}:
+		return nil, errors.New("cannot read empty struct")
 	default:
-		data, err := bson.Marshal(in)
+		marshaler := util.GlobalMarshaler()
+		if marshaler == nil {
+			return nil, errors.New("no registerged marshler")
+		}
+
+		data, err := util.GlobalMarshaler()(in)
 		if err != nil {
 			return nil, errors.Wrap(err, "problem with fallback marshaling")
 		}

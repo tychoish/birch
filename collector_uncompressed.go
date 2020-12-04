@@ -6,7 +6,6 @@ import (
 
 	"github.com/deciduosity/birch"
 	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 // NewUncompressedCollectorJSON constructs a collector that resolves
@@ -210,7 +209,7 @@ func (c *uncompressedCollector) Resolve() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (c *uncompressedCollector) marshalWrite(buf io.Writer, doc io.WriterTo) error {
+func (c *uncompressedCollector) marshalWrite(buf io.Writer, doc *birch.Document) error {
 	switch {
 	case c.exportBSON == c.exportJSON:
 		return errors.New("collector export format is not configured")
@@ -218,7 +217,7 @@ func (c *uncompressedCollector) marshalWrite(buf io.Writer, doc io.WriterTo) err
 		_, err := doc.WriteTo(buf)
 		return errors.WithStack(err)
 	case c.exportJSON:
-		data, err := bson.MarshalExtJSON(doc, false, false)
+		data, err := doc.MarshalJSON()
 		if err != nil {
 			return errors.WithStack(err)
 		}

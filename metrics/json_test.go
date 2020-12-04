@@ -85,6 +85,7 @@ func makeJSONRandComplex(num int) ([][]byte, error) {
 		doc := testutil.RandComplexDocument(100, 2)
 		data, err := json.Marshal(doc)
 		if err != nil {
+			fmt.Println(doc)
 			return nil, errors.WithStack(err)
 		}
 		out = append(out, data)

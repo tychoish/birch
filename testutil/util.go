@@ -42,23 +42,23 @@ func RandComplexDocument(numKeys, otherNum int) *birch.Document {
 	doc := birch.NewDocument()
 
 	for i := 0; i < numKeys; i++ {
-		doc.Append(birch.EC.Int64(fmt.Sprintln(numKeys, otherNum), rand.Int63n(int64(numKeys)*1)))
-		doc.Append(birch.EC.Double(fmt.Sprintln("float", numKeys, otherNum), rand.Float64()))
+		doc.Append(birch.EC.Int64(fmt.Sprint(numKeys, otherNum), rand.Int63n(int64(numKeys)*1)))
+		doc.Append(birch.EC.Double(fmt.Sprint("float", numKeys, otherNum), rand.Float64()))
 
 		if otherNum%5 == 0 {
 			ar := birch.NewArray()
 			for ii := int64(0); i < otherNum; i++ {
 				ar.Append(birch.VC.Int64(rand.Int63n(1 + ii*int64(numKeys))))
 			}
-			doc.Append(birch.EC.Array(fmt.Sprintln("first", numKeys, otherNum), ar))
+			doc.Append(birch.EC.Array(fmt.Sprint("first", numKeys, otherNum), ar))
 		}
 
 		if otherNum%3 == 0 {
-			doc.Append(birch.EC.SubDocument(fmt.Sprintln("second", numKeys, otherNum), RandFlatDocument(otherNum)))
+			doc.Append(birch.EC.SubDocument(fmt.Sprint("second", numKeys, otherNum), RandFlatDocument(otherNum)))
 		}
 
 		if otherNum%12 == 0 {
-			doc.Append(birch.EC.SubDocument(fmt.Sprintln("third", numKeys, otherNum), RandComplexDocument(otherNum, 10)))
+			doc.Append(birch.EC.SubDocument(fmt.Sprint("third", numKeys, otherNum), RandComplexDocument(otherNum, 10)))
 		}
 	}
 

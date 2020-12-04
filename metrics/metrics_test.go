@@ -32,6 +32,18 @@ func TestCollectRuntime(t *testing.T) {
 		}
 	}()
 
+	t.Run("Collection", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		opts := CollectOptions{
+			SkipProcess: true,
+			SkipSystem:  true,
+		}
+		doc := opts.generate(ctx, 1)
+		assert.Equal(t, 4, doc.Len())
+	})
+
 	t.Run("CollectData", func(t *testing.T) {
 		opts := CollectOptions{
 			OutputFilePrefix: filepath.Join(dir, fmt.Sprintf("sysinfo.%d.%s",
@@ -50,7 +62,38 @@ func TestCollectRuntime(t *testing.T) {
 		err = CollectRuntime(ctx, opts)
 		require.NoError(t, err)
 	})
-	t.Run("ReadData", func(t *testing.T) {
+
+	t.Run("ReadStructuredData", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		var files []os.FileInfo
+		files, err = ioutil.ReadDir(dir)
+		require.NoError(t, err)
+		assert.True(t, len(files) >= 1)
+
+		total := 0
+		for idx, info := range files {
+			t.Run(fmt.Sprintf("FileNo.%d", idx), func(t *testing.T) {
+				path := filepath.Join(dir, info.Name())
+				var f *os.File
+				f, err = os.Open(path)
+				require.NoError(t, err)
+				defer func() { assert.NoError(t, f.Close()) }()
+				iter := ftdc.ReadStructuredMetrics(ctx, f)
+				counter := 0
+				for iter.Next() {
+					counter++
+					doc := iter.Document()
+					require.NotNil(t, doc)
+					require.Equal(t, 4, doc.Len())
+				}
+				require.NoError(t, iter.Err())
+				total += counter
+			})
+		}
+	})
+	t.Run("ReadFlattenedData", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
@@ -72,8 +115,8 @@ func TestCollectRuntime(t *testing.T) {
 				for iter.Next() {
 					counter++
 					doc := iter.Document()
-					assert.NotNil(t, doc)
-					require.Equal(t, 3, doc.Len())
+					require.NotNil(t, doc)
+					require.Equal(t, 15, doc.Len())
 				}
 				require.NoError(t, iter.Err())
 				total += counter

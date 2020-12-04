@@ -9,11 +9,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/cdr/grip/recovery"
 	"github.com/deciduosity/birch"
+	"github.com/deciduosity/birch/jsonx"
 	"github.com/deciduosity/ftdc"
 	"github.com/papertrail/go-tail/follower"
 	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 // CollectJSONOptions specifies options for a JSON2FTDC collector. You
@@ -50,21 +51,30 @@ func (opts CollectJSONOptions) getSource() (<-chan *birch.Document, <-chan error
 	switch {
 	case opts.InputSource != nil:
 		go func() {
+			defer recovery.LogStackTraceAndContinue("collect json metrics")
+
 			stream := bufio.NewScanner(opts.InputSource)
 			defer close(errs)
 
 			for stream.Scan() {
-				doc := &birch.Document{}
-				err := bson.UnmarshalExtJSON(stream.Bytes(), false, doc)
+				jd, err := jsonx.DC.BytesErr(stream.Bytes())
 				if err != nil {
 					errs <- err
 					return
 				}
+
+				doc, err := birch.DC.JSONXErr(jd)
+				if err != nil {
+					errs <- err
+					return
+				}
+
 				out <- doc
 			}
 		}()
 	case opts.FileName != "" && !opts.Follow:
 		go func() {
+			defer recovery.LogStackTraceAndContinue("collect json metrics")
 			defer close(errs)
 			f, err := os.Open(opts.FileName)
 			if err != nil {
@@ -75,17 +85,24 @@ func (opts CollectJSONOptions) getSource() (<-chan *birch.Document, <-chan error
 			stream := bufio.NewScanner(f)
 
 			for stream.Scan() {
-				doc := &birch.Document{}
-				err := bson.UnmarshalExtJSON(stream.Bytes(), false, doc)
+				jd, err := jsonx.DC.BytesErr(stream.Bytes())
 				if err != nil {
 					errs <- err
 					return
 				}
+
+				doc, err := birch.DC.JSONXErr(jd)
+				if err != nil {
+					errs <- err
+					return
+				}
+
 				out <- doc
 			}
 		}()
 	case opts.FileName != "" && opts.Follow:
 		go func() {
+			defer recovery.LogStackTraceAndContinue("collect json metrics")
 			defer close(errs)
 
 			tail, err := follower.New(opts.FileName, follower.Config{
@@ -101,8 +118,13 @@ func (opts CollectJSONOptions) getSource() (<-chan *birch.Document, <-chan error
 			}()
 
 			for line := range tail.Lines() {
-				doc := birch.NewDocument()
-				err := bson.UnmarshalExtJSON([]byte(line.String()), false, doc)
+				jd, err := jsonx.DC.BytesErr([]byte(line.String()))
+				if err != nil {
+					errs <- err
+					return
+				}
+
+				doc, err := birch.DC.JSONXErr(jd)
 				if err != nil {
 					errs <- err
 					return

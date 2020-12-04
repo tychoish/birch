@@ -11,13 +11,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cdr/grip/message"
+	"github.com/cdr/grip/recovery"
 	"github.com/deciduosity/birch"
 	"github.com/deciduosity/ftdc"
 	"github.com/deciduosity/ftdc/util"
-	"github.com/cdr/grip/message"
-	"github.com/cdr/grip/recovery"
 	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 // Runtime provides an aggregated view for
@@ -80,16 +79,16 @@ func (opts *CollectOptions) generate(ctx context.Context, id int) *birch.Documen
 		out.Process.Base = base
 	}
 
-	docb, err := bson.Marshal(out)
+	docb, err := out.MarshalDocument()
 	if err != nil {
 		panic(err)
 	}
 
 	if len(opts.Collectors) == 0 {
-		return birch.DC.Reader(docb)
+		return docb
 	}
 
-	doc := birch.DC.Make(len(opts.Collectors) + 1).Append(birch.EC.SubDocument("runtime", birch.DC.Reader(docb)))
+	doc := birch.DC.Make(len(opts.Collectors) + 1).Append(birch.EC.SubDocument("runtime", docb))
 	if !opts.RunParallelCollectors {
 		for _, ec := range opts.Collectors {
 			doc.Append(birch.EC.SubDocument(ec.Name, ec.Operation(ctx)))

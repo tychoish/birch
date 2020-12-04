@@ -9,7 +9,6 @@ import (
 	"github.com/deciduosity/birch/bsontype"
 	"github.com/deciduosity/ftdc/util"
 	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (c *Chunk) exportMatrix() map[string]interface{} {
@@ -118,7 +117,7 @@ func (iter *matrixIterator) worker(ctx context.Context) {
 		chunk := iter.chunks.Chunk()
 
 		if iter.reflect {
-			payload, err = bson.Marshal(chunk.exportMatrix())
+			payload, err = util.GlobalMarshaler()(chunk.exportMatrix())
 			if err != nil {
 				iter.catcher.Add(err)
 				return
