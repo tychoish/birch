@@ -10,7 +10,6 @@ import (
 	"math"
 	"time"
 
-	"github.com/deciduosity/birch/decimal"
 	"github.com/deciduosity/birch/elements"
 	"github.com/deciduosity/birch/types"
 	"github.com/pkg/errors"
@@ -581,7 +580,7 @@ func (ElementConstructor) Int64(key string, i int64) *Element {
 }
 
 // Decimal128 creates a decimal element with the given key and value.
-func (ElementConstructor) Decimal128(key string, d decimal.Decimal128) *Element {
+func (ElementConstructor) Decimal128(key string, d types.Decimal128) *Element {
 	size := uint32(1 + len(key) + 1 + 16)
 	elem := newElement(0, uint32(1+len(key)+1))
 	elem.value.data = make([]byte, size)
@@ -764,7 +763,7 @@ func (ValueConstructor) Int64(i int64) *Value {
 }
 
 // Decimal128 creates a decimal value from the argument.
-func (ValueConstructor) Decimal128(d decimal.Decimal128) *Value {
+func (ValueConstructor) Decimal128(d types.Decimal128) *Value {
 	return EC.Decimal128("", d).value
 }
 

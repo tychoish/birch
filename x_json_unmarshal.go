@@ -3,7 +3,6 @@ package birch
 import (
 	"time"
 
-	"github.com/deciduosity/birch/decimal"
 	"github.com/deciduosity/birch/jsonx"
 	"github.com/deciduosity/birch/types"
 	"github.com/pkg/errors"
@@ -130,7 +129,7 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 		case "$maxKey":
 			return EC.MaxKey(in.Key()), nil
 		case "$numberDecimal":
-			val, err := decimal.ParseDecimal128(indoc.ElementAtIndex(0).Value().StringValue())
+			val, err := types.ParseDecimal128(indoc.ElementAtIndex(0).Value().StringValue())
 			if err != nil {
 				return nil, errors.WithStack(err)
 			}

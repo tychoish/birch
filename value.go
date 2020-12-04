@@ -13,7 +13,6 @@ import (
 
 	"github.com/deciduosity/birch/bsonerr"
 	"github.com/deciduosity/birch/bsontype"
-	"github.com/deciduosity/birch/decimal"
 	"github.com/deciduosity/birch/types"
 	"github.com/pkg/errors"
 )
@@ -1139,7 +1138,7 @@ func (v *Value) Int64OK() (int64, bool) {
 
 // Decimal128 returns the decimal the Value represents. It panics if the value is a BSON type other than
 // decimal.
-func (v *Value) Decimal128() decimal.Decimal128 {
+func (v *Value) Decimal128() types.Decimal128 {
 	if v == nil || v.offset == 0 || v.data == nil {
 		panic(bsonerr.UninitializedElement)
 	}
@@ -1148,16 +1147,16 @@ func (v *Value) Decimal128() decimal.Decimal128 {
 		panic(bsonerr.NewElementTypeError("compact.Element.Decimal128", bsontype.Type(v.data[v.start])))
 	}
 
-	return decimal.NewDecimal128(
+	return types.NewDecimal128(
 		binary.LittleEndian.Uint64(v.data[v.offset:v.offset+8]),
 		binary.LittleEndian.Uint64(v.data[v.offset+8:v.offset+16]))
 }
 
 // Decimal128OK is the same as Decimal128, except that it returns a boolean
 // instead of panicking.
-func (v *Value) Decimal128OK() (decimal.Decimal128, bool) {
+func (v *Value) Decimal128OK() (types.Decimal128, bool) {
 	if v == nil || v.offset == 0 || v.data == nil || bsontype.Type(v.data[v.start]) != bsontype.Decimal128 {
-		return decimal.NewDecimal128(0, 0), false
+		return types.NewDecimal128(0, 0), false
 	}
 
 	return v.Decimal128(), true

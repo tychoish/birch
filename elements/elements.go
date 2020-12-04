@@ -20,7 +20,7 @@ import (
 	"math"
 	"unsafe"
 
-	"github.com/deciduosity/birch/decimal"
+	"github.com/deciduosity/birch/types"
 	"github.com/pkg/errors"
 )
 
@@ -867,7 +867,7 @@ func (Int64NS) Element(start uint, writer []byte, key string, i int64) (int, err
 
 // Encode encodes a decimal128 into a BSON decimal128 element and serializes the bytes to the
 // provided writer.
-func (Decimal128NS) Encode(start uint, writer []byte, d decimal.Decimal128) (int, error) {
+func (Decimal128NS) Encode(start uint, writer []byte, d types.Decimal128) (int, error) {
 	var total int
 
 	high, low := d.GetBytes()
@@ -887,7 +887,7 @@ func (Decimal128NS) Encode(start uint, writer []byte, d decimal.Decimal128) (int
 
 // Element encodes a decimal128 and a key into a BSON decimal128 element and serializes the bytes to the
 // provided writer.
-func (Decimal128NS) Element(start uint, writer []byte, key string, d decimal.Decimal128) (int, error) {
+func (Decimal128NS) Element(start uint, writer []byte, key string, d types.Decimal128) (int, error) {
 	var total int
 
 	n, err := Byte.Encode(start, writer, '\x13')
