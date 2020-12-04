@@ -346,7 +346,7 @@ type Key struct {
 func (k Key) String() string {
 	str := strings.Join(k.Prefix, ".")
 	if str != "" {
-		return str + "." + k.Name
+		return fmt.Sprint(str, ".", k.Name)
 	}
 
 	return k.Name

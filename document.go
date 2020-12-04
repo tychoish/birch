@@ -253,7 +253,7 @@ func (d *Document) Set(elem *Element) *Document {
 		panic(bsonerr.NilElement)
 	}
 
-	key := elem.Key() + "\x00"
+	key := fmt.Sprint(elem.Key(), "\x00")
 	i := sort.Search(len(d.index), func(i int) bool { return bytes.Compare(d.keyFromIndex(i), []byte(key)) >= 0 })
 
 	if i < len(d.index) && bytes.Equal(d.keyFromIndex(i), []byte(key)) {
@@ -328,7 +328,7 @@ func (d *Document) RecursiveLookupElementErr(key ...string) (*Element, error) {
 		err  error
 	)
 
-	first := []byte(key[0] + "\x00")
+	first := []byte(fmt.Sprint(key[0], "\x00"))
 	i := sort.Search(len(d.index), func(i int) bool { return bytes.Compare(d.keyFromIndex(i), first) >= 0 })
 
 	if i < len(d.index) && bytes.Equal(d.keyFromIndex(i), first) {
@@ -391,7 +391,7 @@ func (d *Document) Delete(key ...string) *Element {
 	// the index and delete the element from the elems array.
 	var elem *Element
 
-	first := []byte(key[0] + "\x00")
+	first := []byte(fmt.Sprint(key[0], "\x00"))
 	i := sort.Search(len(d.index), func(i int) bool { return bytes.Compare(d.keyFromIndex(i), first) >= 0 })
 
 	if i < len(d.index) && bytes.Equal(d.keyFromIndex(i), first) {
@@ -634,7 +634,7 @@ func (d *Document) UnmarshalBSON(b []byte) error {
 	//   - Create an Element for each element found
 	//   - Update the index with the key of the element
 	//   TODO: Maybe do 2 pass and alloc the elems and index once?
-	// 		   We should benchmark 2 pass vs multiple allocs for growing the slice
+	//		   We should benchmark 2 pass vs multiple allocs for growing the slice
 	_, err := Reader(b).readElements(func(elem *Element) error {
 		d.elems = append(d.elems, elem)
 		i := sort.Search(len(d.index), func(i int) bool {
