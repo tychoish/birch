@@ -14,7 +14,6 @@ import (
 
 	"github.com/deciduosity/birch/bsonerr"
 	"github.com/deciduosity/birch/bsontype"
-	"github.com/deciduosity/birch/decimal"
 	"github.com/deciduosity/birch/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -1598,11 +1597,11 @@ func TestElement(t *testing.T) {
 			}
 		})
 		t.Run("Decimal128", func(t *testing.T) {
-			var empty decimal.Decimal128
+			var empty types.Decimal128
 			testCases := []struct {
 				name  string
 				elem  *Element
-				val   decimal.Decimal128
+				val   types.Decimal128
 				fault error
 			}{
 				{"Nil Value", &Element{nil}, empty, bsonerr.UninitializedElement},
@@ -1624,7 +1623,7 @@ func TestElement(t *testing.T) {
 							0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 							0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 						}}},
-					decimal.NewDecimal128(255, 255), nil,
+					types.NewDecimal128(255, 255), nil,
 				},
 			}
 

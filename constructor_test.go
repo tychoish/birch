@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/deciduosity/birch/bsontype"
-	"github.com/deciduosity/birch/decimal"
+	"github.com/deciduosity/birch/types"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -466,7 +466,7 @@ func TestConstructor(t *testing.T) {
 				0xee, 0x02, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 				0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3c, 0xb0,
 			}
-			d, _ := decimal.ParseDecimal128("-7.50")
+			d, _ := types.ParseDecimal128("-7.50")
 
 			expected := &Element{&Value{start: 0, offset: 5, data: buf, d: nil}}
 			actual := EC.Decimal128("foo", d)
@@ -905,7 +905,7 @@ func TestConstructor(t *testing.T) {
 				0xee, 0x02, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 				0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3c, 0xb0,
 			}
-			d, _ := decimal.ParseDecimal128("-7.50")
+			d, _ := types.ParseDecimal128("-7.50")
 
 			expected := &Value{start: 0, offset: 2, data: buf, d: nil}
 			actual := VC.Decimal128(d)

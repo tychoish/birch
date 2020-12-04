@@ -9,10 +9,9 @@ import (
 
 	"github.com/deciduosity/birch"
 	"github.com/deciduosity/birch/bsontype"
-	"github.com/deciduosity/birch/decimal"
-	"github.com/deciduosity/birch/types"
 	"github.com/deciduosity/birch/ftdc/testutil"
 	"github.com/deciduosity/birch/ftdc/util"
+	"github.com/deciduosity/birch/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -221,11 +220,11 @@ func TestBSONValueToMetric(t *testing.T) {
 		},
 		{
 			Name:  "Decimal128Empty",
-			Value: birch.VC.Decimal128(decimal.Decimal128{}),
+			Value: birch.VC.Decimal128(types.Decimal128{}),
 		},
 		{
 			Name:  "Decimal128",
-			Value: birch.VC.Decimal128(decimal.NewDecimal128(33, 43)),
+			Value: birch.VC.Decimal128(types.NewDecimal128(33, 43)),
 		},
 		{
 			Name:  "DBPointer",
@@ -420,7 +419,7 @@ func TestExtractingMetrics(t *testing.T) {
 		},
 		{
 			Name:              "Decimal128",
-			Value:             birch.VC.Decimal128(decimal.NewDecimal128(42, 42)),
+			Value:             birch.VC.Decimal128(types.NewDecimal128(42, 42)),
 			ExpectedCount:     0,
 			FirstEncodedValue: 0,
 			NumEncodedValues:  0,
@@ -777,7 +776,7 @@ func TestMetricsHashValue(t *testing.T) {
 		},
 		{
 			name:        "Decimal128",
-			value:       birch.VC.Decimal128(decimal.NewDecimal128(42, 42)),
+			value:       birch.VC.Decimal128(types.NewDecimal128(42, 42)),
 			expectedNum: 0,
 			keyElems:    0,
 		},
@@ -950,7 +949,7 @@ func TestMetricsToElement(t *testing.T) {
 		},
 		{
 			name: "Decimal128",
-			ref:  birch.EC.Decimal128("foo", decimal.NewDecimal128(1, 2)),
+			ref:  birch.EC.Decimal128("foo", types.NewDecimal128(1, 2)),
 		},
 		{
 			name: "Double",
