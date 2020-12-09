@@ -3,8 +3,8 @@ package mongowire
 import (
 	"testing"
 
-	"github.com/deciduosity/birch"
-	"github.com/deciduosity/birch/mrpc/model"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/birch/mrpc/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

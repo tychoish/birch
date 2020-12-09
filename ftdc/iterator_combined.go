@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/cdr/grip"
-	"github.com/deciduosity/birch"
+	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
 )
 

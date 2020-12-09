@@ -3,7 +3,7 @@ package jsonx
 import (
 	"encoding/json"
 
-	"github.com/deciduosity/birch/jsonx/internal"
+	"github.com/tychoish/birch/jsonx/internal"
 	"github.com/pkg/errors"
 )
 

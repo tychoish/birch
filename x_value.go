@@ -3,7 +3,7 @@ package birch
 import (
 	"bytes"
 
-	"github.com/deciduosity/birch/bsontype"
+	"github.com/tychoish/birch/bsontype"
 )
 
 // EqualValue will return true if the two values are equal.

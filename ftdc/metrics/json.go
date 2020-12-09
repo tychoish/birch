@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/cdr/grip/recovery"
-	"github.com/deciduosity/birch"
-	"github.com/deciduosity/birch/jsonx"
-	"github.com/deciduosity/birch/ftdc"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/birch/jsonx"
+	"github.com/tychoish/birch/ftdc"
 	"github.com/papertrail/go-tail/follower"
 	"github.com/pkg/errors"
 )

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/deciduosity/birch"
+	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
 )
 

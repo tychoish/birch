@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/deciduosity/birch/types"
+	"github.com/tychoish/birch/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

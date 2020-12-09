@@ -3,7 +3,7 @@ package hdrhist_test
 import (
 	"testing"
 
-	"github.com/deciduosity/birch/ftdc/hdrhist"
+	"github.com/tychoish/birch/ftdc/hdrhist"
 	"github.com/stretchr/testify/assert"
 )
 

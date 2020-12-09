@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/deciduosity/birch/bsontype"
-	"github.com/deciduosity/birch/types"
+	"github.com/tychoish/birch/bsontype"
+	"github.com/tychoish/birch/types"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

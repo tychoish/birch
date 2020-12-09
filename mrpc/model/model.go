@@ -1,6 +1,6 @@
 package model
 
-import "github.com/deciduosity/birch"
+import "github.com/tychoish/birch"
 
 type Command struct {
 	DB                 string

@@ -11,9 +11,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/deciduosity/birch/bsonerr"
-	"github.com/deciduosity/birch/bsontype"
-	"github.com/deciduosity/birch/elements"
+	"github.com/tychoish/birch/bsonerr"
+	"github.com/tychoish/birch/bsontype"
+	"github.com/tychoish/birch/elements"
 	"github.com/pkg/errors"
 )
 

@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/deciduosity/birch"
-	"github.com/deciduosity/birch/ftdc"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/birch/ftdc"
 	"github.com/stretchr/testify/assert"
 )
 

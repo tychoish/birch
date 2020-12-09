@@ -11,9 +11,9 @@ import (
 	"math"
 	"time"
 
-	"github.com/deciduosity/birch/bsonerr"
-	"github.com/deciduosity/birch/bsontype"
-	"github.com/deciduosity/birch/types"
+	"github.com/tychoish/birch/bsonerr"
+	"github.com/tychoish/birch/bsontype"
+	"github.com/tychoish/birch/types"
 	"github.com/pkg/errors"
 )
 

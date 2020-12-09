@@ -14,8 +14,8 @@ import (
 	"github.com/cdr/grip"
 	"github.com/cdr/grip/message"
 	"github.com/cdr/grip/recovery"
-	"github.com/deciduosity/birch"
-	"github.com/deciduosity/birch/ftdc"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/birch/ftdc"
 	"github.com/pkg/errors"
 )
 

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/cdr/grip"
-	"github.com/deciduosity/birch/mrpc/mongowire"
+	"github.com/tychoish/birch/mrpc/mongowire"
 	"github.com/stretchr/testify/suite"
 )
 

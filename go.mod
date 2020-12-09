@@ -1,4 +1,4 @@
-module github.com/deciduosity/birch
+module github.com/tychoish/birch
 
 go 1.14
 

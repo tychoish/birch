@@ -3,8 +3,8 @@ package hdrhist
 import (
 	"encoding/json"
 
-	"github.com/deciduosity/birch"
-	"github.com/deciduosity/birch/ftdc/util"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/birch/ftdc/util"
 	"github.com/pkg/errors"
 )
 

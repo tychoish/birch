@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"github.com/deciduosity/birch"
+	"github.com/tychoish/birch"
 	"github.com/shirou/gopsutil/process"
 )
 

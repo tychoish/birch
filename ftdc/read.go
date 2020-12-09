@@ -8,8 +8,8 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/deciduosity/birch"
-	"github.com/deciduosity/birch/bsontype"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/birch/bsontype"
 	"github.com/pkg/errors"
 )
 

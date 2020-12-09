@@ -2,7 +2,7 @@ package metrics
 
 import (
 	"github.com/cdr/grip/message"
-	"github.com/deciduosity/birch"
+	"github.com/tychoish/birch"
 	"github.com/shirou/gopsutil/net"
 )
 

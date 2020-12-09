@@ -3,8 +3,8 @@ package birch
 import (
 	"time"
 
-	"github.com/deciduosity/birch/bsontype"
-	"github.com/deciduosity/birch/jsonx"
+	"github.com/tychoish/birch/bsontype"
+	"github.com/tychoish/birch/jsonx"
 )
 
 // MarshalJSON produces a JSON representation of the Document,

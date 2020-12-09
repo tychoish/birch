@@ -6,8 +6,8 @@ import (
 
 	"github.com/cdr/grip"
 	"github.com/cdr/grip/message"
-	"github.com/deciduosity/birch"
-	"github.com/deciduosity/birch/mrpc/mongowire"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/birch/mrpc/mongowire"
 	"github.com/pkg/errors"
 )
 

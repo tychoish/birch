@@ -3,7 +3,7 @@ package ftdc
 import (
 	"io"
 
-	"github.com/deciduosity/birch"
+	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
 )
 

@@ -15,7 +15,7 @@ package events
 import (
 	"time"
 
-	"github.com/deciduosity/birch"
+	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
 )
 

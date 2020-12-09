@@ -3,8 +3,8 @@ package ftdc
 import (
 	"math"
 
-	"github.com/deciduosity/birch"
-	"github.com/deciduosity/birch/bsontype"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/birch/bsontype"
 )
 
 ////////////////////////////////////////////////////////////////////////

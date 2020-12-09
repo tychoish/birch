@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/deciduosity/birch/ftdc"
-	"github.com/deciduosity/birch/ftdc/testutil"
+	"github.com/tychoish/birch/ftdc"
+	"github.com/tychoish/birch/ftdc/testutil"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -41,7 +41,7 @@ API for that, birch is may be the right thing!
 API and Documentation
 ---------------------
 
-See `the godoc <https://pkg.go.dev/github.com/deciduosity/birch>`_ for full
+See `the godoc <https://pkg.go.dev/github.com/tychoish/birch>`_ for full
 API documentation.
 
 Development

@@ -20,7 +20,7 @@ import (
 	"math"
 	"unsafe"
 
-	"github.com/deciduosity/birch/types"
+	"github.com/tychoish/birch/types"
 	"github.com/pkg/errors"
 )
 

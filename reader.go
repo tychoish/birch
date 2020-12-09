@@ -12,7 +12,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/deciduosity/birch/bsonerr"
+	"github.com/tychoish/birch/bsonerr"
 	"github.com/pkg/errors"
 )
 

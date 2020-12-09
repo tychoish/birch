@@ -3,9 +3,9 @@ package ftdc
 import (
 	"io"
 
-	"github.com/deciduosity/birch"
-	"github.com/deciduosity/birch/bsontype"
-	"github.com/deciduosity/birch/types"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/birch/bsontype"
+	"github.com/tychoish/birch/types"
 	"github.com/pkg/errors"
 )
 

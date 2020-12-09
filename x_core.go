@@ -3,7 +3,7 @@ package birch
 import (
 	"bytes"
 
-	"github.com/deciduosity/birch/bsontype"
+	"github.com/tychoish/birch/bsontype"
 )
 
 func readValue(src []byte, t bsontype.Type) ([]byte, []byte, bool) {

@@ -3,7 +3,7 @@ package events
 import (
 	"time"
 
-	"github.com/deciduosity/birch/ftdc"
+	"github.com/tychoish/birch/ftdc"
 	"github.com/pkg/errors"
 )
 

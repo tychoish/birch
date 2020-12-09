@@ -10,9 +10,9 @@ import (
 	"math"
 	"time"
 
-	"github.com/deciduosity/birch/elements"
-	"github.com/deciduosity/birch/jsonx"
-	"github.com/deciduosity/birch/types"
+	"github.com/tychoish/birch/elements"
+	"github.com/tychoish/birch/jsonx"
+	"github.com/tychoish/birch/types"
 	"github.com/pkg/errors"
 )
 

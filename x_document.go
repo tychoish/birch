@@ -3,8 +3,8 @@ package birch
 import (
 	"sort"
 
-	"github.com/deciduosity/birch/bsonerr"
-	"github.com/deciduosity/birch/bsontype"
+	"github.com/tychoish/birch/bsonerr"
+	"github.com/tychoish/birch/bsontype"
 )
 
 // MarshalDocument satisfies the DocumentMarshaler interface, and

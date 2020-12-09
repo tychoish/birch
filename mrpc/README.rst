@@ -74,10 +74,7 @@ If you encounter a problem or have a feature that you'd like to see added to
 ``mrpc``, please feel free to create an issue or file a pull request.
 
 For complete API documentation see the `godoc
-<https://godoc.org/github.com/deciduosity/birch/mrpc>`.
-
-To run tests please use the ``makefile`` which has targets to support most
-developer workflows.
+<https://godoc.org/github.com/tychoish/birch/mrpc>`.
 
 History
 ~~~~~~~

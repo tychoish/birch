@@ -1,7 +1,7 @@
 package mongowire
 
 import (
-	"github.com/deciduosity/birch"
+	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
 )
 

@@ -1,8 +1,8 @@
 package mongowire
 
 import (
-	"github.com/deciduosity/birch"
-	"github.com/deciduosity/birch/mrpc/model"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/birch/mrpc/model"
 )
 
 type Message interface {

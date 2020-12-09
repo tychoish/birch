@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/deciduosity/birch/jsonx"
+	"github.com/tychoish/birch/jsonx"
 	"github.com/pkg/errors"
 )
 

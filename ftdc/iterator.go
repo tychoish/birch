@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/cdr/grip"
-	"github.com/deciduosity/birch"
+	"github.com/tychoish/birch"
 )
 
 type Iterator interface {

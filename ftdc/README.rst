@@ -24,9 +24,7 @@ Use
 ---
 
 All documentation is in the `godoc
-<https://godoc.org/github.com/deciduosity/ftdc>`_.
-
-This library is available for use under the terms of Apache License.
+<https://godoc.org/github.com/tychoish/birch/ftdc>`_.
 
 Features
 --------

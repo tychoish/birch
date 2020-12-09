@@ -3,7 +3,7 @@ package mrpc
 import (
 	"sync"
 
-	"github.com/deciduosity/birch/mrpc/mongowire"
+	"github.com/tychoish/birch/mrpc/mongowire"
 	"github.com/pkg/errors"
 )
 

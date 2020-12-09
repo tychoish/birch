@@ -14,7 +14,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/deciduosity/birch/bsonerr"
+	"github.com/tychoish/birch/bsonerr"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/require"
 )
