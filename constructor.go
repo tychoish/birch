@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/deciduosity/birch/elements"
+	"github.com/deciduosity/birch/jsonx"
 	"github.com/deciduosity/birch/types"
 	"github.com/pkg/errors"
 )
@@ -114,6 +115,8 @@ func (ElementConstructor) Interface(key string, value interface{}) *Element {
 		elem = EC.SubDocument(key, DC.MapDocumentMarshaler(t))
 	case map[string]Marshaler:
 		elem = EC.SubDocument(key, DC.MapMarshaler(t))
+	case map[string]*jsonx.Document:
+		elem = EC.SubDocument(key, DC.MapJSONX(t))
 	case map[string][]string:
 		elem = EC.SubDocument(key, DC.MapSliceString(t))
 	case map[string][]interface{}:
@@ -136,6 +139,8 @@ func (ElementConstructor) Interface(key string, value interface{}) *Element {
 		elem = EC.SubDocument(key, DC.MapSliceDocumentMarshaler(t))
 	case map[string][]Marshaler:
 		elem = EC.SubDocument(key, DC.MapSliceMarshaler(t))
+	case map[string][]*jsonx.Document:
+		elem = EC.SubDocument(key, DC.MapSliceJSONX(t))
 	case map[interface{}]interface{}:
 		elem = EC.SubDocument(key, DC.Interface(t))
 	case []interface{}:
@@ -162,10 +167,14 @@ func (ElementConstructor) Interface(key string, value interface{}) *Element {
 		elem, err = EC.SliceMarshalerErr(key, t)
 	case []*Element:
 		elem = EC.SubDocumentFromElements(key, t...)
+	case []*jsonx.Document:
+		elem = EC.SliceJSONX(key, t)
 	case *Element:
 		elem = t
 	case *Value:
 		elem, err = EC.ValueErr(key, t)
+	case *jsonx.Document:
+		elem = EC.SubDocument(key, DC.JSONX(t))
 	case *Document:
 		if t != nil {
 			elem = EC.SubDocument(key, t)
@@ -228,6 +237,8 @@ func (ElementConstructor) InterfaceErr(key string, value interface{}) (*Element,
 		return EC.InterfaceErr(key, value)
 	case []interface{}, []Marshaler, []DocumentMarshaler:
 		return EC.InterfaceErr(key, value)
+	case *jsonx.Document, []*jsonx.Document, map[string]*jsonx.Document, map[string][]*jsonx.Document:
+		return EC.Interface(key, value), nil
 	case *Value:
 		return EC.ValueErr(key, t)
 	case DocumentMarshaler:

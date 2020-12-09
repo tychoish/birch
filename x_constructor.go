@@ -118,6 +118,16 @@ func (DocumentConstructor) MapString(in map[string]string) *Document {
 	return DC.Elements(elems...)
 }
 
+func (DocumentConstructor) MapJSONX(in map[string]*jsonx.Document) *Document {
+	elems := make([]*Element, 0, len(in))
+
+	for k, v := range in {
+		elems = append(elems, EC.JSONX(k, v))
+	}
+
+	return DC.Elements(elems...)
+}
+
 func (DocumentConstructor) MapInterface(in map[string]interface{}) *Document {
 	elems := make([]*Element, 0, len(in))
 	for k, v := range in {
@@ -263,6 +273,15 @@ func (DocumentConstructor) MapDocumentMarshaler(in map[string]DocumentMarshaler)
 	elems := make([]*Element, 0, len(in))
 	for k, v := range in {
 		elems = append(elems, EC.DocumentMarshaler(k, v))
+	}
+
+	return DC.Elements(elems...)
+}
+
+func (DocumentConstructor) MapSliceJSONX(in map[string][]*jsonx.Document) *Document {
+	elems := make([]*Element, 0, len(in))
+	for k, v := range in {
+		elems = append(elems, EC.SliceJSONX(k, v))
 	}
 
 	return DC.Elements(elems...)
@@ -567,6 +586,16 @@ func (ElementConstructor) Int(key string, i int) *Element {
 	}
 
 	return EC.Int64(key, int64(i))
+}
+
+func (ElementConstructor) SliceJSONX(key string, in []*jsonx.Document) *Element {
+	vals := make([]*Value, len(in))
+
+	for idx := range in {
+		vals[idx] = VC.JSONX(in[idx])
+	}
+
+	return EC.Array(key, NewArray(vals...))
 }
 
 func (ElementConstructor) SliceString(key string, in []string) *Element {
@@ -909,6 +938,22 @@ func (ValueConstructor) MapSliceMarshalerErr(in map[string][]Marshaler) (*Value,
 	}
 
 	return EC.SubDocument("", doc).value, nil
+}
+
+func (ValueConstructor) MapJSONX(in map[string]*jsonx.Document) *Value {
+	doc := DC.Make(len(in))
+	for k, v := range in {
+		doc.Append(EC.JSONX(k, v))
+	}
+	return EC.SubDocument("", doc).value
+}
+
+func (ValueConstructor) MapSliceJSONX(in map[string][]*jsonx.Document) *Value {
+	doc := DC.Make(len(in))
+	for k, v := range in {
+		doc.Append(EC.SliceJSONX(k, v))
+	}
+	return EC.SubDocument("", doc).value
 }
 
 func (ValueConstructor) SliceString(in []string) *Value   { return EC.SliceString("", in).value }
