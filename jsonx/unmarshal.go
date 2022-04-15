@@ -2,6 +2,7 @@ package jsonx
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/tychoish/birch/jsonx/internal"
@@ -94,7 +95,7 @@ func getValueForResult(value internal.Result) (*Value, error) {
 			return VC.Float64(df), nil
 		}
 
-		return nil, fmt.Errorsf("number value [%s] is invalid [%+v]", value.Str, value)
+		return nil, fmt.Errorf("number value [%s] is invalid [%+v]", value.Str, value)
 	case value.IsArray():
 		source := value.Array()
 		array := AC.Make(len(source))
@@ -126,6 +127,6 @@ func getValueForResult(value internal.Result) (*Value, error) {
 
 		return VC.Object(doc), nil
 	default:
-		return nil, fmt.Errorsf("unknown json value type '%s'", value.Type)
+		return nil, fmt.Errorf("unknown json value type '%s'", value.Type)
 	}
 }

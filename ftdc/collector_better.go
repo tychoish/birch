@@ -2,6 +2,7 @@ package ftdc
 
 import (
 	"bytes"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -91,7 +92,7 @@ func (c *betterCollector) Add(in interface{}) error {
 	}
 
 	if len(metrics.values) != len(c.lastSample.values) {
-		return fmt.Errorsf("unexpected schema change detected for sample %d: [current=%d vs previous=%d]",
+		return fmt.Errorf("unexpected schema change detected for sample %d: [current=%d vs previous=%d]",
 			c.numSamples+1, len(metrics.values), len(c.lastSample.values),
 		)
 	}
@@ -99,7 +100,7 @@ func (c *betterCollector) Add(in interface{}) error {
 	var delta int64
 	for idx := range metrics.values {
 		if metrics.types[idx] != c.lastSample.types[idx] {
-			return fmt.Errorsf("unexpected schema change detected for sample types: [current=%v vs previous=%v]",
+			return fmt.Errorf("unexpected schema change detected for sample types: [current=%v vs previous=%v]",
 				metrics.types, c.lastSample.types)
 		}
 		delta, err = extractDelta(metrics.values[idx], c.lastSample.values[idx])

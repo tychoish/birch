@@ -12,6 +12,7 @@
 package events
 
 import (
+	"fmt"
 	"sort"
 	"time"
 
@@ -52,7 +53,7 @@ func (ps *Custom) Add(key string, value interface{}) error {
 		*ps = append(*ps, CustomPoint{Name: key, Value: v})
 		return nil
 	default:
-		return fmt.Errorsf("type '%T' for key %s is not supported", value, key)
+		return fmt.Errorf("type '%T' for key %s is not supported", value, key)
 	}
 }
 

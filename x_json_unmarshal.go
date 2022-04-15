@@ -1,6 +1,7 @@
 package birch
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -156,13 +157,13 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 				case "t":
 					val, ok = elem.Value().IntOK()
 					if !ok {
-						return nil, fmt.Errorsf("problem decoding number for timestamp at %s [%T]", in.Key(), elem.Value().Interface())
+						return nil, fmt.Errorf("problem decoding number for timestamp at %s [%T]", in.Key(), elem.Value().Interface())
 					}
 					t = int64(val)
 				case "i":
 					val, ok = elem.Value().IntOK()
 					if !ok {
-						return nil, fmt.Errorsf("problem decoding number for timestamp at %s [%T]", in.Key(), elem.Value().Interface())
+						return nil, fmt.Errorf("problem decoding number for timestamp at %s [%T]", in.Key(), elem.Value().Interface())
 					}
 					i = int64(val)
 				}
@@ -188,7 +189,7 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 
 				return EC.CodeWithScope(in.Key(), js, scope.Value().MutableDocument()), nil
 			} else {
-				return nil, fmt.Errorsf("invalid key '%s' in code with scope for %s", second, in.Key())
+				return nil, fmt.Errorf("invalid key '%s' in code with scope for %s", second, in.Key())
 			}
 		case "$dbPointer":
 			var (
@@ -209,12 +210,12 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 				case "$ref":
 					ns, ok = elem.Value().StringValueOK()
 					if !ok {
-						return nil, fmt.Errorsf("problem decoding ns for dbref in %s", in.Key())
+						return nil, fmt.Errorf("problem decoding ns for dbref in %s", in.Key())
 					}
 				case "$id":
 					oid, ok = elem.Value().StringValueOK()
 					if !ok {
-						return nil, fmt.Errorsf("problem decoding ns for oid in %s", in.Key())
+						return nil, fmt.Errorf("problem decoding ns for oid in %s", in.Key())
 					}
 				}
 				count++
@@ -248,12 +249,12 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 				case "pattern":
 					pattern, ok = elem.Value().StringValueOK()
 					if !ok {
-						return nil, fmt.Errorsf("problem decoding ns for dbref in %s", in.Key())
+						return nil, fmt.Errorf("problem decoding ns for dbref in %s", in.Key())
 					}
 				case "options":
 					options, ok = elem.Value().StringValueOK()
 					if !ok {
-						return nil, fmt.Errorsf("problem decoding ns for oid in %s", in.Key())
+						return nil, fmt.Errorf("problem decoding ns for oid in %s", in.Key())
 					}
 				}
 				count++
@@ -306,6 +307,6 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 		}
 		return EC.Array(in.Key(), array), nil
 	default:
-		return nil, fmt.Errorsf("unknown value type '%s' [%v]", inv.Type(), inv.Interface())
+		return nil, fmt.Errorf("unknown value type '%s' [%v]", inv.Type(), inv.Interface())
 	}
 }

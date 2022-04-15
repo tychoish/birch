@@ -44,7 +44,7 @@ func (opts CollectJSONOptions) validate() error {
 	return nil
 }
 
-func (opts CollectJSONOptions) getSource() (<-chan *birch.Document, <-chan error) {
+func (opts CollectJSONOptions) getSource(ctx context.Context) (<-chan *birch.Document, <-chan error) {
 	out := make(chan *birch.Document)
 	errs := make(chan error, 2)
 
@@ -97,7 +97,10 @@ func (opts CollectJSONOptions) getSource() (<-chan *birch.Document, <-chan error
 					return
 				}
 
-				out <- doc
+				select {
+				case out <- doc:
+				case <-ctx.Done():
+				}
 			}
 		}()
 	case opts.FileName != "" && opts.Follow:
@@ -129,7 +132,11 @@ func (opts CollectJSONOptions) getSource() (<-chan *birch.Document, <-chan error
 					errs <- err
 					return
 				}
-				out <- doc
+
+				select {
+				case out <- doc:
+				case <-ctx.Done():
+				}
 			}
 		}()
 	default:
@@ -160,9 +167,8 @@ func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 
 	flusher := func() error {
 		fn := fmt.Sprintf("%s.%d", opts.OutputFilePrefix, outputCount)
-		info := collector.Info()
 
-		if info.SampleCount == 0 {
+		if info := collector.Info(); info.SampleCount == 0 {
 			flushTimer.Reset(opts.FlushInterval)
 			return nil
 		}
@@ -183,7 +189,7 @@ func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 		return nil
 	}
 
-	docs, errs := opts.getSource()
+	docs, errs := opts.getSource(ctx)
 
 	for {
 		select {
@@ -199,7 +205,9 @@ func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 				return errors.Wrap(err, "problem collecting results")
 			}
 		case <-flushTimer.C:
-			return errors.Wrap(flusher(), "problem flushing results at the end of the file")
+			if err := flusher(); err != nil {
+				return errors.Wrap(err, "problem flushing results at the end of the file")
+			}
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package ftdc
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/tychoish/birch"
@@ -123,6 +124,6 @@ func extractDelta(current *birch.Value, previous *birch.Value) (int64, error) {
 	case bsontype.Int64:
 		return current.Int64() - previous.Int64(), nil
 	default:
-		return 0, fmt.Errorsf("invalid type %s", current.Type())
+		return 0, fmt.Errorf("invalid type %s", current.Type())
 	}
 }

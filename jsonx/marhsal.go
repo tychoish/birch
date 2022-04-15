@@ -76,7 +76,7 @@ func (v *Value) MarshalJSON() ([]byte, error) {
 		case float64, float32:
 			return []byte(fmt.Sprintf(`%f`, v.value)), nil
 		default:
-			return nil, fmt.Errorsf("unsupported number type %T", v.value)
+			return nil, fmt.Errorf("unsupported number type %T", v.value)
 		}
 	case Null:
 		return []byte("null"), nil
@@ -88,16 +88,16 @@ func (v *Value) MarshalJSON() ([]byte, error) {
 			}
 			return []byte("false"), nil
 		default:
-			return nil, fmt.Errorsf("unsupported bool type %T", bv)
+			return nil, fmt.Errorf("unsupported bool type %T", bv)
 		}
 	case ArrayValue, ObjectValue:
 		switch obj := v.value.(type) {
 		case json.Marshaler:
 			return obj.MarshalJSON()
 		default:
-			return nil, fmt.Errorsf("unsupported object value type %T", obj)
+			return nil, fmt.Errorf("unsupported object value type %T", obj)
 		}
 	default:
-		return nil, fmt.Errorsf("unknown type=%s", v.t)
+		return nil, fmt.Errorf("unknown type=%s", v.t)
 	}
 }

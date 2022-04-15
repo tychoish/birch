@@ -6,6 +6,7 @@ import (
 	"compress/zlib"
 	"context"
 	"encoding/binary"
+	"fmt"
 	"io"
 
 	"github.com/pkg/errors"
@@ -95,7 +96,7 @@ func readChunks(ctx context.Context, ch <-chan *birch.Document, o chan<- *Chunk)
 		// source document (metrics) and the number the file
 		// reports don't equal, it's probably corrupt.
 		if nmetrics != len(metrics) {
-			return fmt.Errorsf("metrics mismatch, file likely corrupt Expected %d, got %d", nmetrics, len(metrics))
+			return fmt.Errorf("metrics mismatch, file likely corrupt Expected %d, got %d", nmetrics, len(metrics))
 		}
 
 		// now go back and populate the delta numbers

@@ -2,6 +2,7 @@ package mongowire
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/mrpc/model"
@@ -231,7 +232,7 @@ func (h *MessageHeader) parseMsgBody(body []byte) (Message, error) {
 			}
 			msg.Items = append(msg.Items, section)
 		default:
-			return nil, fmt.Errorsf("unrecognized kind bit %d", kind)
+			return nil, fmt.Errorf("unrecognized kind bit %d", kind)
 		}
 	}
 

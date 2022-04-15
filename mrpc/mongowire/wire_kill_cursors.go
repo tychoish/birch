@@ -1,6 +1,10 @@
 package mongowire
 
-import "github.com/pkg/errors"
+import (
+	"fmt"
+
+	"github.com/pkg/errors"
+)
 
 func NewKillCursors(ids ...int64) Message {
 	return &killCursorsMessage{
@@ -55,7 +59,7 @@ func (h *MessageHeader) parseKillCursorsMessage(buf []byte) (Message, error) {
 	loc += 4
 
 	if len(buf[loc:]) < int(m.NumCursors)*8 {
-		return nil, fmt.Errorsf("invalid kill cursors message -- NumCursors = %d is larger than number of cursors in message", m.NumCursors)
+		return nil, fmt.Errorf("invalid kill cursors message -- NumCursors = %d is larger than number of cursors in message", m.NumCursors)
 	}
 
 	m.CursorIds = make([]int64, int(m.NumCursors))
