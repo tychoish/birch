@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch/jsonx"
 	"github.com/tychoish/birch/types"
 )
@@ -226,7 +227,7 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 
 			oidp, err := types.ObjectIDFromHex(oid)
 			if err != nil {
-				return nil, errors.Wrapf(err, "problem parsing oid from dbref at %s", in.Key())
+				return nil, fmt.Errorf("problem parsing oid from dbref at %q: %w", in.Key(), err)
 			}
 
 			return EC.DBPointer(in.Key(), ns, oidp), nil

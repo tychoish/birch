@@ -1,6 +1,6 @@
 package bsonerr
 
-import "github.com/pkg/errors"
+import "errors"
 
 // NilReader indicates that an operation was attempted on a nil bson.Reader.
 var NilReader = errors.New("nil reader")

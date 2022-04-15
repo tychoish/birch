@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch"
 )
 

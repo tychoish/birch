@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch/jsonx/internal"
 )
 
@@ -115,7 +116,7 @@ func getValueForResult(value internal.Result) (*Value, error) {
 		value.ForEach(func(key, value internal.Result) bool {
 			val, err := getValueForResult(value)
 			if err != nil {
-				err = errors.Wrapf(err, "problem with subdocument at key %s", key.Str)
+				err = fmt.Errorf("problem with subdocument at key %q: %w", key.Str, err)
 				return false
 			}
 			doc.Append(EC.Value(key.Str, val))

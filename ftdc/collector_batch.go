@@ -2,8 +2,6 @@ package ftdc
 
 import (
 	"bytes"
-
-	"github.com/pkg/errors"
 )
 
 type batchCollector struct {
@@ -45,7 +43,7 @@ func (c *batchCollector) Reset() {
 }
 
 func (c *batchCollector) SetMetadata(in interface{}) error {
-	return errors.WithStack(c.chunks[0].SetMetadata(in))
+	return (c.chunks[0].SetMetadata(in))
 }
 
 func (c *batchCollector) Add(in interface{}) error {
@@ -60,7 +58,7 @@ func (c *batchCollector) Add(in interface{}) error {
 		c.chunks = append(c.chunks, last)
 	}
 
-	return errors.WithStack(last.Add(doc))
+	return (last.Add(doc))
 }
 
 func (c *batchCollector) Resolve() ([]byte, error) {

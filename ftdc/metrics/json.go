@@ -9,8 +9,9 @@ import (
 	"os"
 	"time"
 
+	"errors"
+
 	"github.com/papertrail/go-tail/follower"
-	"github.com/pkg/errors"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc"
 	"github.com/tychoish/birch/jsonx"

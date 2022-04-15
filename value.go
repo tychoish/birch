@@ -11,7 +11,8 @@ import (
 	"math"
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/types"
@@ -205,20 +206,20 @@ func (v *Value) validate(sizeOnly bool) (uint32, error) {
 	case '\x06', '\x0A', '\xFF', '\x7F':
 	case '\x01':
 		if int(v.offset+8) > len(v.data) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		total += 8
 	case '\x02', '\x0D', '\x0E':
 		if int(v.offset+4) > len(v.data) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		l := readi32(v.data[v.offset : v.offset+4])
 		total += 4
 
 		if int32(v.offset)+4+l > int32(len(v.data)) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 		// We check if the value that is the last element of the string is a
 		// null terminator. We take the value offset, add 4 to account for the
@@ -242,7 +243,7 @@ func (v *Value) validate(sizeOnly bool) (uint32, error) {
 		}
 
 		if int(v.offset+4) > len(v.data) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		l := readi32(v.data[v.offset : v.offset+4])
@@ -253,7 +254,7 @@ func (v *Value) validate(sizeOnly bool) (uint32, error) {
 		}
 
 		if int32(v.offset)+l > int32(len(v.data)) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		if !sizeOnly {
@@ -281,7 +282,7 @@ func (v *Value) validate(sizeOnly bool) (uint32, error) {
 		}
 
 		if int(v.offset+4) > len(v.data) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		l := readi32(v.data[v.offset : v.offset+4])
@@ -292,7 +293,7 @@ func (v *Value) validate(sizeOnly bool) (uint32, error) {
 		}
 
 		if int32(v.offset)+l > int32(len(v.data)) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		if !sizeOnly {
@@ -309,7 +310,7 @@ func (v *Value) validate(sizeOnly bool) (uint32, error) {
 		total += uint32(l) - 4
 	case '\x05':
 		if int(v.offset+5) > len(v.data) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		l := readi32(v.data[v.offset : v.offset+4])
@@ -320,19 +321,19 @@ func (v *Value) validate(sizeOnly bool) (uint32, error) {
 		}
 
 		if int32(v.offset)+5+l > int32(len(v.data)) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		total += uint32(l)
 	case '\x07':
 		if int(v.offset+12) > len(v.data) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		total += 12
 	case '\x08':
 		if int(v.offset+1) > len(v.data) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 		total++
 
@@ -341,7 +342,7 @@ func (v *Value) validate(sizeOnly bool) (uint32, error) {
 		}
 	case '\x09':
 		if int(v.offset+8) > len(v.data) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		total += 8
@@ -367,14 +368,14 @@ func (v *Value) validate(sizeOnly bool) (uint32, error) {
 		total++
 	case '\x0C':
 		if int(v.offset+4) > len(v.data) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		l := readi32(v.data[v.offset : v.offset+4])
 		total += 4
 
 		if int32(v.offset)+4+l+12 > int32(len(v.data)) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		total += uint32(l) + 12
@@ -386,14 +387,14 @@ func (v *Value) validate(sizeOnly bool) (uint32, error) {
 			// Because of that we don't check the length here and just validate
 			// the string and the document.
 			if int(v.offset+8) > len(v.data) {
-				return total, newErrTooSmall()
+				return total, errTooSmall
 			}
 
 			total += 8
 			sLength := readi32(v.data[v.offset+4 : v.offset+8])
 
 			if int(sLength) > len(v.data)+8 {
-				return total, newErrTooSmall()
+				return total, errTooSmall
 			}
 
 			total += uint32(sLength)
@@ -413,14 +414,14 @@ func (v *Value) validate(sizeOnly bool) (uint32, error) {
 		}
 
 		if int(v.offset+4) > len(v.data) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		l := readi32(v.data[v.offset : v.offset+4])
 		total += 4
 
 		if int32(v.offset)+l > int32(len(v.data)) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		if !sizeOnly {
@@ -457,19 +458,19 @@ func (v *Value) validate(sizeOnly bool) (uint32, error) {
 		total += uint32(l) - 4
 	case '\x10':
 		if int(v.offset+4) > len(v.data) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		total += 4
 	case '\x11', '\x12':
 		if int(v.offset+8) > len(v.data) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		total += 8
 	case '\x13':
 		if int(v.offset+16) > len(v.data) {
-			return total, newErrTooSmall()
+			return total, errTooSmall
 		}
 
 		total += 16

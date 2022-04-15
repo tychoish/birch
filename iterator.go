@@ -70,7 +70,7 @@ func newReaderIterator(r Reader) (*readerIterator, error) {
 	itr := new(readerIterator)
 
 	if len(r) < 5 {
-		return nil, newErrTooSmall()
+		return nil, errTooSmall
 	}
 
 	givenLength := readi32(r[0:4])

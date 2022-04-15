@@ -1,7 +1,8 @@
 package bsonerr
 
 import (
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch/bsontype"
 )
 

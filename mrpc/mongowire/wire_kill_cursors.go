@@ -3,7 +3,7 @@ package mongowire
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
+	"errors"
 )
 
 func NewKillCursors(ids ...int64) Message {

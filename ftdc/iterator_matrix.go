@@ -5,7 +5,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/ftdc/util"

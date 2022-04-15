@@ -5,7 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch/ftdc"
 )
 

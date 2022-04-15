@@ -3,7 +3,8 @@ package shell
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch"
 )
 

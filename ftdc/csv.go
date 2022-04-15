@@ -9,7 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
 )

@@ -571,7 +571,7 @@ func (d *Document) writeByteSlice(start uint, size uint32, b []byte) (int64, err
 	pos := start
 
 	if len(b) < int(start)+int(size) {
-		return 0, newErrTooSmall()
+		return 0, errTooSmall
 	}
 
 	n, err := elements.Int32.Encode(start, b, int32(size))

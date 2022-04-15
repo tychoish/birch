@@ -144,7 +144,7 @@ func (e *Element) writeElement(key bool, start uint, writer interface{}) (int64,
 	case []byte:
 		n, err := e.writeByteSlice(key, start, size, w)
 		if err != nil {
-			return 0, newErrTooSmall()
+			return 0, errTooSmall
 		}
 
 		total += n
@@ -173,7 +173,7 @@ func (e *Element) writeByteSlice(key bool, start uint, size uint32, b []byte) (i
 	}
 
 	if uint(len(b)) < needed {
-		return 0, newErrTooSmall()
+		return 0, errTooSmall
 	}
 
 	var n int

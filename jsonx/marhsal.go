@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/pkg/errors"
+	"errors"
 )
 
 func (d *Document) MarshalJSON() ([]byte, error) {
@@ -24,7 +24,7 @@ func (d *Document) MarshalJSON() ([]byte, error) {
 
 		val, err := elem.value.MarshalJSON()
 		if err != nil {
-			return nil, errors.Wrapf(err, "problem marshaling value for key %s", elem.key)
+			return nil, fmt.Errorf("problem marshaling value for key %q: %w", elem.key, err)
 		}
 
 		out = append(out, val...)
@@ -50,7 +50,7 @@ func (a *Array) MarshalJSON() ([]byte, error) {
 
 		val, err := elem.MarshalJSON()
 		if err != nil {
-			return nil, errors.Wrapf(err, "problem marshaling array value for index %d", idx)
+			return nil, fmt.Errorf("problem marshaling array value for index %d: %w", idx, err)
 		}
 
 		out = append(out, val...)

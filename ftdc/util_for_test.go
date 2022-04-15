@@ -6,7 +6,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc/testutil"
 )

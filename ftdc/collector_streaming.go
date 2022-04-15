@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pkg/errors"
+	"errors"
 )
 
 type streamingCollector struct {
@@ -116,7 +116,7 @@ func (c *streamingDynamicCollector) Add(in interface{}) error {
 				return err
 			}
 		}
-		return errors.WithStack(c.streamingCollector.Add(doc))
+		return (c.streamingCollector.Add(doc))
 	}
 
 	if c.metricCount != num || c.hash != docHash {
@@ -125,5 +125,5 @@ func (c *streamingDynamicCollector) Add(in interface{}) error {
 		}
 	}
 
-	return errors.WithStack(c.streamingCollector.Add(doc))
+	return (c.streamingCollector.Add(doc))
 }

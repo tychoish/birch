@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch"
 )
 

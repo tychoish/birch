@@ -20,7 +20,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
 )
 
 // ErrInvalidHex indicates that a hex string cannot be converted to an ObjectID.

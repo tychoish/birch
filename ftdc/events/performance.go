@@ -15,7 +15,8 @@ package events
 import (
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch"
 )
 
@@ -109,7 +110,7 @@ func (p *Performance) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return errors.WithStack(iter.Err())
+	return (iter.Err())
 }
 
 func (p *PerformanceCounters) UnmarshalDocument(doc *birch.Document) error {
@@ -128,7 +129,7 @@ func (p *PerformanceCounters) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return errors.WithStack(iter.Err())
+	return (iter.Err())
 }
 
 func (p *PerformanceTimers) UnmarshalDocument(doc *birch.Document) error {
@@ -143,7 +144,7 @@ func (p *PerformanceTimers) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return errors.WithStack(iter.Err())
+	return (iter.Err())
 }
 
 func (p *PerformanceGauges) UnmarshalDocument(doc *birch.Document) error {
@@ -160,7 +161,7 @@ func (p *PerformanceGauges) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return errors.WithStack(iter.Err())
+	return (iter.Err())
 }
 
 // Add combines the values of the input Performance struct into this struct,

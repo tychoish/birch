@@ -3,7 +3,8 @@ package events
 import (
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch/ftdc"
 )
 
@@ -50,7 +51,7 @@ func (r *singleStream) EndIteration(dur time.Duration) {
 
 func (r *singleStream) EndTest() error {
 	r.point.setTimestamp(r.started)
-	err := errors.WithStack(r.collector.Add(r.point))
+	err := (r.collector.Add(r.point))
 	r.Reset()
 	return err
 }

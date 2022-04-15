@@ -7,7 +7,8 @@ import (
 	"io"
 	"net"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch/mrpc/mongowire"
 	"github.com/tychoish/grip"
 	"github.com/tychoish/grip/message"
@@ -39,7 +40,7 @@ func NewBasicService(host string, port int) Service {
 func (s *basicService) Address() string { return s.addr }
 
 func (s *basicService) RegisterOperation(scope *mongowire.OpScope, h HandlerFunc) error {
-	return errors.WithStack(s.registry.Add(*scope, h))
+	return (s.registry.Add(*scope, h))
 }
 
 func (s *basicService) Run(ctx context.Context) error {

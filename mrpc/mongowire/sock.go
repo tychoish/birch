@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pkg/errors"
+	"errors"
 )
 
 const MaxInt32 = 2147483647
@@ -31,10 +31,10 @@ func ReadMessage(ctx context.Context, reader io.Reader) (Message, error) {
 	}()
 	select {
 	case <-ctx.Done():
-		return nil, errors.WithStack(ctx.Err())
+		return nil, (ctx.Err())
 	case res := <-readFinished:
 		if res.err != nil {
-			return nil, errors.WithStack(res.err)
+			return nil, (res.err)
 		}
 		if res.n != 4 {
 			return nil, fmt.Errorf("didn't read message size from socket, got %d", res.n)
@@ -67,14 +67,14 @@ func ReadMessage(ctx context.Context, reader io.Reader) (Message, error) {
 		}()
 		select {
 		case <-ctx.Done():
-			return nil, errors.WithStack(ctx.Err())
+			return nil, (ctx.Err())
 		case res := <-readFinished:
 			if res.err == io.EOF {
 				read = int(header.Size - 4)
 				break
 			}
 			if res.err != nil {
-				return nil, errors.WithStack(res.err)
+				return nil, (res.err)
 			}
 			if res.n == 0 {
 				break
@@ -114,10 +114,10 @@ func SendMessage(ctx context.Context, m Message, writer io.Writer) error {
 		}()
 		select {
 		case <-ctx.Done():
-			return errors.WithStack(ctx.Err())
+			return (ctx.Err())
 		case res := <-writeFinished:
 			if res.err != nil {
-				return errors.Wrap(res.err, "error writing message to client")
+				return fmt.Errorf("error writing message to client: %w", res.err)
 			}
 			if res.n == len(buf) {
 				return nil

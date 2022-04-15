@@ -2,8 +2,6 @@ package ftdc
 
 import (
 	"bytes"
-
-	"github.com/pkg/errors"
 )
 
 type dynamicCollector struct {
@@ -46,7 +44,7 @@ func (c *dynamicCollector) Reset() {
 }
 
 func (c *dynamicCollector) SetMetadata(in interface{}) error {
-	return errors.WithStack(c.chunks[0].SetMetadata(in))
+	return (c.chunks[0].SetMetadata(in))
 }
 
 func (c *dynamicCollector) Add(in interface{}) error {
@@ -59,20 +57,20 @@ func (c *dynamicCollector) Add(in interface{}) error {
 		docHash, num := metricKeyHash(doc)
 		c.hash = docHash
 		c.currentNum = num
-		return errors.WithStack(c.chunks[0].Add(doc))
+		return (c.chunks[0].Add(doc))
 	}
 
 	lastChunk := c.chunks[len(c.chunks)-1]
 
 	docHash, _ := metricKeyHash(doc)
 	if c.hash == docHash {
-		return errors.WithStack(lastChunk.Add(doc))
+		return (lastChunk.Add(doc))
 	}
 
 	chunk := newBatchCollector(c.maxSamples)
 	c.chunks = append(c.chunks, chunk)
 
-	return errors.WithStack(chunk.Add(doc))
+	return (chunk.Add(doc))
 }
 
 func (c *dynamicCollector) Resolve() ([]byte, error) {

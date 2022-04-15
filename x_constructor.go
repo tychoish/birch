@@ -1,7 +1,7 @@
 package birch
 
 import (
-	"errors"
+	"fmt"
 	"io"
 	"math"
 	"time"
@@ -528,7 +528,7 @@ func (DocumentConstructor) InterfaceErr(value interface{}) (*Document, error) {
 	case Marshaler:
 		return DC.MarshalerErr(t)
 	default:
-		return nil, errors.Errorf("value '%s' is of type '%T' which is not convertable to a document.", t, t)
+		return nil, fmt.Errorf("value '%s' is of type '%T' which is not convertable to a document.", t, t)
 	}
 }
 

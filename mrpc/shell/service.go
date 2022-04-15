@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch/mrpc"
 	"github.com/tychoish/birch/mrpc/mongowire"
 )

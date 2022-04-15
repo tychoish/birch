@@ -2,8 +2,6 @@ package ftdc
 
 import (
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 type samplingCollector struct {
@@ -30,5 +28,5 @@ func (c *samplingCollector) Add(d interface{}) error {
 
 	c.lastCollection = time.Now()
 
-	return errors.WithStack(c.Collector.Add(d))
+	return (c.Collector.Add(d))
 }

@@ -38,7 +38,7 @@ func BenchmarkReaderValidate(b *testing.B) {
 func TestReader(t *testing.T) {
 	t.Run("Validate", func(t *testing.T) {
 		t.Run("TooShort", func(t *testing.T) {
-			want := newErrTooSmall()
+			want := errTooSmall
 			_, got := Reader{'\x00', '\x00'}.Validate()
 			if !IsTooSmall(got) {
 				t.Errorf("Did not get expected error. got %v; want %v", got, want)
@@ -74,7 +74,7 @@ func TestReader(t *testing.T) {
 			}
 		})
 		t.Run("validateValue-error", func(t *testing.T) {
-			want := newErrTooSmall()
+			want := errTooSmall
 			r := make(Reader, 11)
 			binary.LittleEndian.PutUint32(r[0:4], 11)
 			r[4], r[5], r[6], r[7], r[8], r[9], r[10] = '\x01', 'f', 'o', 'o', '\x00', '\x01', '\x02'
@@ -183,7 +183,7 @@ func TestReader(t *testing.T) {
 					'\x0B', '\x00', '\x00', '\x00', '\x01', '1', '\x00',
 					'\x0A', '2', '\x00', '\x00', '\x00',
 				},
-				nil, newErrTooSmall(), true,
+				nil, errTooSmall, true,
 			},
 			{"invalid-array",
 				Reader{
@@ -193,7 +193,7 @@ func TestReader(t *testing.T) {
 					'\x0B', '\x00', '\x00', '\x00', '\x01', '1', '\x00',
 					'\x0A', '2', '\x00', '\x00', '\x00',
 				},
-				nil, newErrTooSmall(), true,
+				nil, errTooSmall, true,
 			},
 		}
 
@@ -226,7 +226,7 @@ func TestReader(t *testing.T) {
 			}
 			_, err := rdr.RecursiveLookup("x", "y")
 			if !IsTooSmall(err) {
-				t.Errorf("Empty key lookup did not return expected result. got %v; want %v", err, newErrTooSmall())
+				t.Errorf("Empty key lookup did not return expected result. got %v; want %v", err, errTooSmall)
 			}
 		})
 		t.Run("corrupted-array", func(t *testing.T) {
@@ -240,7 +240,7 @@ func TestReader(t *testing.T) {
 			}
 			_, err := rdr.RecursiveLookup("x", "y")
 			if !IsTooSmall(err) {
-				t.Errorf("Empty key lookup did not return expected result. got %v; want %v", err, newErrTooSmall())
+				t.Errorf("Empty key lookup did not return expected result. got %v; want %v", err, errTooSmall)
 			}
 		})
 		t.Run("invalid-traversal", func(t *testing.T) {
@@ -357,14 +357,14 @@ func TestReader(t *testing.T) {
 			{
 				"nil reader",
 				nil,
-				newErrTooSmall(),
+				errTooSmall,
 				nil,
 				nil,
 			},
 			{
 				"empty reader",
 				[]byte{},
-				newErrTooSmall(),
+				errTooSmall,
 				nil,
 				nil,
 			},

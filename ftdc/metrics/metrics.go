@@ -11,7 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc"
 	"github.com/tychoish/emt"
@@ -215,7 +216,7 @@ func CollectRuntime(ctx context.Context, opts CollectOptions) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return errors.WithStack(flusher())
+			return (flusher())
 		case <-collectTimer.C:
 			if err := collector.Add(opts.generate(ctx, collectCount)); err != nil {
 				return fmt.Errorf("problem collecting results: %w", err)
