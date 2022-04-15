@@ -3,9 +3,8 @@ package events
 import (
 	"time"
 
-	"github.com/cdr/grip"
 	"github.com/tychoish/birch/ftdc"
-	"github.com/pkg/errors"
+	"github.com/tychoish/emt"
 )
 
 type groupStream struct {
@@ -14,7 +13,7 @@ type groupStream struct {
 	interval      time.Duration
 	point         *Performance
 	collector     ftdc.Collector
-	catcher       grip.Catcher
+	catcher       emt.Catcher
 }
 
 // NewGroupedRecorder blends the single and the interval recorders, but it
@@ -27,7 +26,7 @@ func NewGroupedRecorder(collector ftdc.Collector, interval time.Duration) Record
 	return &groupStream{
 		collector:     collector,
 		point:         &Performance{Timestamp: time.Time{}},
-		catcher:       grip.NewCatcher(),
+		catcher:       emt.NewCatcher(),
 		interval:      interval,
 		lastCollected: time.Now(),
 	}
@@ -67,11 +66,11 @@ func (r *groupStream) EndTest() error {
 	}
 	err := r.catcher.Resolve()
 	r.Reset()
-	return errors.WithStack(err)
+	return err
 }
 
 func (r *groupStream) Reset() {
-	r.catcher = grip.NewCatcher()
+	r.catcher = emt.NewCatcher()
 	r.point = &Performance{
 		Gauges: r.point.Gauges,
 	}

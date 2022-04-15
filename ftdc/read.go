@@ -8,9 +8,9 @@ import (
 	"encoding/binary"
 	"io"
 
+	"github.com/pkg/errors"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
-	"github.com/pkg/errors"
 )
 
 func readDiagnostic(ctx context.Context, f io.Reader, ch chan<- *birch.Document) error {
@@ -95,7 +95,7 @@ func readChunks(ctx context.Context, ch <-chan *birch.Document, o chan<- *Chunk)
 		// source document (metrics) and the number the file
 		// reports don't equal, it's probably corrupt.
 		if nmetrics != len(metrics) {
-			return errors.Errorf("metrics mismatch, file likely corrupt Expected %d, got %d", nmetrics, len(metrics))
+			return fmt.Errorsf("metrics mismatch, file likely corrupt Expected %d, got %d", nmetrics, len(metrics))
 		}
 
 		// now go back and populate the delta numbers

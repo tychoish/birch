@@ -12,8 +12,6 @@ package types
 import (
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // Decimal128 holds decimal128 BSON values.
@@ -149,7 +147,7 @@ var dPosInf = Decimal128{0x1E << 58, 0}
 var dNegInf = Decimal128{0x3E << 58, 0}
 
 func dErr(s string) (Decimal128, error) {
-	return dNaN, errors.Errorf("cannot parse %q as a decimal128", s)
+	return dNaN, fmt.Errorsf("cannot parse %q as a decimal128", s)
 }
 
 //ParseDecimal128 takes the given string and attempts to parse it into a valid

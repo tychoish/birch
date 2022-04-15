@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cdr/grip"
+	"github.com/tychoish/grip"
 )
 
 type result struct {

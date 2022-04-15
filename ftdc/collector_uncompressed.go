@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch"
 )
 
 // NewUncompressedCollectorJSON constructs a collector that resolves
@@ -158,7 +158,7 @@ func (c *uncompressedCollector) Info() CollectorInfo {
 func (c *uncompressedCollector) SetMetadata(in interface{}) error {
 	doc, err := readDocument(in)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	c.metadata = doc
@@ -168,7 +168,7 @@ func (c *uncompressedCollector) SetMetadata(in interface{}) error {
 func (c *uncompressedCollector) Add(in interface{}) error {
 	doc, err := readDocument(in)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	if c.metricCount == 0 {
@@ -196,13 +196,13 @@ func (c *uncompressedCollector) Resolve() ([]byte, error) {
 
 	if c.metadata != nil {
 		if err := c.marshalWrite(buf, c.metadata); err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 	}
 
 	for _, sample := range c.samples {
 		if err := c.marshalWrite(buf, sample); err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 	}
 
@@ -215,19 +215,19 @@ func (c *uncompressedCollector) marshalWrite(buf io.Writer, doc *birch.Document)
 		return errors.New("collector export format is not configured")
 	case c.exportBSON:
 		_, err := doc.WriteTo(buf)
-		return errors.WithStack(err)
+		return err
 	case c.exportJSON:
 		data, err := doc.MarshalJSON()
 		if err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 
 		if _, err = buf.Write(data); err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 
 		if _, err = buf.Write([]byte("\n")); err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 		return nil
 	default:

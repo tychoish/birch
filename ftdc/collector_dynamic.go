@@ -52,7 +52,7 @@ func (c *dynamicCollector) SetMetadata(in interface{}) error {
 func (c *dynamicCollector) Add(in interface{}) error {
 	doc, err := readDocument(in)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	if c.hash == "" {
@@ -80,7 +80,7 @@ func (c *dynamicCollector) Resolve() ([]byte, error) {
 	for _, chunk := range c.chunks {
 		out, err := chunk.Resolve()
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		_, _ = buf.Write(out)

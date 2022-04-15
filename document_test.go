@@ -14,10 +14,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tychoish/birch/bsonerr"
-	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tychoish/birch/bsonerr"
 )
 
 func TestDocument(t *testing.T) {
@@ -84,9 +83,6 @@ func TestDocument(t *testing.T) {
 					t.Errorf("Did not get expected error. got %#v; want %#v", err, tc.err)
 				}
 				require.Equal(t, tc.want, got)
-				// if diff := cmp.Diff(got, tc.want, cmp.AllowUnexported(Document{})); diff != "" {
-				// 	t.Errorf("Documents differ: (-got +want)\n%s", diff)
-				// }
 			})
 		}
 	})
@@ -171,9 +167,6 @@ func TestDocument(t *testing.T) {
 				got.IgnoreNilInsert = true
 				got.Append(nil)
 				require.Equal(t, want, got)
-				// if diff := cmp.Diff(got, want, cmp.AllowUnexported(Document{})); diff != "" {
-				// 	t.Errorf("Documents differ: (-got +want)\n%s", diff)
-				// }
 			}()
 		})
 		testCases := []struct {
@@ -220,10 +213,6 @@ func TestDocument(t *testing.T) {
 							t.Errorf("Did not received expected error from panic. got %#v; want %#v", r, bsonerr.NilElement)
 						}
 						require.Equal(t, tc.want, got)
-
-						// if diff := cmp.Diff(got, tc.want, cmp.AllowUnexported(Document{})); diff != "" {
-						// 	t.Errorf("Documents differ: (-got +want)\n%s", diff)
-						// }
 					}()
 					got = NewDocument()
 					got.Prepend(tc.elems...)
@@ -253,9 +242,6 @@ func TestDocument(t *testing.T) {
 						}
 						require.Equal(t, tc.want, got)
 
-						// if diff := cmp.Diff(got, tc.want, cmp.AllowUnexported(Document{})); diff != "" {
-						// 	t.Errorf("Documents differ: (-got +want)\n%s", diff)
-						// }
 					}()
 					got = NewDocument()
 					got.IgnoreNilInsert = true
@@ -360,9 +346,6 @@ func TestDocument(t *testing.T) {
 						}
 
 						require.Equal(t, tc.want, got)
-						// if diff := cmp.Diff(got, tc.want, cmp.AllowUnexported(Document{})); diff != "" {
-						// 	t.Errorf("Documents differ: (-got +want)\n%s", diff)
-						// }
 					}()
 					got = NewDocument()
 					got.Set(tc.elem)
@@ -392,9 +375,6 @@ func TestDocument(t *testing.T) {
 						}
 
 						require.Equal(t, tc.want, got)
-						// if diff := cmp.Diff(got, tc.want, cmp.AllowUnexported(Document{})); diff != "" {
-						// 	t.Errorf("Documents differ: (-got +want)\n%s", diff)
-						// }
 					}()
 					got = NewDocument()
 					got.IgnoreNilInsert = true
@@ -439,9 +419,6 @@ func TestDocument(t *testing.T) {
 				got := tc.d.Set(tc.elem)
 
 				require.Equal(t, tc.want, got)
-				// if diff := cmp.Diff(got, tc.want, cmp.AllowUnexported(Document{}, Element{}, Value{})); diff != "" {
-				// 	t.Errorf("Documents differ: (-got +want)\n%s", diff)
-				// }
 			})
 		}
 	})
@@ -579,9 +556,6 @@ func TestDocument(t *testing.T) {
 				}
 
 				require.Equal(t, tc.want, got)
-				// if diff := cmp.Diff(got, tc.want, cmp.AllowUnexported(Element{}, Value{})); diff != "" {
-				// 	t.Errorf("Documents differ: (-got +want)\n%s", diff)
-				// }
 			})
 		}
 	})
@@ -606,10 +580,6 @@ func TestDocument(t *testing.T) {
 		d.Reset()
 		wantSlc := make([]*Element, 5)
 		require.Equal(t, wantSlc, gotSlc)
-		// if diff := cmp.Diff(gotSlc, wantSlc, cmp.AllowUnexported(Element{})); diff != "" {
-		// 	t.Error("Pointers to elements should be cleared on Reset.")
-		// 	t.Errorf("Element slices differ: (-got +want)\n%s", diff)
-		// }
 		if len(d.elems) != 0 {
 			t.Errorf("Expected length of elements slice to be 0. got %d; want %d", len(d.elems), 0)
 		}
@@ -640,9 +610,6 @@ func TestDocument(t *testing.T) {
 				}
 				require.Equal(t, tc.want, buf.Bytes())
 
-				// if diff := cmp.Diff(buf.Bytes(), tc.want); diff != "" {
-				// 	t.Errorf("Written bytes differ: (-got +want)\n%s", diff)
-				// }
 			})
 		}
 	})
@@ -695,9 +662,6 @@ func TestDocument(t *testing.T) {
 			}
 			require.Equal(t, tc.want, b)
 
-			// if diff := cmp.Diff(b, tc.want); diff != "" {
-			// 	t.Errorf("Written bytes differ: (-got +want)\n%s", diff)
-			// }
 		}
 	})
 	t.Run("MarshalBSON", func(t *testing.T) {})
@@ -727,11 +691,9 @@ func TestDocument(t *testing.T) {
 				t.Errorf("Expected error not returned. got %s; want %s", err, tc.err)
 			}
 
-			if diff := cmp.Diff(d, tc.want, cmp.Comparer(documentComparer)); diff != "" {
-				t.Errorf("Documents differ: (-got +want)\n%s", diff)
-				t.Errorf("\n%#v\n%#v", d, tc.want)
+			if documentComparer(d, tc.want) {
+				t.Errorf("documents are not equal: a=%q, b=%q", d.String(), tc.want.String())
 			}
-
 		}
 	})
 	t.Run("ReadFrom", func(t *testing.T) {

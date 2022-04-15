@@ -3,9 +3,9 @@ package birch
 import (
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/tychoish/birch/jsonx"
 	"github.com/tychoish/birch/types"
-	"github.com/pkg/errors"
 )
 
 // UnmarshalJSON converts the contents of a document to JSON
@@ -18,13 +18,13 @@ import (
 func (d *Document) UnmarshalJSON(in []byte) error {
 	jdoc, err := jsonx.DC.BytesErr(in)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 	iter := jdoc.Iterator()
 	for iter.Next() {
 		elem, err := convertJSONElements(iter.Element())
 		if err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 
 		d.Append(elem)
@@ -36,13 +36,13 @@ func (d *Document) UnmarshalJSON(in []byte) error {
 func (a *Array) UnmarshalJSON(in []byte) error {
 	ja, err := jsonx.AC.BytesErr(in)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 	iter := ja.Iterator()
 	for iter.Next() {
 		elem, err := convertJSONElements(iter.Element())
 		if err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 
 		a.Append(elem.value)
@@ -54,12 +54,12 @@ func (a *Array) UnmarshalJSON(in []byte) error {
 func (v *Value) UnmarshalJSON(in []byte) error {
 	va, err := jsonx.VC.BytesErr(in)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	elem, err := convertJSONElements(jsonx.EC.Value("", va))
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 	v.Set(elem.Value())
 	return nil
@@ -72,7 +72,7 @@ func (DocumentConstructor) JSONXErr(jd *jsonx.Document) (*Document, error) {
 	for iter.Next() {
 		elem, err := convertJSONElements(iter.Element())
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		d.Append(elem)
@@ -131,7 +131,7 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 		case "$numberDecimal":
 			val, err := types.ParseDecimal128(indoc.ElementAtIndex(0).Value().StringValue())
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 
 			return EC.Decimal128(in.Key(), val), nil
@@ -156,13 +156,13 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 				case "t":
 					val, ok = elem.Value().IntOK()
 					if !ok {
-						return nil, errors.Errorf("problem decoding number for timestamp at %s [%T]", in.Key(), elem.Value().Interface())
+						return nil, fmt.Errorsf("problem decoding number for timestamp at %s [%T]", in.Key(), elem.Value().Interface())
 					}
 					t = int64(val)
 				case "i":
 					val, ok = elem.Value().IntOK()
 					if !ok {
-						return nil, errors.Errorf("problem decoding number for timestamp at %s [%T]", in.Key(), elem.Value().Interface())
+						return nil, fmt.Errorsf("problem decoding number for timestamp at %s [%T]", in.Key(), elem.Value().Interface())
 					}
 					i = int64(val)
 				}
@@ -183,12 +183,12 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 			} else if second == "$scope" {
 				scope, err := convertJSONElements(indoc.ElementAtIndex(1))
 				if err != nil {
-					return nil, errors.WithStack(err)
+					return nil, err
 				}
 
 				return EC.CodeWithScope(in.Key(), js, scope.Value().MutableDocument()), nil
 			} else {
-				return nil, errors.Errorf("invalid key '%s' in code with scope for %s", second, in.Key())
+				return nil, fmt.Errorsf("invalid key '%s' in code with scope for %s", second, in.Key())
 			}
 		case "$dbPointer":
 			var (
@@ -209,12 +209,12 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 				case "$ref":
 					ns, ok = elem.Value().StringValueOK()
 					if !ok {
-						return nil, errors.Errorf("problem decoding ns for dbref in %s", in.Key())
+						return nil, fmt.Errorsf("problem decoding ns for dbref in %s", in.Key())
 					}
 				case "$id":
 					oid, ok = elem.Value().StringValueOK()
 					if !ok {
-						return nil, errors.Errorf("problem decoding ns for oid in %s", in.Key())
+						return nil, fmt.Errorsf("problem decoding ns for oid in %s", in.Key())
 					}
 				}
 				count++
@@ -248,12 +248,12 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 				case "pattern":
 					pattern, ok = elem.Value().StringValueOK()
 					if !ok {
-						return nil, errors.Errorf("problem decoding ns for dbref in %s", in.Key())
+						return nil, fmt.Errorsf("problem decoding ns for dbref in %s", in.Key())
 					}
 				case "options":
 					options, ok = elem.Value().StringValueOK()
 					if !ok {
-						return nil, errors.Errorf("problem decoding ns for oid in %s", in.Key())
+						return nil, fmt.Errorsf("problem decoding ns for oid in %s", in.Key())
 					}
 				}
 				count++
@@ -263,13 +263,13 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 		case "$date":
 			date, err := time.Parse(time.RFC3339, indoc.ElementAtIndex(0).Value().StringValue())
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 			return EC.Time(in.Key(), date), nil
 		case "$oid":
 			oid, err := types.ObjectIDFromHex(indoc.ElementAtIndex(0).Value().StringValue())
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 
 			return EC.ObjectID(in.Key(), oid), nil
@@ -284,7 +284,7 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 			for iter.Next() {
 				elem, err := convertJSONElements(iter.Element())
 				if err != nil {
-					return nil, errors.WithStack(err)
+					return nil, err
 				}
 
 				doc.Append(elem)
@@ -299,13 +299,13 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 		for iter.Next() {
 			elem, err := convertJSONElements(iter.Element())
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 
 			array.Append(elem.value)
 		}
 		return EC.Array(in.Key(), array), nil
 	default:
-		return nil, errors.Errorf("unknown value type '%s' [%v]", inv.Type(), inv.Interface())
+		return nil, fmt.Errorsf("unknown value type '%s' [%v]", inv.Type(), inv.Interface())
 	}
 }

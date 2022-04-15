@@ -5,16 +5,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cdr/grip"
 	"github.com/tychoish/birch/ftdc"
-	"github.com/pkg/errors"
+	"github.com/tychoish/emt"
 )
 
 type intervalStream struct {
 	point     *Performance
 	started   time.Time
 	collector ftdc.Collector
-	catcher   grip.Catcher
+	catcher   emt.Catcher
 	sync.Mutex
 
 	interval time.Duration
@@ -35,7 +34,7 @@ func NewIntervalRecorder(ctx context.Context, collector ftdc.Collector, interval
 		collector: collector,
 		rootCtx:   ctx,
 		point:     &Performance{Timestamp: time.Time{}},
-		catcher:   grip.NewCatcher(),
+		catcher:   emt.NewCatcher(),
 		interval:  interval,
 	}
 }
@@ -116,7 +115,8 @@ func (r *intervalStream) EndTest() error {
 	r.reset()
 
 	r.Unlock()
-	return errors.WithStack(err)
+
+	return err
 }
 
 func (r *intervalStream) Reset() {
@@ -130,7 +130,7 @@ func (r *intervalStream) reset() {
 		r.canceler()
 		r.canceler = nil
 	}
-	r.catcher = grip.NewCatcher()
+	r.catcher = emt.NewCatcher()
 	r.point = &Performance{
 		Gauges: r.point.Gauges,
 	}

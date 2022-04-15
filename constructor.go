@@ -13,7 +13,6 @@ import (
 	"github.com/tychoish/birch/elements"
 	"github.com/tychoish/birch/jsonx"
 	"github.com/tychoish/birch/types"
-	"github.com/pkg/errors"
 )
 
 // EC is a convenience variable provided for access to the ElementConstructor methods.
@@ -210,7 +209,7 @@ func (ElementConstructor) InterfaceErr(key string, value interface{}) (*Element,
 		case t < math.MaxInt32:
 			return EC.Int32(key, int32(t)), nil
 		case uint64(t) > math.MaxInt64:
-			return nil, errors.Errorf("BSON only has signed integer types and %d overflows an int64", t)
+			return nil, fmt.Errorsf("BSON only has signed integer types and %d overflows an int64", t)
 		default:
 			return EC.Int64(key, int64(t)), nil
 		}
@@ -219,7 +218,7 @@ func (ElementConstructor) InterfaceErr(key string, value interface{}) (*Element,
 		case t < math.MaxInt32:
 			return EC.Int32(key, int32(t)), nil
 		case t > math.MaxInt64:
-			return nil, errors.Errorf("BSON only has signed integer types and %d overflows an int64", t)
+			return nil, fmt.Errorsf("BSON only has signed integer types and %d overflows an int64", t)
 		default:
 			return EC.Int64(key, int64(t)), nil
 		}
@@ -246,7 +245,7 @@ func (ElementConstructor) InterfaceErr(key string, value interface{}) (*Element,
 	case Marshaler:
 		return EC.MarshalerErr(key, t)
 	default:
-		return nil, errors.Errorf("Cannot create element for type %T, try using bsoncodec.ConstructElementErr", value)
+		return nil, fmt.Errorsf("Cannot create element for type %T, try using bsoncodec.ConstructElementErr", value)
 	}
 }
 
@@ -652,7 +651,7 @@ func (ElementConstructor) Value(key string, value *Value) *Element {
 func (ElementConstructor) ValueErr(key string, value *Value) (*Element, error) {
 	elem := EC.Value(key, value)
 	if elem == nil {
-		return nil, errors.Errorf("could not convert '%s' value to an element", key)
+		return nil, fmt.Errorsf("could not convert '%s' value to an element", key)
 	}
 
 	return elem, nil

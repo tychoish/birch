@@ -3,16 +3,15 @@ package events
 import (
 	"time"
 
-	"github.com/cdr/grip"
 	"github.com/tychoish/birch/ftdc"
-	"github.com/pkg/errors"
+	"github.com/tychoish/emt"
 )
 
 type histogramStream struct {
 	point     *PerformanceHDR
 	started   time.Time
 	collector ftdc.Collector
-	catcher   grip.Catcher
+	catcher   emt.Catcher
 }
 
 // NewHistogramRecorder collects data and stores them with a histogram format.
@@ -30,7 +29,7 @@ func NewHistogramRecorder(collector ftdc.Collector) Recorder {
 	return &histogramStream{
 		point:     NewHistogramMillisecond(PerformanceGauges{}),
 		collector: collector,
-		catcher:   grip.NewCatcher(),
+		catcher:   emt.NewCatcher(),
 	}
 }
 
@@ -80,11 +79,11 @@ func (r *histogramStream) EndTest() error {
 	}
 	err := r.catcher.Resolve()
 	r.Reset()
-	return errors.WithStack(err)
+	return err
 }
 
 func (r *histogramStream) Reset() {
-	r.catcher = grip.NewCatcher()
+	r.catcher = emt.NewCatcher()
 	r.point = NewHistogramMillisecond(r.point.Gauges)
 	r.started = time.Time{}
 }

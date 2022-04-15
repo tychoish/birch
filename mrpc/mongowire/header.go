@@ -1,9 +1,5 @@
 package mongowire
 
-import (
-	"github.com/pkg/errors"
-)
-
 type MessageHeader struct {
 	Size       int32 // total message size
 	RequestID  int32
@@ -46,8 +42,8 @@ func (h *MessageHeader) Parse(body []byte) (Message, error) {
 	case OP_MSG:
 		m, err = h.parseMsgBody(body)
 	default:
-		return nil, errors.Errorf("unknown op code: %s", h.OpCode)
+		return nil, fmt.Errorsf("unknown op code: %s", h.OpCode)
 	}
 
-	return m, errors.WithStack(err)
+	return m, err
 }

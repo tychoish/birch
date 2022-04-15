@@ -36,7 +36,7 @@ func ReadMessage(ctx context.Context, reader io.Reader) (Message, error) {
 			return nil, errors.WithStack(res.err)
 		}
 		if res.n != 4 {
-			return nil, errors.Errorf("didn't read message size from socket, got %d", res.n)
+			return nil, fmt.Errorsf("didn't read message size from socket, got %d", res.n)
 		}
 	}
 
@@ -44,9 +44,9 @@ func ReadMessage(ctx context.Context, reader io.Reader) (Message, error) {
 	header.Size = readInt32(sizeBuf)
 	if header.Size > int32(200*1024*1024) {
 		if header.Size == 542393671 {
-			return nil, errors.Errorf("message too big, probably http request %d", header.Size)
+			return nil, fmt.Errorsf("message too big, probably http request %d", header.Size)
 		}
-		return nil, errors.Errorf("message too big %d", header.Size)
+		return nil, fmt.Errorsf("message too big %d", header.Size)
 	}
 	if header.Size < 0 || header.Size-4 > MaxInt32 {
 		return nil, errors.New("message header has invalid size")
@@ -85,7 +85,7 @@ func ReadMessage(ctx context.Context, reader io.Reader) (Message, error) {
 
 	buf := restBuf.Bytes()
 	if len(buf) < 12 {
-		return nil, errors.Errorf("invalid message header. either header.Size = %v is shorter than message length, or message is missing RequestId, ResponseTo, or OpCode fields.", header.Size)
+		return nil, fmt.Errorsf("invalid message header. either header.Size = %v is shorter than message length, or message is missing RequestId, ResponseTo, or OpCode fields.", header.Size)
 	}
 	header.RequestID = readInt32(buf)
 	header.ResponseTo = readInt32(buf[4:])

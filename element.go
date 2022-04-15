@@ -14,7 +14,6 @@ import (
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/elements"
-	"github.com/pkg/errors"
 )
 
 // Element represents a BSON element, i.e. key-value pair of a BSON document.
@@ -123,12 +122,12 @@ func (e *Element) KeyOK() (string, bool) {
 func (e *Element) WriteTo(w io.Writer) (int64, error) {
 	val, err := e.MarshalBSON()
 	if err != nil {
-		return 0, errors.WithStack(err)
+		return 0, err
 	}
 
 	n, err := w.Write(val)
 
-	return int64(n), errors.WithStack(err)
+	return int64(n), err
 }
 
 func (e *Element) writeElement(key bool, start uint, writer interface{}) (int64, error) {

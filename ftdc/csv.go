@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
-	"github.com/pkg/errors"
 )
 
 func (c *Chunk) getFieldNames() []string {
@@ -105,7 +105,7 @@ func DumpCSV(ctx context.Context, iter *ChunkIterator, prefix string) error {
 		if writer == nil {
 			writer, err = getCSVFile(prefix, fileCount)
 			if err != nil {
-				return errors.WithStack(err)
+				return err
 			}
 			csvw = csv.NewWriter(writer)
 			fileCount++
@@ -125,7 +125,7 @@ func DumpCSV(ctx context.Context, iter *ChunkIterator, prefix string) error {
 
 			writer, err = getCSVFile(prefix, fileCount)
 			if err != nil {
-				return errors.WithStack(err)
+				return err
 			}
 
 			csvw = csv.NewWriter(writer)
@@ -225,7 +225,7 @@ func ConvertFromCSV(ctx context.Context, bucketSize int, input io.Reader, output
 		}
 
 		if err = collector.Add(birch.NewDocument(elems...)); err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 	}
 }

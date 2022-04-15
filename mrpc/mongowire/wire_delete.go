@@ -1,8 +1,8 @@
 package mongowire
 
 import (
-	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch"
 )
 
 func NewDelete(ns string, flags int32, filter *birch.Document) Message {
@@ -19,7 +19,9 @@ func NewDelete(ns string, flags int32, filter *birch.Document) Message {
 
 func (m *deleteMessage) HasResponse() bool     { return false }
 func (m *deleteMessage) Header() MessageHeader { return m.header }
-func (m *deleteMessage) Scope() *OpScope       { return &OpScope{Type: m.header.OpCode, Context: m.Namespace} }
+func (m *deleteMessage) Scope() *OpScope {
+	return &OpScope{Type: m.header.OpCode, Context: m.Namespace}
+}
 func (m *deleteMessage) Serialize() []byte {
 	size := 16 /* header */ + 8 /* update header */
 	size += len(m.Namespace) + 1
@@ -60,7 +62,7 @@ func (h *MessageHeader) parseDeleteMessage(buf []byte) (Message, error) {
 
 	m.Namespace, err = readCString(buf[loc:])
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	loc += len(m.Namespace) + 1
 
@@ -72,7 +74,7 @@ func (h *MessageHeader) parseDeleteMessage(buf []byte) (Message, error) {
 
 	m.Filter, err = birch.ReadDocument(buf[loc:])
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	loc += int(getDocSize(m.Filter)) // nolint
 

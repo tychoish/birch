@@ -5,11 +5,11 @@ import (
 	"io"
 	"time"
 
-	"github.com/cdr/grip"
+	"github.com/pkg/errors"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/ftdc/util"
-	"github.com/pkg/errors"
+	"github.com/tychoish/emt"
 )
 
 func (c *Chunk) exportMatrix() map[string]interface{} {
@@ -33,7 +33,7 @@ func (c *Chunk) export() (*birch.Document, error) {
 			break
 		}
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		doc.Append(elem)
@@ -83,7 +83,7 @@ type matrixIterator struct {
 	metadata *birch.Document
 	document *birch.Document
 	pipe     chan *birch.Document
-	catcher  grip.Catcher
+	catcher  emt.Catcher
 	reflect  bool
 }
 

@@ -1,8 +1,9 @@
 package mongowire
 
 import (
+	"errors"
+
 	"github.com/tychoish/birch"
-	"github.com/pkg/errors"
 )
 
 func NewCommand(db, name string, args, metadata *birch.Document, inputs []birch.Document) Message {
@@ -120,11 +121,11 @@ func (h *MessageHeader) parseCommandMessage(buf []byte) (Message, error) {
 	for len(buf) > 0 {
 		doc, err := birch.ReadDocument(buf)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 		size, err = doc.Validate()
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		buf = buf[size:]

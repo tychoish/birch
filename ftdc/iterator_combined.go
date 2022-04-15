@@ -2,10 +2,10 @@ package ftdc
 
 import (
 	"context"
+	"errors"
 
-	"github.com/cdr/grip"
 	"github.com/tychoish/birch"
-	"github.com/pkg/errors"
+	"github.com/tychoish/emt"
 )
 
 type combinedIterator struct {
@@ -15,7 +15,7 @@ type combinedIterator struct {
 	metadata *birch.Document
 	document *birch.Document
 	pipe     chan *birch.Document
-	catcher  grip.Catcher
+	catcher  emt.Catcher
 	flatten  bool
 }
 

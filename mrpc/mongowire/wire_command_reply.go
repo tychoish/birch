@@ -1,8 +1,8 @@
 package mongowire
 
 import (
-	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch"
 )
 
 func NewCommandReply(reply, metadata *birch.Document, output []birch.Document) Message {
@@ -54,7 +54,7 @@ func (h *MessageHeader) parseCommandReplyMessage(buf []byte) (Message, error) {
 
 	rm.CommandReply, err = birch.ReadDocument(buf)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	replySize := getDocSize(rm.CommandReply)
@@ -76,7 +76,7 @@ func (h *MessageHeader) parseCommandReplyMessage(buf []byte) (Message, error) {
 	for len(buf) > 0 {
 		doc, err := birch.ReadDocument(buf)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 		buf = buf[getDocSize(doc):]
 		rm.OutputDocs = append(rm.OutputDocs, *doc.Copy())

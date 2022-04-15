@@ -1,9 +1,9 @@
 package metrics
 
 import (
-	"github.com/cdr/grip/message"
-	"github.com/tychoish/birch"
 	"github.com/shirou/gopsutil/net"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/grip/x/metrics"
 )
 
 func marshalNetStat(netstat *net.IOCountersStat) *birch.Document {
@@ -21,7 +21,7 @@ func marshalNetStat(netstat *net.IOCountersStat) *birch.Document {
 		birch.EC.Int64("fifoout", int64(netstat.Fifoout)))
 }
 
-func marshalCPU(cpu *message.StatCPUTimes) *birch.Document {
+func marshalCPU(cpu *metrics.StatCPUTimes) *birch.Document {
 	return birch.DC.Elements(
 		birch.EC.Int64("user", cpu.User),
 		birch.EC.Int64("system", cpu.System),

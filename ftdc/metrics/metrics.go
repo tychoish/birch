@@ -11,12 +11,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cdr/grip"
-	"github.com/cdr/grip/message"
-	"github.com/cdr/grip/recovery"
+	"github.com/pkg/errors"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc"
-	"github.com/pkg/errors"
+	"github.com/tychoish/emt"
+	"github.com/tychoish/grip/message"
+	"github.com/tychoish/grip/recovery"
+	"github.com/tychoish/grip/x/metrics"
 )
 
 // Runtime provides an aggregated view for
@@ -24,9 +25,9 @@ type Runtime struct {
 	ID        int                    `json:"id" bson:"id"`
 	Timestamp time.Time              `json:"ts" bson:"ts"`
 	PID       int                    `json:"pid" bson:"pid"`
-	Golang    *message.GoRuntimeInfo `json:"golang,omitempty" bson:"golang,omitempty"`
-	System    *message.SystemInfo    `json:"system,omitempty" bson:"system,omitempty"`
-	Process   *message.ProcessInfo   `json:"process,omitempty" bson:"process,omitempty"`
+	Golang    *metrics.GoRuntimeInfo `json:"golang,omitempty" bson:"golang,omitempty"`
+	System    *metrics.SystemInfo    `json:"system,omitempty" bson:"system,omitempty"`
+	Process   *metrics.ProcessInfo   `json:"process,omitempty" bson:"process,omitempty"`
 }
 
 // CollectOptions are the settings to provide the behavior of
@@ -65,17 +66,17 @@ func (opts *CollectOptions) generate(ctx context.Context, id int) *birch.Documen
 	base := message.Base{}
 
 	if !opts.SkipGolang {
-		out.Golang = message.CollectGoStatsTotals().(*message.GoRuntimeInfo)
+		out.Golang = metrics.CollectGoStatsTotals().(*metrics.GoRuntimeInfo)
 		out.Golang.Base = base
 	}
 
 	if !opts.SkipSystem {
-		out.System = message.CollectSystemInfo().(*message.SystemInfo)
+		out.System = metrics.CollectSystemInfo().(*metrics.SystemInfo)
 		out.System.Base = base
 	}
 
 	if !opts.SkipProcess {
-		out.Process = message.CollectProcessInfo(int32(pid)).(*message.ProcessInfo)
+		out.Process = metrics.CollectProcessInfo(int32(pid)).(*metrics.ProcessInfo)
 		out.Process.Base = base
 	}
 
@@ -145,7 +146,7 @@ func NewCollectOptions(prefix string) CollectOptions {
 // Validate checks the Collect option settings and ensures that all
 // values are reasonable.
 func (opts CollectOptions) Validate() error {
-	catcher := grip.NewCatcher()
+	catcher := emt.NewCatcher()
 
 	sort.Stable(opts.Collectors)
 
@@ -193,11 +194,11 @@ func CollectRuntime(ctx context.Context, opts CollectOptions) error {
 		}
 
 		if err = ftdc.FlushCollector(collector, file); err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 
 		if err = file.Close(); err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 
 		outputCount++
@@ -223,7 +224,7 @@ func CollectRuntime(ctx context.Context, opts CollectOptions) error {
 			collectTimer.Reset(opts.CollectionInterval)
 		case <-flushTimer.C:
 			if err := flusher(); err != nil {
-				return errors.WithStack(err)
+				return err
 			}
 			flushTimer.Reset(opts.FlushInterval)
 		}

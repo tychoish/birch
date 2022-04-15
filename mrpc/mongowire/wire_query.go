@@ -1,8 +1,9 @@
 package mongowire
 
 import (
+	"errors"
+
 	"github.com/tychoish/birch"
-	"github.com/pkg/errors"
 )
 
 func NewQuery(ns string, flags, skip, toReturn int32, query, project *birch.Document) Message {
@@ -85,7 +86,7 @@ func (h *MessageHeader) parseQueryMessage(buf []byte) (Message, error) {
 
 	qm.Namespace, err = readCString(buf[loc:])
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	loc += len(qm.Namespace) + 1
 
@@ -100,14 +101,14 @@ func (h *MessageHeader) parseQueryMessage(buf []byte) (Message, error) {
 
 	qm.Query, err = birch.ReadDocument(buf[loc:])
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	loc += getDocSize(qm.Query)
 
 	if loc < len(buf) {
 		qm.Project, err = birch.ReadDocument(buf[loc:])
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 		loc += getDocSize(qm.Project) // nolint
 	}

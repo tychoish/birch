@@ -1,7 +1,5 @@
 package birch
 
-import "github.com/pkg/errors"
-
 // Marshaler describes types that know how to marshal a document
 // representation of themselves into bson. Do not use this interface
 // for types that would marshal themselves into values.
@@ -32,12 +30,12 @@ type DocumentUnmarshaler interface {
 func MarshalDocumentBSON(dm DocumentMarshaler) ([]byte, error) {
 	doc, err := dm.MarshalDocument()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	out, err := doc.MarshalBSON()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return out, nil

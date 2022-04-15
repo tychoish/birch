@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"time"
 
-	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch"
 )
 
 type betterCollector struct {
@@ -31,7 +31,7 @@ func NewBaseCollector(maxSize int) Collector {
 func (c *betterCollector) SetMetadata(in interface{}) error {
 	doc, err := readDocument(in)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	c.metadata = doc
@@ -65,7 +65,7 @@ func (c *betterCollector) Info() CollectorInfo {
 func (c *betterCollector) Add(in interface{}) error {
 	doc, err := readDocument(in)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	var metrics extractedMetrics
@@ -73,7 +73,7 @@ func (c *betterCollector) Add(in interface{}) error {
 		c.reference = doc
 		metrics, err = extractMetricsFromDocument(doc)
 		if err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 		c.startedAt = metrics.ts
 		c.lastSample = &metrics
@@ -87,11 +87,11 @@ func (c *betterCollector) Add(in interface{}) error {
 
 	metrics, err = extractMetricsFromDocument(doc)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	if len(metrics.values) != len(c.lastSample.values) {
-		return errors.Errorf("unexpected schema change detected for sample %d: [current=%d vs previous=%d]",
+		return fmt.Errorsf("unexpected schema change detected for sample %d: [current=%d vs previous=%d]",
 			c.numSamples+1, len(metrics.values), len(c.lastSample.values),
 		)
 	}
@@ -99,7 +99,7 @@ func (c *betterCollector) Add(in interface{}) error {
 	var delta int64
 	for idx := range metrics.values {
 		if metrics.types[idx] != c.lastSample.types[idx] {
-			return errors.Errorf("unexpected schema change detected for sample types: [current=%v vs previous=%v]",
+			return fmt.Errorsf("unexpected schema change detected for sample types: [current=%v vs previous=%v]",
 				metrics.types, c.lastSample.types)
 		}
 		delta, err = extractDelta(metrics.values[idx], c.lastSample.values[idx])
@@ -122,7 +122,7 @@ func (c *betterCollector) Resolve() ([]byte, error) {
 
 	data, err := c.getPayload()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	buf := bytes.NewBuffer([]byte{})

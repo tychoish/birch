@@ -1,10 +1,10 @@
 package mrpc
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/tychoish/birch/mrpc/mongowire"
-	"github.com/pkg/errors"
 )
 
 type OperationRegistry struct {
@@ -21,11 +21,11 @@ func (o *OperationRegistry) Add(op mongowire.OpScope, h HandlerFunc) error {
 	}
 
 	if h == nil {
-		return errors.Errorf("cannot define nil handler function for %+v", op)
+		return fmt.Errorsf("cannot define nil handler function for %+v", op)
 	}
 
 	if _, ok := o.ops[op]; ok {
-		return errors.Errorf("operation '%+v' is already defined", op)
+		return fmt.Errorsf("operation '%+v' is already defined", op)
 	}
 
 	o.ops[op] = h

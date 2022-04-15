@@ -12,11 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tychoish/birch/ftdc"
-	"github.com/tychoish/birch/ftdc/testutil"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tychoish/birch/ftdc"
+	"github.com/tychoish/birch/ftdc/testutil"
 )
 
 func TestCollectJSONOptions(t *testing.T) {
@@ -86,7 +85,7 @@ func makeJSONRandComplex(num int) ([][]byte, error) {
 		data, err := json.Marshal(doc)
 		if err != nil {
 			fmt.Println(doc)
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 		out = append(out, data)
 	}

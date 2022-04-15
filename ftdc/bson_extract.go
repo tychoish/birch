@@ -3,10 +3,9 @@ package ftdc
 import (
 	"time"
 
-	"github.com/cdr/grip"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
-	"github.com/pkg/errors"
+	"github.com/tychoish/emt"
 )
 
 ////////////////////////////////////////////////////////////////////////
@@ -28,7 +27,7 @@ func extractMetricsFromDocument(doc *birch.Document) (extractedMetrics, error) {
 		data extractedMetrics
 	)
 
-	catcher := grip.NewCatcher()
+	catcher := emt.NewCatcher()
 
 	for iter.Next() {
 		data, err = extractMetricsFromValue(iter.Element().Value())
@@ -58,7 +57,7 @@ func extractMetricsFromArray(array *birch.Array) (extractedMetrics, error) {
 		data extractedMetrics
 	)
 
-	catcher := grip.NewCatcher()
+	catcher := emt.NewCatcher()
 	iter := array.Iterator()
 
 	for iter.Next() {
@@ -85,10 +84,10 @@ func extractMetricsFromValue(val *birch.Value) (extractedMetrics, error) {
 	switch btype {
 	case bsontype.Array:
 		metrics, err = extractMetricsFromArray(val.MutableArray())
-		err = errors.WithStack(err)
+		err = err
 	case bsontype.EmbeddedDocument:
 		metrics, err = extractMetricsFromDocument(val.MutableDocument())
-		err = errors.WithStack(err)
+		err = err
 	case bsontype.Boolean:
 		if val.Boolean() {
 			metrics.values = append(metrics.values, birch.VC.Int64(1))
@@ -124,6 +123,6 @@ func extractDelta(current *birch.Value, previous *birch.Value) (int64, error) {
 	case bsontype.Int64:
 		return current.Int64() - previous.Int64(), nil
 	default:
-		return 0, errors.Errorf("invalid type %s", current.Type())
+		return 0, fmt.Errorsf("invalid type %s", current.Type())
 	}
 }

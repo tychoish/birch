@@ -3,8 +3,8 @@ package events
 import (
 	"time"
 
-	"github.com/tychoish/birch/ftdc"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch/ftdc"
 )
 
 type singleStream struct {
@@ -52,7 +52,7 @@ func (r *singleStream) EndTest() error {
 	r.point.setTimestamp(r.started)
 	err := errors.WithStack(r.collector.Add(r.point))
 	r.Reset()
-	return errors.WithStack(err)
+	return err
 }
 
 func (r *singleStream) Reset() {

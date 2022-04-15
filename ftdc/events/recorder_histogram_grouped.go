@@ -3,9 +3,8 @@ package events
 import (
 	"time"
 
-	"github.com/cdr/grip"
 	"github.com/tychoish/birch/ftdc"
-	"github.com/pkg/errors"
+	"github.com/tychoish/emt"
 )
 
 type histogramGroupedStream struct {
@@ -14,7 +13,7 @@ type histogramGroupedStream struct {
 	started       time.Time
 	interval      time.Duration
 	collector     ftdc.Collector
-	catcher       grip.Catcher
+	catcher       emt.Catcher
 }
 
 // NewHistogramGroupedRecorder captures data and stores them with a
@@ -33,7 +32,7 @@ func NewHistogramGroupedRecorder(collector ftdc.Collector, interval time.Duratio
 	return &histogramGroupedStream{
 		point:     NewHistogramMillisecond(PerformanceGauges{}),
 		collector: collector,
-		catcher:   grip.NewCatcher(),
+		catcher:   emt.NewCatcher(),
 	}
 }
 
@@ -90,11 +89,11 @@ func (r *histogramGroupedStream) EndTest() error {
 	}
 	err := r.catcher.Resolve()
 	r.Reset()
-	return errors.WithStack(err)
+	return err
 }
 
 func (r *histogramGroupedStream) Reset() {
-	r.catcher = grip.NewCatcher()
+	r.catcher = emt.NewCatcher()
 	r.point = NewHistogramMillisecond(r.point.Gauges)
 	r.lastCollected = time.Time{}
 	r.started = time.Time{}

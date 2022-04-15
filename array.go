@@ -14,7 +14,6 @@ import (
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/elements"
-	"github.com/pkg/errors"
 )
 
 // Array represents an array in BSON. The methods of this type are more
@@ -163,7 +162,7 @@ func (a *Array) Append(values ...*Value) *Array {
 func (a *Array) AppendInterfaceErr(elem interface{}) error {
 	e, err := EC.InterfaceErr("", elem)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	a.doc.Append(e)

@@ -3,8 +3,6 @@ package jsonx
 import (
 	"io"
 	"io/ioutil"
-
-	"github.com/pkg/errors"
 )
 
 type DocumentConstructor struct{}
@@ -36,7 +34,7 @@ func (DocumentConstructor) BytesErr(in []byte) (*Document, error) {
 func (DocumentConstructor) ReaderErr(in io.Reader) (*Document, error) {
 	buf, err := ioutil.ReadAll(in)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return DC.BytesErr(buf)
@@ -55,7 +53,7 @@ func (ArrayConstructor) Reader(in io.Reader) *Array      { return arrayConstruct
 func (ArrayConstructor) BytesErr(in []byte) (*Array, error) {
 	a := AC.New()
 	if err := a.UnmarshalJSON(in); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return a, nil
@@ -64,7 +62,7 @@ func (ArrayConstructor) BytesErr(in []byte) (*Array, error) {
 func (ArrayConstructor) ReaderErr(in io.Reader) (*Array, error) {
 	buf, err := ioutil.ReadAll(in)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return AC.BytesErr(buf)
@@ -135,7 +133,7 @@ func (ValueConstructor) BytesErr(in []byte) (*Value, error) {
 	val := &Value{}
 
 	if err := val.UnmarshalJSON(in); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	return val, nil
 }
@@ -144,7 +142,7 @@ func (ValueConstructor) Reader(in io.Reader) *Value { return valueConstructorOrP
 func (ValueConstructor) ReaderErr(in io.Reader) (*Value, error) {
 	buf, err := ioutil.ReadAll(in)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return VC.BytesErr(buf)

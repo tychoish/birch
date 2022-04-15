@@ -1,9 +1,10 @@
 package mongowire
 
 import (
+	"errors"
+
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/mrpc/model"
-	"github.com/pkg/errors"
 )
 
 type OpMessageSection interface {
@@ -230,7 +231,7 @@ func (h *MessageHeader) parseMsgBody(body []byte) (Message, error) {
 			}
 			msg.Items = append(msg.Items, section)
 		default:
-			return nil, errors.Errorf("unrecognized kind bit %d", kind)
+			return nil, fmt.Errorsf("unrecognized kind bit %d", kind)
 		}
 	}
 

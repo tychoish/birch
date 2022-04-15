@@ -88,5 +88,5 @@ Dependencies
 
 mrpc uses the following core libraries:
 
-- `github.com/cdr/grip <https://github.com/cdr/grip>`_ (for logging)
-- `github.com/pkg/errors <https;//github.com/pkg/errors>`_ (for error annotation.)
+- `github.com/tychoish/grip <https://github.com/tychoish/grip>`_ (for logging)
+

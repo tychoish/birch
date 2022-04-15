@@ -1,12 +1,12 @@
 package birch
 
 import (
+	"errors"
 	"io"
 	"math"
 	"time"
 
 	"github.com/tychoish/birch/jsonx"
-	"github.com/pkg/errors"
 )
 
 // DC is a convenience variable provided for access to the DocumentConstructor methods.
@@ -85,7 +85,7 @@ func (DocumentConstructor) ReadFromErr(in io.Reader) (*Document, error) {
 	}
 
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return doc, nil
@@ -103,7 +103,7 @@ func (DocumentConstructor) Marshaler(in Marshaler) *Document {
 func (DocumentConstructor) MarshalerErr(in Marshaler) (*Document, error) {
 	data, err := in.MarshalBSON()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return DC.ReaderErr(data)
@@ -143,7 +143,7 @@ func (DocumentConstructor) MapInterfaceErr(in map[string]interface{}) (*Document
 	for k, v := range in {
 		elem, err := EC.InterfaceErr(k, v)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		if elem != nil {
@@ -232,7 +232,7 @@ func (DocumentConstructor) MapMarshalerErr(in map[string]Marshaler) (*Document, 
 	for k, v := range in {
 		elem, err := EC.MarshalerErr(k, v)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		if elem != nil {
@@ -258,7 +258,7 @@ func (DocumentConstructor) MapSliceMarshalerErr(in map[string][]Marshaler) (*Doc
 	for k, v := range in {
 		elem, err := EC.SliceMarshalerErr(k, v)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		if elem != nil {
@@ -293,7 +293,7 @@ func (DocumentConstructor) MapDocumentMarshalerErr(in map[string]DocumentMarshal
 	for k, v := range in {
 		elem, err := EC.DocumentMarshalerErr(k, v)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		if elem != nil {
@@ -319,7 +319,7 @@ func (DocumentConstructor) MapSliceDocumentMarshalerErr(in map[string][]Document
 	for k, v := range in {
 		elem, err := EC.SliceDocumentMarshalerErr(k, v)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		if elem != nil {
@@ -354,7 +354,7 @@ func (DocumentConstructor) MapSliceInterfaceErr(in map[string][]interface{}) (*D
 	for k, v := range in {
 		elem, err := EC.SliceInterfaceErr(k, v)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		if elem != nil {
@@ -544,7 +544,7 @@ func (ElementConstructor) Marshaler(key string, val Marshaler) *Element {
 func (ElementConstructor) MarshalerErr(key string, val Marshaler) (*Element, error) {
 	doc, err := val.MarshalBSON()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return EC.SubDocumentFromReader(key, doc), nil
@@ -562,7 +562,7 @@ func (ElementConstructor) DocumentMarshaler(key string, val DocumentMarshaler) *
 func (ElementConstructor) DocumentMarshalerErr(key string, val DocumentMarshaler) (*Element, error) {
 	doc, err := val.MarshalDocument()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return EC.SubDocument(key, doc), nil
@@ -571,7 +571,7 @@ func (ElementConstructor) DocumentMarshalerErr(key string, val DocumentMarshaler
 func (ElementConstructor) JSONXErr(key string, val *jsonx.Document) (*Element, error) {
 	doc, err := DC.JSONXErr(val)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	return EC.SubDocument(key, doc), nil
 }
@@ -624,7 +624,7 @@ func (ElementConstructor) SliceInterfaceErr(key string, in []interface{}) (*Elem
 	for idx := range in {
 		elem, err := VC.InterfaceErr(in[idx])
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		if elem != nil {
@@ -721,7 +721,7 @@ func (ElementConstructor) SliceMarshalerErr(key string, in []Marshaler) (*Elemen
 	for idx := range in {
 		val, err := VC.MarshalerErr(in[idx])
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		if val != nil {
@@ -748,7 +748,7 @@ func (ElementConstructor) SliceDocumentMarshalerErr(key string, in []DocumentMar
 	for idx := range in {
 		val, err := VC.DocumentMarshalerErr(in[idx])
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		if val != nil {
@@ -774,7 +774,7 @@ func (ValueConstructor) Interface(in interface{}) *Value {
 func (ValueConstructor) InterfaceErr(in interface{}) (*Value, error) {
 	elem, err := EC.InterfaceErr("", in)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return elem.value, nil
@@ -787,7 +787,7 @@ func (ValueConstructor) Marshaler(in Marshaler) *Value {
 func (ValueConstructor) MarshalerErr(in Marshaler) (*Value, error) {
 	elem, err := EC.MarshalerErr("", in)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return elem.value, nil
@@ -800,7 +800,7 @@ func (ValueConstructor) DocumentMarshaler(in DocumentMarshaler) *Value {
 func (ValueConstructor) DocumentMarshalerErr(in DocumentMarshaler) (*Value, error) {
 	elem, err := EC.DocumentMarshalerErr("", in)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return elem.value, nil
@@ -810,7 +810,7 @@ func (ValueConstructor) JSONXErr(in *jsonx.Document) (*Value, error) {
 	elem, err := EC.JSONXErr("", in)
 
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return elem.value, nil
@@ -907,7 +907,7 @@ func (ValueConstructor) MapSliceDuration(in map[string][]time.Duration) *Value {
 func (ValueConstructor) MapInterfaceErr(in map[string]interface{}) (*Value, error) {
 	doc, err := DC.MapInterfaceErr(in)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return EC.SubDocument("", doc).value, nil
@@ -916,7 +916,7 @@ func (ValueConstructor) MapInterfaceErr(in map[string]interface{}) (*Value, erro
 func (ValueConstructor) MapSliceInterfaceErr(in map[string][]interface{}) (*Value, error) {
 	doc, err := DC.MapSliceInterfaceErr(in)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return EC.SubDocument("", doc).value, nil
@@ -925,7 +925,7 @@ func (ValueConstructor) MapSliceInterfaceErr(in map[string][]interface{}) (*Valu
 func (ValueConstructor) MapMarshalerErr(in map[string]Marshaler) (*Value, error) {
 	doc, err := DC.MapMarshalerErr(in)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return EC.SubDocument("", doc).value, nil
@@ -934,7 +934,7 @@ func (ValueConstructor) MapMarshalerErr(in map[string]Marshaler) (*Value, error)
 func (ValueConstructor) MapSliceMarshalerErr(in map[string][]Marshaler) (*Value, error) {
 	doc, err := DC.MapSliceMarshalerErr(in)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return EC.SubDocument("", doc).value, nil
@@ -975,7 +975,7 @@ func (ValueConstructor) SliceInterface(in []interface{}) *Value {
 func (ValueConstructor) SliceMarshalerErr(in []Marshaler) (*Value, error) {
 	elem, err := EC.SliceMarshalerErr("", in)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return elem.value, nil
@@ -984,7 +984,7 @@ func (ValueConstructor) SliceMarshalerErr(in []Marshaler) (*Value, error) {
 func (ValueConstructor) SliceInterfaceErr(in []interface{}) (*Value, error) {
 	elem, err := EC.SliceInterfaceErr("", in)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return elem.value, nil

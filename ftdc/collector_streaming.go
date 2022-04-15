@@ -62,12 +62,12 @@ func FlushCollector(c Collector, writer io.Writer) error {
 	}
 	payload, err := c.Resolve()
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	n, err := writer.Write(payload)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 	if n != len(payload) {
 		return errors.New("problem flushing data")
@@ -103,7 +103,7 @@ func (c *streamingDynamicCollector) Reset() {
 func (c *streamingDynamicCollector) Add(in interface{}) error {
 	doc, err := readDocument(in)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	docHash, num := metricKeyHash(doc)
@@ -112,7 +112,7 @@ func (c *streamingDynamicCollector) Add(in interface{}) error {
 		c.metricCount = num
 		if c.streamingCollector.count > 0 {
 			if err := FlushCollector(c, c.output); err != nil {
-				return errors.WithStack(err)
+				return err
 			}
 		}
 		return errors.WithStack(c.streamingCollector.Add(doc))
@@ -120,7 +120,7 @@ func (c *streamingDynamicCollector) Add(in interface{}) error {
 
 	if c.metricCount != num || c.hash != docHash {
 		if err := FlushCollector(c, c.output); err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 	}
 

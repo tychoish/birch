@@ -15,8 +15,8 @@ package events
 import (
 	"time"
 
-	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch"
 )
 
 // Performance represents a single raw event in a metrics collection system for
@@ -96,15 +96,15 @@ func (p *Performance) UnmarshalDocument(doc *birch.Document) error {
 		case "id":
 		case "counters":
 			if err := p.Counters.UnmarshalDocument(elem.Value().MutableDocument()); err != nil {
-				return errors.WithStack(err)
+				return err
 			}
 		case "timers":
 			if err := p.Timers.UnmarshalDocument(elem.Value().MutableDocument()); err != nil {
-				return errors.WithStack(err)
+				return err
 			}
 		case "gauges":
 			if err := p.Gauges.UnmarshalDocument(elem.Value().MutableDocument()); err != nil {
-				return errors.WithStack(err)
+				return err
 			}
 		}
 	}

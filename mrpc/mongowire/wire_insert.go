@@ -1,8 +1,9 @@
 package mongowire
 
 import (
+	"errors"
+
 	"github.com/tychoish/birch"
-	"github.com/pkg/errors"
 )
 
 func NewInsert(ns string, docs ...*birch.Document) Message {
@@ -21,7 +22,9 @@ func NewInsert(ns string, docs ...*birch.Document) Message {
 
 func (m *insertMessage) HasResponse() bool     { return false }
 func (m *insertMessage) Header() MessageHeader { return m.header }
-func (m *insertMessage) Scope() *OpScope       { return &OpScope{Type: m.header.OpCode, Context: m.Namespace} }
+func (m *insertMessage) Scope() *OpScope {
+	return &OpScope{Type: m.header.OpCode, Context: m.Namespace}
+}
 
 func (m *insertMessage) Serialize() []byte {
 	size := 16 /* header */ + 4 /* update header */

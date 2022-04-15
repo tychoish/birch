@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 
-	"github.com/cdr/grip"
 	"github.com/tychoish/birch"
+	"github.com/tychoish/emt"
 )
 
 // ChunkIterator is a simple iterator for reading off of an FTDC data
@@ -37,14 +37,14 @@ type ChunkIterator struct {
 	next    *Chunk
 	cancel  context.CancelFunc
 	closed  bool
-	catcher grip.Catcher
+	catcher emt.Catcher
 }
 
 // ReadChunks creates a ChunkIterator from an underlying FTDC data
 // source.
 func ReadChunks(ctx context.Context, r io.Reader) *ChunkIterator {
 	iter := &ChunkIterator{
-		catcher: grip.NewCatcher(),
+		catcher: emt.NewCatcher(),
 		pipe:    make(chan *Chunk, 2),
 	}
 

@@ -15,8 +15,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch"
 )
 
 // CustomPoint represents a computed statistic as a key value
@@ -52,7 +52,7 @@ func (ps *Custom) Add(key string, value interface{}) error {
 		*ps = append(*ps, CustomPoint{Name: key, Value: v})
 		return nil
 	default:
-		return errors.Errorf("type '%T' for key %s is not supported", value, key)
+		return fmt.Errorsf("type '%T' for key %s is not supported", value, key)
 	}
 }
 
@@ -101,7 +101,7 @@ func (ps Custom) MarshalDocument() (*birch.Document, error) {
 	for _, elem := range ps {
 		de, err := birch.EC.InterfaceErr(elem.Name, elem.Value)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 		doc.Append(de)
 	}

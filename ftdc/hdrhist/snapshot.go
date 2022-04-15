@@ -5,7 +5,6 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc/util"
-	"github.com/pkg/errors"
 )
 
 // A Snapshot is an exported view of a Histogram, useful for serializing them.
@@ -32,7 +31,7 @@ func (h *Histogram) MarshalJSON() ([]byte, error) { return json.Marshal(h.Export
 func (h *Histogram) UnmarshalBSON(in []byte) error {
 	s := &Snapshot{}
 	if err := util.GlobalUnmarshaler()(in, s); err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	*h = *Import(s)
@@ -42,7 +41,7 @@ func (h *Histogram) UnmarshalBSON(in []byte) error {
 func (h *Histogram) UnmarshalJSON(in []byte) error {
 	s := &Snapshot{}
 	if err := json.Unmarshal(in, s); err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	*h = *Import(s)

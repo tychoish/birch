@@ -9,12 +9,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/cdr/grip/recovery"
-	"github.com/tychoish/birch"
-	"github.com/tychoish/birch/jsonx"
-	"github.com/tychoish/birch/ftdc"
 	"github.com/papertrail/go-tail/follower"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/birch/ftdc"
+	"github.com/tychoish/birch/jsonx"
+	"github.com/tychoish/grip/recovery"
 )
 
 // CollectJSONOptions specifies options for a JSON2FTDC collector. You
@@ -150,7 +150,7 @@ func (opts CollectJSONOptions) getSource() (<-chan *birch.Document, <-chan error
 // documents, a la "tail -f".
 func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 	if err := opts.validate(); err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	outputCount := 0
@@ -193,7 +193,7 @@ func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 			if err == nil || errors.Cause(err) == io.EOF {
 				return errors.Wrap(flusher(), "problem flushing results at the end of the file")
 			}
-			return errors.WithStack(err)
+			return err
 		case doc := <-docs:
 			if err := collector.Add(doc); err != nil {
 				return errors.Wrap(err, "problem collecting results")

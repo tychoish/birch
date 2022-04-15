@@ -4,11 +4,10 @@ import (
 	"context"
 	"io"
 
-	"github.com/cdr/grip"
-	"github.com/cdr/grip/message"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/mrpc/mongowire"
-	"github.com/pkg/errors"
+	"github.com/tychoish/grip"
+	"github.com/tychoish/grip/message"
 )
 
 // WriteResponse sends a response the the writer output.
@@ -93,11 +92,11 @@ func RequestMessageToDocument(msg mongowire.Message) (*birch.Document, error) {
 				return section.Documents()[0].Copy(), nil
 			}
 		}
-		return nil, errors.Errorf("%s message did not contain body", msg.Header().OpCode)
+		return nil, fmt.Errorsf("%s message did not contain body", msg.Header().OpCode)
 	}
 	opCmdMsg, ok := msg.(*mongowire.CommandMessage)
 	if !ok {
-		return nil, errors.Errorf("message is not of type %s", mongowire.OP_COMMAND.String())
+		return nil, fmt.Errorsf("message is not of type %s", mongowire.OP_COMMAND.String())
 	}
 	return opCmdMsg.CommandArgs, nil
 }
@@ -117,7 +116,7 @@ func ResponseMessageToDocument(msg mongowire.Message) (*birch.Document, error) {
 				return section.Documents()[0].Copy(), nil
 			}
 		}
-		return nil, errors.Errorf("%s response did not contain body", mongowire.OP_MSG.String())
+		return nil, fmt.Errorsf("%s response did not contain body", mongowire.OP_MSG.String())
 	}
-	return nil, errors.Errorf("message is not of type %s, %s, nor %s", mongowire.OP_COMMAND_REPLY.String(), mongowire.OP_REPLY.String(), mongowire.OP_MSG.String())
+	return nil, fmt.Errorsf("message is not of type %s, %s, nor %s", mongowire.OP_COMMAND_REPLY.String(), mongowire.OP_REPLY.String(), mongowire.OP_MSG.String())
 }

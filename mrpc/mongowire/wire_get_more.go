@@ -65,7 +65,7 @@ func (h *MessageHeader) parseGetMoreMessage(buf []byte) (Message, error) {
 
 	qm.Namespace, err = readCString(buf[loc:])
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	loc += len(qm.Namespace) + 1
 

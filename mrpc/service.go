@@ -7,9 +7,9 @@ import (
 	"io"
 	"net"
 
-	"github.com/cdr/grip"
-	"github.com/cdr/grip/message"
-	"github.com/cdr/grip/recovery"
+	"github.com/tychoish/grip"
+	"github.com/tychoish/grip/message"
+	"github.com/tychoish/grip/recovery"
 	"github.com/tychoish/birch/mrpc/mongowire"
 	"github.com/pkg/errors"
 )

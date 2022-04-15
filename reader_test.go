@@ -14,9 +14,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tychoish/birch/bsonerr"
-	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/require"
+	"github.com/tychoish/birch/bsonerr"
 )
 
 func ExampleReader_Validate() {
@@ -340,8 +339,9 @@ func TestReader(t *testing.T) {
 					t.Errorf("Unexpected error from ElementAt: %s", err)
 				}
 
-				if diff := cmp.Diff(got, tc.want, cmp.Comparer(readerElementComparer)); diff != "" {
-					t.Errorf("Documents differ: (-got +want)\n%s", diff)
+				if !got.Equal(tc.want) {
+					t.Errorf("elements are not the same: a=%q b=%q", got.String(), tc.want.String())
+
 				}
 			})
 		}

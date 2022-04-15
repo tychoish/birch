@@ -1,8 +1,8 @@
 package shell
 
 import (
-	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch"
 )
 
 func intOK(ok bool) int {
@@ -44,12 +44,12 @@ func (r *ErrorResponse) UnmarshalDocument(in *birch.Document) error {
 		switch elem.Key() {
 		case "ok":
 			if r.OK, ok = elem.Value().IntOK(); !ok {
-				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+				return fmt.Errorsf("could not parse value of correct type [%s] for key %s",
 					elem.Value().Type().String(), elem.Key())
 			}
 		case "errmsg":
 			if r.ErrorMessage, ok = elem.Value().StringValueOK(); !ok {
-				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+				return fmt.Errorsf("could not parse value of correct type [%s] for key %s",
 					elem.Value().Type().String(), elem.Key())
 			}
 		}
@@ -88,7 +88,7 @@ func (imr isMasterResponse) MarshalDocument() (*birch.Document, error) {
 
 func (imr *isMasterResponse) UnmarshalDocument(in *birch.Document) error {
 	if err := imr.ErrorResponse.UnmarshalDocument(in); err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	var ok bool
@@ -99,12 +99,12 @@ func (imr *isMasterResponse) UnmarshalDocument(in *birch.Document) error {
 		switch elem.Key() {
 		case "minWireVersion":
 			if imr.MinWireVersion, ok = elem.Value().IntOK(); !ok {
-				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+				return fmt.Errorsf("could not parse value of correct type [%s] for key %s",
 					elem.Value().Type().String(), elem.Key())
 			}
 		case "maxWireVersion":
 			if imr.MaxWireVersion, ok = elem.Value().IntOK(); !ok {
-				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+				return fmt.Errorsf("could not parse value of correct type [%s] for key %s",
 					elem.Value().Type().String(), elem.Key())
 			}
 		}
@@ -134,7 +134,7 @@ func (resp whatsMyURIResponse) MarshalDocument() (*birch.Document, error) {
 
 func (resp *whatsMyURIResponse) UnmarshalDocument(in *birch.Document) error {
 	if err := resp.ErrorResponse.UnmarshalDocument(in); err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	var ok bool
@@ -145,7 +145,7 @@ func (resp *whatsMyURIResponse) UnmarshalDocument(in *birch.Document) error {
 		switch elem.Key() {
 		case "you":
 			if resp.You, ok = elem.Value().StringValueOK(); !ok {
-				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+				return fmt.Errorsf("could not parse value of correct type [%s] for key %s",
 					elem.Value().Type().String(), elem.Key())
 			}
 		}
@@ -172,7 +172,7 @@ func (resp buildInfoResponse) MarshalDocument() (*birch.Document, error) {
 
 func (resp *buildInfoResponse) UnmarshalDocument(in *birch.Document) error {
 	if err := resp.ErrorResponse.UnmarshalDocument(in); err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	var ok bool
@@ -183,7 +183,7 @@ func (resp *buildInfoResponse) UnmarshalDocument(in *birch.Document) error {
 		switch elem.Key() {
 		case "version":
 			if resp.Version, ok = elem.Value().StringValueOK(); !ok {
-				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+				return fmt.Errorsf("could not parse value of correct type [%s] for key %s",
 					elem.Value().Type().String(), elem.Key())
 			}
 		}
@@ -210,7 +210,7 @@ func (resp getLogResponse) MarshalDocument() (*birch.Document, error) {
 
 func (resp *getLogResponse) UnmarshalDocument(in *birch.Document) error {
 	if err := resp.ErrorResponse.UnmarshalDocument(in); err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	iter := in.Iterator()
@@ -221,7 +221,7 @@ func (resp *getLogResponse) UnmarshalDocument(in *birch.Document) error {
 		case "version":
 			array, ok := elem.Value().MutableArrayOK()
 			if !ok {
-				return errors.Errorf("could not parse value of correct type [%s] for key %s",
+				return fmt.Errorsf("could not parse value of correct type [%s] for key %s",
 					elem.Value().Type().String(), elem.Key())
 			}
 
@@ -230,7 +230,7 @@ func (resp *getLogResponse) UnmarshalDocument(in *birch.Document) error {
 			for aiter.Next() {
 				str, ok := aiter.Value().StringValueOK()
 				if !ok {
-					return errors.Errorf("could not parse value of correct type [%s] in array",
+					return fmt.Errorsf("could not parse value of correct type [%s] in array",
 						aiter.Value().Type().String())
 				}
 

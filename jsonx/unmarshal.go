@@ -3,8 +3,8 @@ package jsonx
 import (
 	"encoding/json"
 
-	"github.com/tychoish/birch/jsonx/internal"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch/jsonx/internal"
 )
 
 func (d *Document) UnmarshalJSON(in []byte) error {
@@ -28,7 +28,7 @@ func (d *Document) UnmarshalJSON(in []byte) error {
 		return true
 	})
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	return nil
@@ -47,7 +47,7 @@ func (a *Array) UnmarshalJSON(in []byte) error {
 	for _, item := range res.Array() {
 		val, err := getValueForResult(item)
 		if err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 
 		a.Append(val)
@@ -64,7 +64,7 @@ func (v *Value) UnmarshalJSON(in []byte) error {
 
 	out, err := getValueForResult(res)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	v.value = out.value
@@ -94,14 +94,14 @@ func getValueForResult(value internal.Result) (*Value, error) {
 			return VC.Float64(df), nil
 		}
 
-		return nil, errors.Errorf("number value [%s] is invalid [%+v]", value.Str, value)
+		return nil, fmt.Errorsf("number value [%s] is invalid [%+v]", value.Str, value)
 	case value.IsArray():
 		source := value.Array()
 		array := AC.Make(len(source))
 		for _, elem := range source {
 			val, err := getValueForResult(elem)
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 
 			array.Append(val)
@@ -121,11 +121,11 @@ func getValueForResult(value internal.Result) (*Value, error) {
 			return true
 		})
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		return VC.Object(doc), nil
 	default:
-		return nil, errors.Errorf("unknown json value type '%s'", value.Type)
+		return nil, fmt.Errorsf("unknown json value type '%s'", value.Type)
 	}
 }

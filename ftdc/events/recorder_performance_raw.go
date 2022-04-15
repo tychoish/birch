@@ -3,16 +3,15 @@ package events
 import (
 	"time"
 
-	"github.com/cdr/grip"
 	"github.com/tychoish/birch/ftdc"
-	"github.com/pkg/errors"
+	"github.com/tychoish/emt"
 )
 
 type rawStream struct {
 	started   time.Time
 	point     *Performance
 	collector ftdc.Collector
-	catcher   grip.Catcher
+	catcher   emt.Catcher
 }
 
 // NewRawRecorder records a new event every time that the EndIteration method
@@ -24,7 +23,7 @@ func NewRawRecorder(collector ftdc.Collector) Recorder {
 	return &rawStream{
 		collector: collector,
 		point:     &Performance{Timestamp: time.Time{}},
-		catcher:   grip.NewCatcher(),
+		catcher:   emt.NewCatcher(),
 	}
 }
 
@@ -58,11 +57,11 @@ func (r *rawStream) EndTest() error {
 	}
 	err := r.catcher.Resolve()
 	r.Reset()
-	return errors.WithStack(err)
+	return err
 }
 
 func (r *rawStream) Reset() {
-	r.catcher = grip.NewCatcher()
+	r.catcher = emt.NewCatcher()
 	r.point = &Performance{
 		Gauges: r.point.Gauges,
 	}
