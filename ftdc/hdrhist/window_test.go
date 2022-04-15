@@ -3,8 +3,8 @@ package hdrhist_test
 import (
 	"testing"
 
-	"github.com/tychoish/birch/ftdc/hdrhist"
 	"github.com/stretchr/testify/assert"
+	"github.com/tychoish/birch/ftdc/hdrhist"
 )
 
 func TestWindowedHistogram(t *testing.T) {

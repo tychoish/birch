@@ -11,7 +11,7 @@ import (
 func (d *Document) UnmarshalJSON(in []byte) error {
 	res, err := internal.ParseBytes(in)
 	if err != nil {
-		return errors.Wrap(err, "problem parsing raw json")
+		return fmt.Errorf("problem parsing raw json: %w", err)
 	}
 
 	if !res.IsObject() {
@@ -38,7 +38,7 @@ func (d *Document) UnmarshalJSON(in []byte) error {
 func (a *Array) UnmarshalJSON(in []byte) error {
 	res, err := internal.ParseBytes(in)
 	if err != nil {
-		return errors.Wrap(err, "problem parsing raw json")
+		return fmt.Errorf("problem parsing raw json: %w", err)
 	}
 
 	if !res.IsArray() {
@@ -60,7 +60,7 @@ func (a *Array) UnmarshalJSON(in []byte) error {
 func (v *Value) UnmarshalJSON(in []byte) error {
 	res, err := internal.ParseBytes(in)
 	if err != nil {
-		return errors.Wrap(err, "problem parsing raw json")
+		return fmt.Errorf("problem parsing raw json: %w", err)
 	}
 
 	out, err := getValueForResult(res)

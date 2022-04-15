@@ -1,8 +1,8 @@
 package mongowire
 
 import (
-	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch"
 )
 
 type OpScope struct {

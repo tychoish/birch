@@ -16,7 +16,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/tychoish/birch"
 )
 
@@ -75,7 +74,7 @@ func (ps Custom) MarshalBSON() ([]byte, error) { return birch.MarshalDocumentBSO
 func (ps *Custom) UnmarshalBSON(in []byte) error {
 	doc, err := birch.ReadDocument(in)
 	if err != nil {
-		return errors.Wrap(err, "problem parsing bson document")
+		return fmt.Errorf("problem parsing bson document: %w", err)
 	}
 
 	iter := doc.Iterator()
@@ -88,7 +87,7 @@ func (ps *Custom) UnmarshalBSON(in []byte) error {
 	}
 
 	if err = iter.Err(); err != nil {
-		return errors.Wrap(err, "problem reading document")
+		return fmt.Errorf("problem reading document: %w", err)
 	}
 
 	return nil

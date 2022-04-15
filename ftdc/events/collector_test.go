@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCollector(t *testing.T) {

@@ -66,7 +66,7 @@ func readChunks(ctx context.Context, ch <-chan *birch.Document, o chan<- *Chunk)
 		// compressed, so we make a reader for that. data
 		z, err := zlib.NewReader(bytes.NewBuffer(zBytes[4:]))
 		if err != nil {
-			return errors.Wrap(err, "problem building zlib reader")
+			return fmt.Errorf("problem building zlib reader: %w", err)
 		}
 		buf := bufio.NewReader(z)
 
@@ -77,7 +77,7 @@ func readChunks(ctx context.Context, ch <-chan *birch.Document, o chan<- *Chunk)
 		// deltas are not populated.
 		refDoc, metrics, err := readBufMetrics(buf)
 		if err != nil {
-			return errors.Wrap(err, "problem reading metrics")
+			return fmt.Errorf("problem reading metrics: %w", err)
 		}
 
 		// now go back and read the first few bytes
@@ -113,7 +113,7 @@ func readChunks(ctx context.Context, ch <-chan *birch.Document, o chan<- *Chunk)
 				} else {
 					delta, err = binary.ReadUvarint(buf)
 					if err != nil {
-						return errors.Wrap(err, "reached unexpected end of encoded integer")
+						return fmt.Errorf("reached unexpected end of encoded integer: %w", err)
 					}
 					if delta == 0 {
 						nzeroes, err = binary.ReadUvarint(buf)
@@ -159,7 +159,7 @@ func readBufBSON(buf *bufio.Reader) (*birch.Document, error) {
 func readBufMetrics(buf *bufio.Reader) (*birch.Document, []Metric, error) {
 	doc, err := readBufBSON(buf)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "problem reading reference doc")
+		return nil, nil, fmt.Errorf("problem reading reference doc: %w", err)
 	}
 
 	return doc, metricForDocument([]string{}, doc), nil

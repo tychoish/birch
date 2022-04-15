@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tychoish/birch/ftdc"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch/ftdc"
 )
 
 // Collector wraps the ftdc.Collector interface and adds

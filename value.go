@@ -11,10 +11,10 @@ import (
 	"math"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/types"
-	"github.com/pkg/errors"
 )
 
 // Value represents a BSON value. It can be obtained as part of a bson.Element or created for use

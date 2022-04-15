@@ -175,7 +175,7 @@ func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 
 		output, err := collector.Resolve()
 		if err != nil {
-			return errors.Wrap(err, "problem resolving ftdc data")
+			return fmt.Errorf("problem resolving ftdc data: %w", err)
 		}
 
 		if err = ioutil.WriteFile(fn, output, 0600); err != nil {
@@ -202,11 +202,11 @@ func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 			return err
 		case doc := <-docs:
 			if err := collector.Add(doc); err != nil {
-				return errors.Wrap(err, "problem collecting results")
+				return fmt.Errorf("problem collecting results: %w", err)
 			}
 		case <-flushTimer.C:
 			if err := flusher(); err != nil {
-				return errors.Wrap(err, "problem flushing results at the end of the file")
+				return fmt.Errorf("problem flushing results at the end of the file: %w", err)
 			}
 		}
 	}

@@ -6,9 +6,9 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc/testutil"
-	"github.com/pkg/errors"
 )
 
 type customCollector struct {

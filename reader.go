@@ -12,8 +12,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/tychoish/birch/bsonerr"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch/bsonerr"
 )
 
 var errValidateDone = errors.New("validation loop complete")

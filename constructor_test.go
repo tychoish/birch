@@ -12,11 +12,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tychoish/birch/bsontype"
-	"github.com/tychoish/birch/types"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tychoish/birch/bsontype"
+	"github.com/tychoish/birch/types"
 )
 
 func requireElementsEqual(t *testing.T, expected *Element, actual *Element) {

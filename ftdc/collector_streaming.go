@@ -1,6 +1,7 @@
 package ftdc
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/pkg/errors"
@@ -37,7 +38,7 @@ func (c *streamingCollector) Reset() { c.count = 0; c.Collector.Reset() }
 func (c *streamingCollector) Add(in interface{}) error {
 	if c.count-1 >= c.maxSamples {
 		if err := FlushCollector(c, c.output); err != nil {
-			return errors.Wrap(err, "problem flushing collector contents")
+			return fmt.Errorf("problem flushing collector contents: %w", err)
 		}
 	}
 

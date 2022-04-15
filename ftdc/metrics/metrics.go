@@ -178,7 +178,7 @@ func CollectRuntime(ctx context.Context, opts CollectOptions) error {
 
 	file, err := os.Create(fmt.Sprintf("%s.%d", opts.OutputFilePrefix, outputCount))
 	if err != nil {
-		return errors.Wrap(err, "problem creating initial file")
+		return fmt.Errorf("problem creating initial file: %w", err)
 	}
 
 	collector := ftdc.NewStreamingCollector(opts.SampleCount, file)
@@ -205,7 +205,7 @@ func CollectRuntime(ctx context.Context, opts CollectOptions) error {
 
 		file, err = os.Create(fmt.Sprintf("%s.%d", opts.OutputFilePrefix, outputCount))
 		if err != nil {
-			return errors.Wrap(err, "problem creating subsequent file")
+			return fmt.Errorf("problem creating subsequent file: %w", err)
 		}
 
 		collector = ftdc.NewStreamingCollector(opts.SampleCount, file)
@@ -218,7 +218,7 @@ func CollectRuntime(ctx context.Context, opts CollectOptions) error {
 			return errors.WithStack(flusher())
 		case <-collectTimer.C:
 			if err := collector.Add(opts.generate(ctx, collectCount)); err != nil {
-				return errors.Wrap(err, "problem collecting results")
+				return fmt.Errorf("problem collecting results: %w", err)
 			}
 			collectCount++
 			collectTimer.Reset(opts.CollectionInterval)

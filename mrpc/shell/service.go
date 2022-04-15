@@ -2,11 +2,12 @@ package shell
 
 import (
 	"context"
+	"fmt"
 	"io"
 
+	"github.com/pkg/errors"
 	"github.com/tychoish/birch/mrpc"
 	"github.com/tychoish/birch/mrpc/mongowire"
-	"github.com/pkg/errors"
 )
 
 type shellService struct {
@@ -18,7 +19,7 @@ type shellService struct {
 func NewShellService(host string, port int) (mrpc.Service, error) {
 	s := &shellService{Service: mrpc.NewBasicService(host, port)}
 	if err := s.registerHandlers(); err != nil {
-		return nil, errors.Wrap(err, "could not register handlers")
+		return nil, fmt.Errorf("could not register handlers: %w", err)
 	}
 	return s, nil
 }
@@ -28,7 +29,7 @@ func NewShellService(host string, port int) (mrpc.Service, error) {
 func MakeShellService(service mrpc.Service) (mrpc.Service, error) {
 	s := &shellService{Service: service}
 	if err := s.registerHandlers(); err != nil {
-		return nil, errors.Wrap(err, "could not register handlers")
+		return nil, fmt.Errorf("could not register handlers: %w", err)
 	}
 	return s, nil
 }
@@ -83,7 +84,7 @@ func (s *shellService) isMaster(ctx context.Context, w io.Writer, msg mongowire.
 	doc, _ := makeIsMasterResponse(0, opMsgWireVersion).MarshalDocument()
 	resp, err := ResponseToMessage(t, doc)
 	if err != nil {
-		WriteErrorResponse(ctx, w, t, errors.Wrap(err, "could not make response"), isMasterCommand)
+		WriteErrorResponse(ctx, w, t, fmt.Errorf("could not make response: %w", err), isMasterCommand)
 		return
 	}
 	WriteResponse(ctx, w, resp, isMasterCommand)
@@ -94,7 +95,7 @@ func (s *shellService) whatsMyURI(ctx context.Context, w io.Writer, msg mongowir
 	doc, _ := makeWhatsMyURIResponse(s.Address()).MarshalDocument()
 	resp, err := ResponseToMessage(t, doc)
 	if err != nil {
-		WriteErrorResponse(ctx, w, t, errors.Wrap(err, "could not make response"), whatsMyURICommand)
+		WriteErrorResponse(ctx, w, t, fmt.Errorf("could not make response: %w", err), whatsMyURICommand)
 		return
 	}
 	WriteResponse(ctx, w, resp, whatsMyURICommand)
@@ -104,7 +105,7 @@ func (s *shellService) buildInfo(ctx context.Context, w io.Writer, msg mongowire
 	doc, _ := makeBuildInfoResponse("0.0.0").MarshalDocument()
 	resp, err := ResponseToMessage(msg.Header().OpCode, doc)
 	if err != nil {
-		WriteErrorResponse(ctx, w, msg.Header().OpCode, errors.Wrap(err, "could not make response"), buildInfoCommand)
+		WriteErrorResponse(ctx, w, msg.Header().OpCode, fmt.Errorf("could not make response: %w", err), buildInfoCommand)
 		return
 	}
 	WriteResponse(ctx, w, resp, buildInfoCommand)

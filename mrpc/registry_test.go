@@ -6,9 +6,9 @@ import (
 	"io"
 	"testing"
 
-	"github.com/tychoish/grip"
-	"github.com/tychoish/birch/mrpc/mongowire"
 	"github.com/stretchr/testify/suite"
+	"github.com/tychoish/birch/mrpc/mongowire"
+	"github.com/tychoish/grip"
 )
 
 type RegistrySuite struct {

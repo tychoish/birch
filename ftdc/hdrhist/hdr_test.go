@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tychoish/birch/ftdc/hdrhist"
 	"github.com/stretchr/testify/assert"
+	"github.com/tychoish/birch/ftdc/hdrhist"
 )
 
 func TestHighSigFig(t *testing.T) {

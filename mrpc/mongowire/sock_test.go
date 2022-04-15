@@ -6,9 +6,9 @@ import (
 	"io"
 	"testing"
 
-	"github.com/tychoish/birch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tychoish/birch"
 )
 
 func TestReadMessage(t *testing.T) {

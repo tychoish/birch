@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tychoish/birch"
-	"github.com/tychoish/birch/ftdc/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/birch/ftdc/testutil"
 )
 
 func TestCollectorInterface(t *testing.T) {

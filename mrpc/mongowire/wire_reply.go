@@ -1,8 +1,8 @@
 package mongowire
 
 import (
-	"github.com/tychoish/birch"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch"
 )
 
 func NewReply(cursorID int64, flags, startingFrom, numReturned int32, docs []birch.Document) Message {

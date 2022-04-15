@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tychoish/birch/ftdc/testutil"
 	"github.com/stretchr/testify/assert"
+	"github.com/tychoish/birch/ftdc/testutil"
 )
 
 func TestSamplingCollector(t *testing.T) {

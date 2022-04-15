@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"compress/zlib"
 	"encoding/binary"
+	"fmt"
 	"math"
 	"sort"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/ftdc/util"
-	"github.com/pkg/errors"
 )
 
 func readDocument(in interface{}) (*birch.Document, error) {
@@ -25,7 +26,7 @@ func readDocument(in interface{}) (*birch.Document, error) {
 	case birch.Marshaler:
 		data, err := doc.MarshalBSON()
 		if err != nil {
-			return nil, errors.Wrap(err, "problem with unmarshaler")
+			return nil, fmt.Errorf("problem with unmarshaler: %w", err)
 		}
 		return birch.ReadDocument(data)
 	case map[string]interface{}, map[string]int, map[string]int64, map[string]uint, map[string]uint64:
@@ -48,7 +49,7 @@ func readDocument(in interface{}) (*birch.Document, error) {
 
 		data, err := util.GlobalMarshaler()(in)
 		if err != nil {
-			return nil, errors.Wrap(err, "problem with fallback marshaling")
+			return nil, fmt.Errorf("problem with fallback marshaling: %w", err)
 		}
 		return birch.ReadDocument(data)
 	}

@@ -1,8 +1,8 @@
 package bsonerr
 
 import (
-	"github.com/tychoish/birch/bsontype"
 	"github.com/pkg/errors"
+	"github.com/tychoish/birch/bsontype"
 )
 
 // UninitializedElement is returned whenever any method is invoked on an uninitialized Element.

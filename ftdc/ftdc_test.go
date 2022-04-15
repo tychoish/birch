@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tychoish/birch"
-	"github.com/tychoish/birch/ftdc/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tychoish/birch"
+	"github.com/tychoish/birch/ftdc/testutil"
 )
 
 // Map converts the chunk to a map representation. Each key in the map

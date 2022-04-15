@@ -7,11 +7,11 @@ import (
 	"io"
 	"net"
 
+	"github.com/pkg/errors"
+	"github.com/tychoish/birch/mrpc/mongowire"
 	"github.com/tychoish/grip"
 	"github.com/tychoish/grip/message"
 	"github.com/tychoish/grip/recovery"
-	"github.com/tychoish/birch/mrpc/mongowire"
-	"github.com/pkg/errors"
 )
 
 type HandlerFunc func(context.Context, io.Writer, mongowire.Message)

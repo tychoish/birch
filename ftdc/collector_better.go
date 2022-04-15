@@ -105,7 +105,7 @@ func (c *betterCollector) Add(in interface{}) error {
 		}
 		delta, err = extractDelta(metrics.values[idx], c.lastSample.values[idx])
 		if err != nil {
-			return errors.Wrap(err, "problem parsing data")
+			return fmt.Errorf("problem parsing data: %w", err)
 		}
 		c.deltas[getOffset(c.maxDeltas, c.numSamples, idx)] = delta
 	}
@@ -133,7 +133,7 @@ func (c *betterCollector) Resolve() ([]byte, error) {
 			birch.EC.Int32("type", 0),
 			birch.EC.SubDocument("doc", c.metadata)).WriteTo(buf)
 		if err != nil {
-			return nil, errors.Wrap(err, "problem writing metadata document")
+			return nil, fmt.Errorf("problem writing metadata document: %w", err)
 		}
 	}
 
@@ -142,7 +142,7 @@ func (c *betterCollector) Resolve() ([]byte, error) {
 		birch.EC.Int32("type", 1),
 		birch.EC.Binary("data", data)).WriteTo(buf)
 	if err != nil {
-		return nil, errors.Wrap(err, "problem writing metric chunk document")
+		return nil, fmt.Errorf("problem writing metric chunk document: %w", err)
 	}
 
 	return buf.Bytes(), nil
@@ -151,7 +151,7 @@ func (c *betterCollector) Resolve() ([]byte, error) {
 func (c *betterCollector) getPayload() ([]byte, error) {
 	payload := bytes.NewBuffer([]byte{})
 	if _, err := c.reference.WriteTo(payload); err != nil {
-		return nil, errors.Wrap(err, "problem writing reference document")
+		return nil, fmt.Errorf("problem writing reference document: %w", err)
 	}
 
 	payload.Write(encodeSizeValue(uint32(len(c.lastSample.values))))
@@ -182,7 +182,7 @@ func (c *betterCollector) getPayload() ([]byte, error) {
 
 	data, err := compressBuffer(payload.Bytes())
 	if err != nil {
-		return nil, errors.Wrap(err, "problem compressing payload")
+		return nil, fmt.Errorf("problem compressing payload: %w", err)
 	}
 
 	return data, nil

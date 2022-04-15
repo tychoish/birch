@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/types"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestElement(t *testing.T) {

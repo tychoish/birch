@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/tychoish/birch/bsonerr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tychoish/birch/bsonerr"
 )
 
 func TestArray(t *testing.T) {

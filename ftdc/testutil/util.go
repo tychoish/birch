@@ -6,9 +6,9 @@ import (
 	"math/rand"
 	"strconv"
 
+	"github.com/pkg/errors"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
-	"github.com/pkg/errors"
 )
 
 func CreateEventRecord(count, duration, size, workers int64) *birch.Document {

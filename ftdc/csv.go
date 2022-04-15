@@ -49,7 +49,7 @@ func WriteCSV(ctx context.Context, iter *ChunkIterator, writer io.Writer) error 
 		if numFields == 0 {
 			fieldNames := chunk.getFieldNames()
 			if err := csvw.Write(fieldNames); err != nil {
-				return errors.Wrap(err, "problem writing field names")
+				return fmt.Errorf("problem writing field names: %w", err)
 			}
 			numFields = len(fieldNames)
 		} else if numFields != len(chunk.Metrics) {
@@ -68,7 +68,7 @@ func WriteCSV(ctx context.Context, iter *ChunkIterator, writer io.Writer) error 
 		}
 	}
 	if err := iter.Err(); err != nil {
-		return errors.Wrap(err, "problem reading chunks")
+		return fmt.Errorf("problem reading chunks: %w", err)
 	}
 
 	return nil
@@ -115,12 +115,12 @@ func DumpCSV(ctx context.Context, iter *ChunkIterator, prefix string) error {
 		if numFields == 0 {
 			fieldNames := chunk.getFieldNames()
 			if err = csvw.Write(fieldNames); err != nil {
-				return errors.Wrap(err, "problem writing field names")
+				return fmt.Errorf("problem writing field names: %w", err)
 			}
 			numFields = len(fieldNames)
 		} else if numFields != len(chunk.Metrics) {
 			if err = writer.Close(); err != nil {
-				return errors.Wrap(err, "problem flushing and closing file")
+				return fmt.Errorf("problem flushing and closing file: %w", err)
 			}
 
 			writer, err = getCSVFile(prefix, fileCount)
@@ -134,7 +134,7 @@ func DumpCSV(ctx context.Context, iter *ChunkIterator, prefix string) error {
 			// now dump header
 			fieldNames := chunk.getFieldNames()
 			if err := csvw.Write(fieldNames); err != nil {
-				return errors.Wrap(err, "problem writing field names")
+				return fmt.Errorf("problem writing field names: %w", err)
 			}
 			numFields = len(fieldNames)
 		}
@@ -151,14 +151,14 @@ func DumpCSV(ctx context.Context, iter *ChunkIterator, prefix string) error {
 		}
 	}
 	if err := iter.Err(); err != nil {
-		return errors.Wrap(err, "problem reading chunks")
+		return fmt.Errorf("problem reading chunks: %w", err)
 	}
 
 	if writer == nil {
 		return nil
 	}
 	if err := writer.Close(); err != nil {
-		return errors.Wrap(err, "problem writing files to disk")
+		return fmt.Errorf("problem writing files to disk: %w", err)
 
 	}
 	return nil
@@ -175,14 +175,14 @@ func ConvertFromCSV(ctx context.Context, bucketSize int, input io.Reader, output
 
 	header, err := csvr.Read()
 	if err != nil {
-		return errors.Wrap(err, "problem reading error")
+		return fmt.Errorf("problem reading error: %w", err)
 	}
 
 	collector := NewStreamingDynamicCollector(bucketSize, output)
 
 	defer func() {
 		if err != nil && (errors.Cause(err) != context.Canceled || errors.Cause(err) != context.DeadlineExceeded) {
-			err = errors.Wrap(err, "omitting final flush, because of prior error")
+			err = fmt.Errorf("omitting final flush, because of prior error: %w", err)
 		}
 		err = FlushCollector(collector, output)
 	}()
@@ -191,7 +191,7 @@ func ConvertFromCSV(ctx context.Context, bucketSize int, input io.Reader, output
 	for {
 		if ctx.Err() != nil {
 			// this is weird so that the defer can work
-			err = errors.Wrap(err, "operation aborted")
+			err = fmt.Errorf("operation aborted: %w", err)
 			return err
 		}
 
@@ -207,7 +207,7 @@ func ConvertFromCSV(ctx context.Context, bucketSize int, input io.Reader, output
 				header = record
 				continue
 			}
-			err = errors.Wrap(err, "problem parsing csv")
+			err = fmt.Errorf("problem parsing csv: %w", err)
 			return err
 		}
 		if len(record) != len(header) {

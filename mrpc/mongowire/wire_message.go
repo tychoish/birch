@@ -216,7 +216,7 @@ func (h *MessageHeader) parseMsgBody(body []byte) (Message, error) {
 			loc += 4
 			section.Identifier, err = readCString(body[loc:])
 			if err != nil {
-				return nil, errors.Wrap(err, "could not read identifier")
+				return nil, fmt.Errorf("could not read identifier: %w", err)
 			}
 			loc += len(section.Identifier) + 1 // c string null terminator
 
@@ -224,7 +224,7 @@ func (h *MessageHeader) parseMsgBody(body []byte) (Message, error) {
 				docSize := int(readInt32(body[loc:]))
 				doc, err := birch.ReadDocument(body[loc : loc+docSize])
 				if err != nil {
-					return nil, errors.Wrap(err, "could not read payload document")
+					return nil, fmt.Errorf("could not read payload document: %w", err)
 				}
 				section.Payload = append(section.Payload, *doc.Copy())
 				remaining -= docSize

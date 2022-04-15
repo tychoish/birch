@@ -1,7 +1,6 @@
 package mrpc
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 
@@ -18,7 +17,7 @@ func (o *OperationRegistry) Add(op mongowire.OpScope, h HandlerFunc) error {
 	defer o.mu.Unlock()
 
 	if err := op.Validate(); err != nil {
-		return errors.Wrap(err, "could not add operation, it failed to validate")
+		return fmt.Errorf("could not add operation, it failed to validate: %w", err)
 	}
 
 	if h == nil {
