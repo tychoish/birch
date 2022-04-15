@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"io"
 
-	"errors"
-
 	"github.com/tychoish/birch"
 )
 
@@ -29,7 +27,10 @@ func (w *writerCollector) Write(in []byte) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("problem reading bson document: %w", err)
 	}
-	return len(in), errors.Wrap(w.collector.Add(doc), "problem adding document to collector")
+	if err := w.collector.Add(doc); err != nil {
+		return 0, fmt.Errorf("problem adding document to collector: %w", err)
+	}
+	return len(in), nil
 }
 
 func (w *writerCollector) Close() error {
@@ -37,5 +38,8 @@ func (w *writerCollector) Close() error {
 		return fmt.Errorf("problem flushing documents to collector: %w", err)
 	}
 
-	return errors.Wrap(w.writer.Close(), "problem closing underlying writer")
+	if err := w.writer.Close(); err != nil {
+		return fmt.Errorf("problem closing underlying writer: %w", err)
+	}
+	return nil
 }

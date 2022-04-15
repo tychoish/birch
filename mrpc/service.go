@@ -46,7 +46,7 @@ func (s *basicService) RegisterOperation(scope *mongowire.OpScope, h HandlerFunc
 func (s *basicService) Run(ctx context.Context) error {
 	l, err := net.Listen("tcp", s.addr)
 	if err != nil {
-		return errors.Wrapf(err, "problem listening on %s", s.addr)
+		return fmt.Errorf("problem listening on %s: %w", s.addr, err)
 	}
 
 	go func() {
@@ -103,7 +103,7 @@ func (s *basicService) dispatchRequest(ctx context.Context, conn net.Conn) {
 	for {
 		m, err := mongowire.ReadMessage(ctx, conn)
 		if err != nil {
-			if errors.Cause(err) == io.EOF {
+			if errors.Is(err, io.EOF) {
 				// Connection was likely closed
 				return
 			}

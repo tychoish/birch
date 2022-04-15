@@ -1,14 +1,13 @@
 package birch
 
 import (
-	"testing"
-
 	"errors"
+	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func IsTooSmall(err error) bool { return errors.Cause(err) == errTooSmall }
+func IsTooSmall(err error) bool { return errors.Is(err, errTooSmall) }
 
 func requireErrEqual(t *testing.T, err1 error, err2 error) {
 	if err1 != nil && err2 != nil {

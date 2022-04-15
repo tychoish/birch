@@ -79,7 +79,7 @@ func (opts CollectJSONOptions) getSource(ctx context.Context) (<-chan *birch.Doc
 			defer close(errs)
 			f, err := os.Open(opts.FileName)
 			if err != nil {
-				errs <- errors.Wrapf(err, "problem opening data file %s", opts.FileName)
+				errs <- fmt.Errorf("problem opening data file %s: %w", opts.FileName, err)
 				return
 			}
 			defer func() { errs <- f.Close() }()
@@ -113,7 +113,7 @@ func (opts CollectJSONOptions) getSource(ctx context.Context) (<-chan *birch.Doc
 				Reopen: true,
 			})
 			if err != nil {
-				errs <- errors.Wrapf(err, "problem setting up file follower of '%s'", opts.FileName)
+				errs <- fmt.Errorf("problem setting up file follower of '%s': %w", opts.FileName, err)
 				return
 			}
 			defer func() {
@@ -180,7 +180,7 @@ func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 		}
 
 		if err = ioutil.WriteFile(fn, output, 0600); err != nil {
-			return errors.Wrapf(err, "problem writing data to file %s", fn)
+			return fmt.Errorf("problem writing data to file %s: %w", fn, err)
 		}
 
 		outputCount++
@@ -197,8 +197,10 @@ func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 		case <-ctx.Done():
 			return errors.New("operation aborted")
 		case err := <-errs:
-			if err == nil || errors.Cause(err) == io.EOF {
-				return errors.Wrap(flusher(), "problem flushing results at the end of the file")
+			if err == nil || errors.Is(err, io.EOF) {
+				if err := flusher(); err != nil {
+					return fmt.Errorf("problem flushing: %w", err)
+				}
 			}
 			return err
 		case doc := <-docs:

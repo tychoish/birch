@@ -11,8 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"errors"
-
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc"
 	"github.com/tychoish/emt"

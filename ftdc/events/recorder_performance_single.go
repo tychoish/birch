@@ -3,8 +3,6 @@ package events
 import (
 	"time"
 
-	"errors"
-
 	"github.com/tychoish/birch/ftdc"
 )
 

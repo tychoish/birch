@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 
-	"errors"
-
 	"github.com/tychoish/birch/mrpc"
 	"github.com/tychoish/birch/mrpc/mongowire"
 )
@@ -70,7 +68,7 @@ func (s *shellService) registerHandlers() error {
 				Type:    opType,
 				Command: name,
 			}, handler); err != nil {
-				return errors.Wrapf(err, "could not register %s handler for %s", opType.String(), name)
+				return fmt.Errorf("could not register %s handler for %s: %w", opType.String(), name, err)
 			}
 		}
 	}

@@ -60,12 +60,12 @@ func WriteCSV(ctx context.Context, iter *ChunkIterator, writer io.Writer) error 
 		for i := 0; i < chunk.nPoints; i++ {
 			record := chunk.getRecord(i)
 			if err := csvw.Write(record); err != nil {
-				return errors.Wrapf(err, "problem writing csv record %d of %d", i, chunk.nPoints)
+				return fmt.Errorf("problem writing csv record %d of %d: %w", i, chunk.nPoints, err)
 			}
 		}
 		csvw.Flush()
 		if err := csvw.Error(); err != nil {
-			return errors.Wrapf(err, "problem flushing csv data")
+			return fmt.Errorf("problem flushing csv data: %w", err)
 		}
 	}
 	if err := iter.Err(); err != nil {
@@ -79,7 +79,7 @@ func getCSVFile(prefix string, count int) (io.WriteCloser, error) {
 	fn := fmt.Sprintf("%s.%d.csv", prefix, count)
 	writer, err := os.Create(fn)
 	if err != nil {
-		return nil, errors.Wrapf(err, "provlem opening file %s", fn)
+		return nil, fmt.Errorf("provlem opening file %s: %w", fn, err)
 	}
 	return writer, nil
 }
@@ -143,12 +143,12 @@ func DumpCSV(ctx context.Context, iter *ChunkIterator, prefix string) error {
 		for i := 0; i < chunk.nPoints; i++ {
 			record := chunk.getRecord(i)
 			if err := csvw.Write(record); err != nil {
-				return errors.Wrapf(err, "problem writing csv record %d of %d", i, chunk.nPoints)
+				return fmt.Errorf("problem writing csv record %d of %d: %w", i, chunk.nPoints, err)
 			}
 		}
 		csvw.Flush()
 		if err := csvw.Error(); err != nil {
-			return errors.Wrapf(err, "problem flushing csv data")
+			return fmt.Errorf("problem flushing csv data: %w", err)
 		}
 	}
 	if err := iter.Err(); err != nil {
@@ -182,7 +182,7 @@ func ConvertFromCSV(ctx context.Context, bucketSize int, input io.Reader, output
 	collector := NewStreamingDynamicCollector(bucketSize, output)
 
 	defer func() {
-		if err != nil && (errors.Cause(err) != context.Canceled || errors.Cause(err) != context.DeadlineExceeded) {
+		if err != nil && (!errors.Is(err, context.Canceled) || !errors.Is(err, context.DeadlineExceeded)) {
 			err = fmt.Errorf("omitting final flush, because of prior error: %w", err)
 		}
 		err = FlushCollector(collector, output)

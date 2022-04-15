@@ -43,7 +43,7 @@ func (c *streamingCollector) Add(in interface{}) error {
 	}
 
 	if err := c.Collector.Add(in); err != nil {
-		return errors.Wrapf(err, "adding sample #%d", c.count+1)
+		return fmt.Errorf("adding sample #%d: %w", c.count+1, err)
 	}
 	c.count++
 
