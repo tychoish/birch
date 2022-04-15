@@ -21,14 +21,18 @@ func TestWriteCSVIntegration(t *testing.T) {
 	defer cancel()
 
 	tmp, err := ioutil.TempDir("", "ftdc-csv-")
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer func() { require.NoError(t, os.RemoveAll(tmp)) }()
 
 	t.Run("Write", func(t *testing.T) {
 		iter := ReadChunks(ctx, bytes.NewBuffer(newChunk(10)))
 		out := &bytes.Buffer{}
 		err := WriteCSV(ctx, iter, out)
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		lines := strings.Split(out.String(), "\n")
 		assert.Len(t, lines, 12)
@@ -36,19 +40,27 @@ func TestWriteCSVIntegration(t *testing.T) {
 	t.Run("ResuseIterPass", func(t *testing.T) {
 		iter := ReadChunks(ctx, bytes.NewBuffer(newChunk(10)))
 		err := DumpCSV(ctx, iter, filepath.Join(tmp, "dump"))
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 		err = DumpCSV(ctx, iter, filepath.Join(tmp, "dump"))
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 	})
 	t.Run("Dump", func(t *testing.T) {
 		iter := ReadChunks(ctx, bytes.NewBuffer(newChunk(10)))
 		err := DumpCSV(ctx, iter, filepath.Join(tmp, "dump"))
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 	})
 	t.Run("DumpMixed", func(t *testing.T) {
 		iter := ReadChunks(ctx, bytes.NewBuffer(newMixedChunk(10)))
 		err := DumpCSV(ctx, iter, filepath.Join(tmp, "dump"))
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 	})
 	t.Run("WriteWithSchemaChange", func(t *testing.T) {
 		iter := ReadChunks(ctx, bytes.NewBuffer(newMixedChunk(10)))
@@ -97,11 +109,15 @@ func TestReadCSVIntegration(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			buf := &bytes.Buffer{}
 			err := WriteCSV(ctx, test.Iter, buf)
-			require.NoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			out := &bytes.Buffer{}
 			err = ConvertFromCSV(ctx, test.Rows, buf, out)
-			require.NoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			iter := ReadMetrics(ctx, out)
 			count := 0

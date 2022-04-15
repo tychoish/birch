@@ -18,11 +18,15 @@ func TestRollupRoundTrip(t *testing.T) {
 
 	t.Run("NewBSON", func(t *testing.T) {
 		payload, err := data.MarshalBSON()
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		rt := Custom{}
 		err = rt.UnmarshalBSON(payload)
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		require.Len(t, rt, 4)
 		assert.Equal(t, "a", rt[0].Name)

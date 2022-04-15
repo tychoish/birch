@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -109,26 +108,22 @@ func writeStream(docs [][]byte, writer io.Writer) error {
 }
 
 func TestCollectJSON(t *testing.T) {
-	buildDir, err := filepath.Abs(filepath.Join("..", "build"))
-	require.NoError(t, err)
-	dir, err := ioutil.TempDir(buildDir, "ftdc-")
-	require.NoError(t, err)
+	dir := t.TempDir()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	defer func() {
-		if err = os.RemoveAll(dir); err != nil {
-			fmt.Println(err)
-		}
-	}()
 
 	hundredDocs, err := makeJSONRandComplex(100)
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	t.Run("SingleReaderIdealCase", func(t *testing.T) {
 		buf := &bytes.Buffer{}
 		err = writeStream(hundredDocs, buf)
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		reader := bytes.NewReader(buf.Bytes())
 
@@ -149,12 +144,16 @@ func TestCollectJSON(t *testing.T) {
 
 		var docs [][]byte
 		docs, err = makeJSONRandComplex(10)
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		docs[2] = docs[len(docs)-1][1:] // break the last document
 
 		err = writeStream(docs, buf)
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		reader := bytes.NewReader(buf.Bytes())
 
@@ -174,7 +173,9 @@ func TestCollectJSON(t *testing.T) {
 		fn := filepath.Join(dir, "json-read-file-one")
 		var f *os.File
 		f, err = os.Create(fn)
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		require.NoError(t, writeStream(hundredDocs, f))
 		require.NoError(t, f.Close())
@@ -194,7 +195,9 @@ func TestCollectJSON(t *testing.T) {
 		fn := filepath.Join(dir, "json-read-file-two")
 		var f *os.File
 		f, err = os.Create(fn)
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		go func() {
 			time.Sleep(10 * time.Millisecond)
@@ -241,7 +244,9 @@ func TestCollectJSON(t *testing.T) {
 
 		for _, in := range inputs {
 			doc, err = json.Marshal(in)
-			require.NoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 			docs = append(docs, doc)
 		}
 		require.Len(t, docs, 3)
@@ -266,7 +271,9 @@ func TestCollectJSON(t *testing.T) {
 		require.False(t, os.IsNotExist(err))
 
 		fn, err := os.Open(filepath.Join(dir, "roundtrip.0"))
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		iter := ftdc.ReadMetrics(ctx, fn)
 		idx := -1
@@ -280,7 +287,9 @@ func TestCollectJSON(t *testing.T) {
 				assert.EqualValues(t, v, out.Interface())
 			}
 		}
-		require.NoError(t, iter.Err())
+		if err := iter.Err(); err != nil {
+			t.Fatal(err)
+		}
 		assert.Equal(t, 2, idx) // zero indexed
 	})
 }

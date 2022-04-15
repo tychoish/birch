@@ -316,7 +316,9 @@ func TestJSON(t *testing.T) {
 				t.Run(test.Name, func(t *testing.T) {
 					out, err := test.Doc.MarshalJSON()
 
-					require.NoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 					require.Equal(t, test.Expected, string(out))
 				})
 			}
@@ -329,7 +331,9 @@ func TestJSON(t *testing.T) {
 				t.Run(test.Name, func(t *testing.T) {
 					out, err := test.Array.MarshalJSON()
 
-					require.NoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 					require.Equal(t, test.Expected, string(out))
 				})
 			}
@@ -343,7 +347,9 @@ func TestJSON(t *testing.T) {
 				t.Run(test.Name, func(t *testing.T) {
 					out, err := test.Val.MarshalJSON()
 
-					require.NoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 					require.Equal(t, test.Expected, string(out))
 				})
 			}
@@ -359,17 +365,23 @@ func TestJSON(t *testing.T) {
 				t.Run(test.Name, func(t *testing.T) {
 					doc := DC.New()
 					err := doc.UnmarshalJSON([]byte(test.Expected))
-					require.NoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 					iter := doc.Iterator()
 					for iter.Next() {
 						elem := iter.Element()
 						expected, err := test.Doc.LookupErr(elem.Key())
-						require.NoError(t, err)
+						if err != nil {
+							t.Fatal(err)
+						}
 						assert.True(t, elem.Value().Equal(expected), "[%s] %s != %s",
 							test.Expected,
 							expected.Interface(), elem.Value().Interface())
 					}
-					require.NoError(t, iter.Err())
+					if err := iter.Err(); err != nil {
+						t.Fatal(err)
+					}
 				})
 			}
 		})
@@ -382,18 +394,24 @@ func TestJSON(t *testing.T) {
 				t.Run(test.Name, func(t *testing.T) {
 					array := NewArray()
 					err := array.UnmarshalJSON([]byte(test.Expected))
-					require.NoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 
 					iter := array.Iterator()
 					idx := uint(0)
 					for iter.Next() {
 						elem := iter.Value()
 						expected, err := test.Array.LookupErr(idx)
-						require.NoError(t, err)
+						if err != nil {
+							t.Fatal(err)
+						}
 						assert.True(t, elem.Equal(expected))
 						idx++
 					}
-					require.NoError(t, iter.Err())
+					if err := iter.Err(); err != nil {
+						t.Fatal(err)
+					}
 				})
 			}
 		})
@@ -406,7 +424,9 @@ func TestJSON(t *testing.T) {
 				t.Run(test.Name, func(t *testing.T) {
 					value := &Value{}
 					err := value.UnmarshalJSON([]byte(test.Expected))
-					require.NoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 
 					assert.True(t, value.Equal(test.Val))
 				})

@@ -23,14 +23,7 @@ func GetDirectoryOfFile() string {
 }
 
 func TestCollectRuntime(t *testing.T) {
-	dir, err := ioutil.TempDir(filepath.Join(filepath.Dir(GetDirectoryOfFile()), "build"), "ftdc-")
-	require.NoError(t, err)
-
-	defer func() {
-		if err = os.RemoveAll(dir); err != nil {
-			fmt.Println(err)
-		}
-	}()
+	dir := t.TempDir()
 
 	t.Run("Collection", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
@@ -59,17 +52,19 @@ func TestCollectRuntime(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		err = CollectRuntime(ctx, opts)
-		require.NoError(t, err)
+		if err := CollectRuntime(ctx, opts); err != nil {
+			t.Fatal(err)
+		}
 	})
 
 	t.Run("ReadStructuredData", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		var files []os.FileInfo
-		files, err = ioutil.ReadDir(dir)
-		require.NoError(t, err)
+		files, err := ioutil.ReadDir(dir)
+		if err != nil {
+			t.Fatal(err)
+		}
 		assert.True(t, len(files) >= 1)
 
 		total := 0
@@ -78,7 +73,9 @@ func TestCollectRuntime(t *testing.T) {
 				path := filepath.Join(dir, info.Name())
 				var f *os.File
 				f, err = os.Open(path)
-				require.NoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 				defer func() { assert.NoError(t, f.Close()) }()
 				iter := ftdc.ReadStructuredMetrics(ctx, f)
 				counter := 0
@@ -88,7 +85,9 @@ func TestCollectRuntime(t *testing.T) {
 					require.NotNil(t, doc)
 					require.Equal(t, 4, doc.Len())
 				}
-				require.NoError(t, iter.Err())
+				if err := iter.Err(); err != nil {
+					t.Fatal(err)
+				}
 				total += counter
 			})
 		}
@@ -97,9 +96,10 @@ func TestCollectRuntime(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		var files []os.FileInfo
-		files, err = ioutil.ReadDir(dir)
-		require.NoError(t, err)
+		files, err := ioutil.ReadDir(dir)
+		if err != nil {
+			t.Fatal(err)
+		}
 		assert.True(t, len(files) >= 1)
 
 		total := 0
@@ -108,7 +108,9 @@ func TestCollectRuntime(t *testing.T) {
 				path := filepath.Join(dir, info.Name())
 				var f *os.File
 				f, err = os.Open(path)
-				require.NoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 				defer func() { assert.NoError(t, f.Close()) }()
 				iter := ftdc.ReadMetrics(ctx, f)
 				counter := 0
@@ -118,7 +120,9 @@ func TestCollectRuntime(t *testing.T) {
 					require.NotNil(t, doc)
 					require.Equal(t, 15, doc.Len())
 				}
-				require.NoError(t, iter.Err())
+				if err := iter.Err(); err != nil {
+					t.Fatal(err)
+				}
 				total += counter
 			})
 		}
@@ -141,7 +145,8 @@ func TestCollectRuntime(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
-		err = CollectRuntime(ctx, opts)
-		require.NoError(t, err)
+		if err := CollectRuntime(ctx, opts); err != nil {
+			t.Fatal(err)
+		}
 	})
 }

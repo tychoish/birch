@@ -123,13 +123,21 @@ func (w *mockWriter) Write(p []byte) (int, error) {
 
 func createSmallMessage(t *testing.T) Message {
 	bytes, err := birch.DC.Elements(birch.EC.String("foo", "bar")).MarshalBSON()
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 	query, err := birch.ReadDocument(bytes)
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 	bytes, err = birch.DC.Elements(birch.EC.String("bar", "foo")).MarshalBSON()
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 	project, err := birch.ReadDocument(bytes)
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	return NewQuery("ns", 0, 0, 1, query, project)
 }

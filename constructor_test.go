@@ -14,36 +14,55 @@ import (
 
 	"errors"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/types"
 )
 
 func requireElementsEqual(t *testing.T, expected *Element, actual *Element) {
+	t.Helper()
 	requireValuesEqual(t, expected.value, actual.value)
 }
 
 func requireValuesEqual(t *testing.T, expected *Value, actual *Value) {
-	require.Equal(t, expected.start, actual.start)
-	require.Equal(t, expected.offset, actual.offset)
+	t.Helper()
+	if expected.start != actual.start {
+		t.Fatal("start values for values were not the same")
+	}
+	if expected.offset != actual.offset {
+		t.Fatal("start values for values were not the same")
+	}
 
-	require.True(t, bytes.Equal(expected.data, actual.data))
+	if !bytes.Equal(expected.data, actual.data) {
+		t.Fatal("data payloads were not equal")
+	}
 
 	if expected.d == nil {
-		require.Nil(t, actual.d)
+		if actual.d != nil {
+			t.Fatal("document value was expected to be nil and was not")
+		}
 	} else {
-		require.NotNil(t, actual.d)
-		require.Equal(t, expected.d.IgnoreNilInsert, actual.d.IgnoreNilInsert)
+		if actual.d == nil {
+			t.Fatal("actual document was nil")
+		}
+		if expected.d.IgnoreNilInsert != actual.d.IgnoreNilInsert {
+			t.Fatal("ignore nil insert values not equal")
+		}
+		if len(expected.d.elems) != len(actual.d.elems) {
+			t.Fatal("expected numbers of elements were not correct")
+		}
 
-		require.Equal(t, len(expected.d.elems), len(actual.d.elems))
 		for i := range expected.d.elems {
 			requireElementsEqual(t, expected.d.elems[i], actual.d.elems[i])
 		}
 
-		require.Equal(t, len(expected.d.index), len(actual.d.index))
+		if len(expected.d.index) != len(actual.d.index) {
+			t.Fatal("index values were not equal")
+		}
 		for i := range expected.d.index {
-			require.Equal(t, expected.d.index[i], actual.d.index[i])
+			if expected.d.index[i] != actual.d.index[i] {
+				t.Fatal("values at index were not equal")
+			}
 		}
 	}
 }
@@ -1012,7 +1031,7 @@ func TestDocumentConstructor(t *testing.T) {
 					return DC.Reader(Reader(bytes)), nil
 				},
 				Check: func(t *testing.T, _ *Document) {
-					assert.Panics(t, func() {
+					require.Panics(t, func() {
 						DC.Reader(nil)
 					})
 				},
@@ -1082,7 +1101,9 @@ func TestDocumentConstructor(t *testing.T) {
 		} {
 			t.Run(test.Name, func(t *testing.T) {
 				doc, err := test.Constructor()
-				require.NoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 				if test.IsNil {
 					require.Nil(t, doc)
 					return
@@ -1090,7 +1111,7 @@ func TestDocumentConstructor(t *testing.T) {
 
 				require.NotNil(t, doc)
 
-				assert.Equal(t, test.Size, doc.Len())
+				require.Equal(t, test.Size, doc.Len())
 				if test.Check != nil {
 					t.Run("Check", func(t *testing.T) {
 						test.Check(t, doc)
@@ -1265,17 +1286,21 @@ func TestDocumentConstructor(t *testing.T) {
 				t.Run("NoErrors", func(t *testing.T) {
 					doc := DC.Interface(test.Input)
 					require.NotNil(t, doc)
-					assert.Equal(t, test.Size, doc.Len())
+					require.Equal(t, test.Size, doc.Len())
 				})
 				t.Run("Errors", func(t *testing.T) {
 					edoc, err := DC.InterfaceErr(test.Input)
 					if test.HasErrors {
-						assert.Error(t, err)
-						assert.Nil(t, edoc)
+						if err == nil {
+							t.Fatal(err)
+						}
+						require.Nil(t, edoc)
 					} else {
-						assert.NoError(t, err)
+						if err != nil {
+							t.Fatal(err)
+						}
 						require.NotNil(t, edoc)
-						assert.Equal(t, test.Size, edoc.Len())
+						require.Equal(t, test.Size, edoc.Len())
 					}
 				})
 				t.Run("ValueConstructor", func(t *testing.T) {

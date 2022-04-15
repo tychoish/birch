@@ -30,7 +30,9 @@ func TestPerformanceType(t *testing.T) {
 	t.Run("Document", func(t *testing.T) {
 		perf := &Performance{}
 		doc, err := perf.MarshalDocument()
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 		require.NotNil(t, doc)
 		assert.Equal(t, 5, doc.Len())
 	})

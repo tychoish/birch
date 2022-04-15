@@ -567,12 +567,16 @@ func TestDocument(t *testing.T) {
 
 		for _, elem := range elems {
 			require.True(t, iter.Next())
-			require.NoError(t, iter.Err())
+			if err := iter.Err(); err != nil {
+				t.Fatal(err)
+			}
 			requireElementsEqual(t, elem, iter.Element())
 		}
 
 		require.False(t, iter.Next())
-		require.NoError(t, iter.Err())
+		if err := iter.Err(); err != nil {
+			t.Fatal(err)
+		}
 	})
 	t.Run("Reset", func(t *testing.T) {
 		d := NewDocument(EC.Null("a"), EC.Null("b"), EC.Null("c"), EC.Null("a"), EC.Null("e"))
@@ -691,8 +695,11 @@ func TestDocument(t *testing.T) {
 				t.Errorf("Expected error not returned. got %s; want %s", err, tc.err)
 			}
 
-			if documentComparer(d, tc.want) {
-				t.Errorf("documents are not equal: a=%q, b=%q", d.String(), tc.want.String())
+			if !documentsAreEqual(d, tc.want) {
+				t.Log(tc.name)
+				t.Log("wanted:", tc.want.String())
+				t.Log("recivd:", d.String())
+				t.Error("documents are not equal")
 			}
 		}
 	})
@@ -789,7 +796,9 @@ func TestDocument(t *testing.T) {
 		})
 		t.Run("ElementErr", func(t *testing.T) {
 			elem, err := doc.LookupElementErr("_id")
-			require.NoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 			assert.Equal(t, "_id", elem.Key())
 			assert.EqualValues(t, 11, elem.Value().Int64())
 		})
@@ -799,7 +808,9 @@ func TestDocument(t *testing.T) {
 		})
 		t.Run("ValueErr", func(t *testing.T) {
 			val, err := doc.LookupErr("_id")
-			require.NoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 			assert.EqualValues(t, 11, val.Int64())
 		})
 		t.Run("Missing", func(t *testing.T) {
@@ -981,7 +992,7 @@ func elementEqual(e1, e2 *Element) bool {
 	return valueEqual(e1.value, e2.value)
 }
 
-func documentComparer(d1, d2 *Document) bool {
+func documentsAreEqual(d1, d2 *Document) bool {
 	if (len(d1.elems) != len(d2.elems)) || (len(d1.index) != len(d2.index)) {
 		return false
 	}

@@ -4,7 +4,6 @@ go 1.18
 
 require (
 	github.com/papertrail/go-tail v0.0.0-20180509224916-973c153b0431
-	github.com/pkg/errors v0.9.1
 	github.com/shirou/gopsutil v3.20.11+incompatible
 	github.com/stretchr/testify v1.7.0
 	github.com/tychoish/emt v0.0.0-20220306153139-74b97c67f209

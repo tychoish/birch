@@ -127,7 +127,9 @@ func TestReadDocument(t *testing.T) {
 				out, err := birch.NewDocument(
 					birch.EC.String("foo", "bar"),
 					birch.EC.Int64("baz", 33)).MarshalBSON()
-				require.NoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 				return birch.Reader(out)
 			}(),
 			len: 2,

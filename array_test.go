@@ -304,7 +304,9 @@ func TestArray(t *testing.T) {
 		t.Run("Passing", func(t *testing.T) {
 			ar := NewArray(VC.Int(42), VC.Int(84))
 			ln, err := ar.Validate()
-			require.NoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 			require.True(t, ln > 0)
 		})
 		t.Run("Fail", func(t *testing.T) {

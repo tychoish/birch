@@ -75,7 +75,9 @@ func TestRecorder(t *testing.T) {
 							assert.True(t, payload.Timers.Total >= payload.Timers.Duration)
 							lastTotal = payload.Timers.Total
 						}
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						payload, ok := c.Data[len(c.Data)-1].(*Performance)
 						require.True(t, ok)
 						assert.EqualValues(t, iterations*10, payload.Counters.Operations)
@@ -205,7 +207,9 @@ func TestRecorder(t *testing.T) {
 							r.IncOperations(1)
 							r.EndIteration(time.Second)
 						}
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						require.True(t, len(c.Data) > 0)
 
 						switch data := c.Data[len(c.Data)-1].(type) {
@@ -238,7 +242,9 @@ func TestRecorder(t *testing.T) {
 							r.IncSize(1024)
 							r.EndIteration(100 * time.Millisecond)
 						}
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						require.True(t, len(c.Data) > 0)
 
 						switch data := c.Data[len(c.Data)-1].(type) {
@@ -270,7 +276,9 @@ func TestRecorder(t *testing.T) {
 							r.IncError(3)
 							r.EndIteration(10 * time.Millisecond)
 						}
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						require.True(t, len(c.Data) > 0)
 
 						switch data := c.Data[len(c.Data)-1].(type) {
@@ -315,7 +323,9 @@ func TestRecorder(t *testing.T) {
 						r.SetState(422)
 						r.EndIteration(time.Second)
 						r.BeginIteration()
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
@@ -337,7 +347,9 @@ func TestRecorder(t *testing.T) {
 						r.SetWorkers(422)
 						r.EndIteration(time.Second)
 						r.BeginIteration()
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
@@ -358,7 +370,9 @@ func TestRecorder(t *testing.T) {
 						r.BeginIteration()
 						r.EndIteration(time.Second)
 						r.BeginIteration()
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
@@ -380,7 +394,9 @@ func TestRecorder(t *testing.T) {
 						r.SetFailed(true)
 						r.EndIteration(time.Second)
 						r.BeginIteration()
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
@@ -404,7 +420,9 @@ func TestRecorder(t *testing.T) {
 						r.SetFailed(true)
 						r.EndIteration(time.Second)
 						r.BeginIteration()
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
@@ -425,7 +443,9 @@ func TestRecorder(t *testing.T) {
 						r.BeginIteration()
 						r.SetTotalDuration(time.Minute)
 
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
@@ -449,7 +469,9 @@ func TestRecorder(t *testing.T) {
 						r.SetDuration(time.Minute)
 						r.EndIteration(0)
 
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
@@ -473,7 +495,9 @@ func TestRecorder(t *testing.T) {
 						r.IncIterations(42)
 						r.EndIteration(0)
 
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
@@ -498,7 +522,9 @@ func TestRecorder(t *testing.T) {
 						r.BeginIteration()
 						r.SetTime(ts)
 						r.EndIteration(time.Second)
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
@@ -520,7 +546,9 @@ func TestRecorder(t *testing.T) {
 						r.BeginIteration()
 						r.SetID(id)
 						r.EndIteration(time.Second)
-						require.NoError(t, r.EndTest())
+						if err := r.EndTest(); err != nil {
+							t.Fatal(err)
+						}
 						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {

@@ -4,20 +4,27 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/mrpc/model"
 )
 
 func TestMessage(t *testing.T) {
 	bytes, err := birch.DC.Elements(birch.EC.String("foo", "bar")).MarshalBSON()
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 	query, err := birch.ReadDocument(bytes)
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 	bytes, err = birch.DC.Elements(birch.EC.String("bar", "foo")).MarshalBSON()
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 	project, err := birch.ReadDocument(bytes)
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	headerSize := 16
 	for _, test := range []struct {
@@ -113,7 +120,9 @@ func TestMessage(t *testing.T) {
 			assert.Equal(t, headerSize+test.bodySize, len(test.message.Serialize()))
 			assert.Equal(t, int32(headerSize+test.bodySize), test.message.Header().Size)
 			m, err := test.header.Parse(test.message.Serialize()[headerSize:])
-			require.NoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 			assert.Equal(t, test.message.Serialize(), m.Serialize())
 			assert.Equal(t, test.message.Header(), m.Header())
 		})

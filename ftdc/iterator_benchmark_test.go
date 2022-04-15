@@ -34,14 +34,18 @@ func BenchmarkIterator(b *testing.B) {
 	} {
 		b.Run(test.Name, func(b *testing.B) {
 			file, err := os.Open(test.Path)
-			require.NoError(b, err)
+			if err != nil {
+				b.Fatal(err)
+			}
 			defer func() {
 				if err = file.Close(); err != nil {
 					fmt.Println(err)
 				}
 			}()
 			data, err := ioutil.ReadAll(file)
-			require.NoError(b, err)
+			if err != nil {
+				b.Fatal(err)
+			}
 			b.ResetTimer()
 
 			b.Run("Chunk", func(b *testing.B) {

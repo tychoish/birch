@@ -103,7 +103,9 @@ func TestCollectorInterface(t *testing.T) {
 						require.Equal(t, info.SampleCount, count)
 
 						out, err := collector.Resolve()
-						require.NoError(t, err)
+						if err != nil {
+							t.Fatal(err)
+						}
 						buf := bytes.NewBuffer(out)
 
 						iter := ReadStructuredMetrics(ctx, buf)
@@ -121,7 +123,9 @@ func TestCollectorInterface(t *testing.T) {
 							})
 						}
 						assert.Equal(t, len(docs)-1, idx) // zero index
-						require.NoError(t, iter.Err())
+						if err := iter.Err(); err != nil {
+							t.Fatal(err)
+						}
 
 					})
 				}
@@ -175,7 +179,9 @@ func TestStreamingEncoding(t *testing.T) {
 							assert.Equal(t, val, test.dataset[idx])
 							idx++
 						}
-						require.NoError(t, iter.Err())
+						if err := iter.Err(); err != nil {
+							t.Fatal(err)
+						}
 						require.Equal(t, len(test.dataset), len(res))
 						assert.Equal(t, test.dataset, res)
 					})
@@ -210,7 +216,9 @@ func TestStreamingEncoding(t *testing.T) {
 							assert.Equal(t, fmt.Sprint(doc), fmt.Sprint(docs[idx]))
 						}
 
-						require.NoError(t, iter.Err())
+						if err := iter.Err(); err != nil {
+							t.Fatal(err)
+						}
 						require.Equal(t, len(test.dataset), len(res))
 						assert.Equal(t, test.dataset, res)
 					})
@@ -255,7 +263,9 @@ func TestStreamingEncoding(t *testing.T) {
 							assert.Equal(t, fmt.Sprint(doc), fmt.Sprint(docs[idx]))
 						}
 
-						require.NoError(t, iter.Err())
+						if err := iter.Err(); err != nil {
+							t.Fatal(err)
+						}
 						require.Equal(t, len(test.dataset), len(res), "%v -> %v", test.dataset, res)
 						assert.Equal(t, test.dataset, res)
 					})
@@ -301,7 +311,9 @@ func TestStreamingEncoding(t *testing.T) {
 
 							assert.Equal(t, fmt.Sprint(doc), fmt.Sprint(docs[idx]))
 						}
-						require.NoError(t, iter.Err())
+						if err := iter.Err(); err != nil {
+							t.Fatal(err)
+						}
 						require.Equal(t, len(test.dataset), len(res), "%v -> %v", test.dataset, res)
 						require.Equal(t, len(test.dataset), len(res))
 					})
@@ -342,7 +354,9 @@ func TestFixedEncoding(t *testing.T) {
 						}
 
 						payload, err := collector.Resolve()
-						require.NoError(t, err)
+						if err != nil {
+							t.Fatal(err)
+						}
 						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
 						idx := 0
@@ -354,7 +368,9 @@ func TestFixedEncoding(t *testing.T) {
 							assert.Equal(t, val, test.dataset[idx])
 							idx++
 						}
-						require.NoError(t, iter.Err())
+						if err := iter.Err(); err != nil {
+							t.Fatal(err)
+						}
 						require.Equal(t, len(test.dataset), len(res))
 						assert.Equal(t, test.dataset, res)
 					})
@@ -375,7 +391,9 @@ func TestFixedEncoding(t *testing.T) {
 						}
 
 						payload, err := collector.Resolve()
-						require.NoError(t, err)
+						if err != nil {
+							t.Fatal(err)
+						}
 						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
 						for iter.Next() {
@@ -388,7 +406,9 @@ func TestFixedEncoding(t *testing.T) {
 							assert.Equal(t, fmt.Sprint(doc), fmt.Sprint(docs[idx]))
 						}
 
-						require.NoError(t, iter.Err())
+						if err := iter.Err(); err != nil {
+							t.Fatal(err)
+						}
 						require.Equal(t, len(test.dataset), len(res))
 						assert.Equal(t, test.dataset, res)
 					})
@@ -438,7 +458,9 @@ func TestWriter(t *testing.T) {
 	t.Run("RealDocument", func(t *testing.T) {
 		collector := NewWriterCollector(2, &noopWriter{})
 		doc, err := birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5)).MarshalBSON()
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 		_, err = collector.Write(doc)
 		assert.NoError(t, err)
 		assert.NoError(t, collector.Close())
@@ -450,9 +472,13 @@ func TestWriter(t *testing.T) {
 	t.Run("CloseError", func(t *testing.T) {
 		collector := NewWriterCollector(2, &errWriter{})
 		doc, err := birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5)).MarshalBSON()
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 		_, err = collector.Write(doc)
-		require.NoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 		assert.Error(t, collector.Close())
 	})
 }
@@ -522,7 +548,9 @@ func TestTimestampHandling(t *testing.T) {
 				}
 
 				out, err := collector.Resolve()
-				require.NoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 				t.Run("Structured", func(t *testing.T) {
 					iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(out))
 					idx := 0
@@ -535,7 +563,9 @@ func TestTimestampHandling(t *testing.T) {
 						}
 						idx++
 					}
-					require.NoError(t, iter.Err())
+					if err := iter.Err(); err != nil {
+						t.Fatal(err)
+					}
 				})
 				t.Run("Flattened", func(t *testing.T) {
 					iter := ReadMetrics(ctx, bytes.NewBuffer(out))
@@ -548,7 +578,9 @@ func TestTimestampHandling(t *testing.T) {
 						}
 						idx++
 					}
-					require.NoError(t, iter.Err())
+					if err := iter.Err(); err != nil {
+						t.Fatal(err)
+					}
 				})
 				t.Run("Chunks", func(t *testing.T) {
 					chunks := ReadChunks(ctx, bytes.NewBuffer(out))
@@ -572,7 +604,9 @@ func TestTimestampHandling(t *testing.T) {
 				}
 
 				out, err := collector.Resolve()
-				require.NoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
 				iter := ReadMetrics(ctx, bytes.NewBuffer(out))
 				idx := 0
@@ -585,7 +619,9 @@ func TestTimestampHandling(t *testing.T) {
 					}
 					idx++
 				}
-				require.NoError(t, iter.Err())
+				if err := iter.Err(); err != nil {
+					t.Fatal(err)
+				}
 			})
 			t.Run("UnixNano", func(t *testing.T) {
 				collector := NewBaseCollector(100)
@@ -596,7 +632,9 @@ func TestTimestampHandling(t *testing.T) {
 				}
 
 				out, err := collector.Resolve()
-				require.NoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
 				iter := ReadMetrics(ctx, bytes.NewBuffer(out))
 				idx := 0
@@ -610,7 +648,9 @@ func TestTimestampHandling(t *testing.T) {
 
 					idx++
 				}
-				require.NoError(t, iter.Err())
+				if err := iter.Err(); err != nil {
+					t.Fatal(err)
+				}
 			})
 		})
 	}
