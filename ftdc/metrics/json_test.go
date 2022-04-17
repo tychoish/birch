@@ -249,7 +249,9 @@ func TestCollectJSON(t *testing.T) {
 			}
 			docs = append(docs, doc)
 		}
-		require.Len(t, docs, 3)
+		if len(docs) != 3 {
+			t.Fatalf("lengths of %d and %d are not expected", len(docs), 3)
+		}
 
 		buf := &bytes.Buffer{}
 
@@ -284,7 +286,9 @@ func TestCollectJSON(t *testing.T) {
 			assert.Equal(t, 2, s.Len())
 			for k, v := range inputs[idx] {
 				out := s.Lookup(k)
-				assert.EqualValues(t, v, out.Interface())
+				if int(v.(int64)) != int(out.Interface().(int32)) {
+					t.Fatalf("values are not equal %v and %v", v, out.Interface())
+				}
 			}
 		}
 		if err := iter.Err(); err != nil {

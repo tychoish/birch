@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/csv"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -19,12 +17,7 @@ import (
 func TestWriteCSVIntegration(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
-	tmp, err := ioutil.TempDir("", "ftdc-csv-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { require.NoError(t, os.RemoveAll(tmp)) }()
+	tmp := t.TempDir()
 
 	t.Run("Write", func(t *testing.T) {
 		iter := ReadChunks(ctx, bytes.NewBuffer(newChunk(10)))

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch/types"
 )
 
@@ -319,7 +318,9 @@ func TestJSON(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					require.Equal(t, test.Expected, string(out))
+					if test.Expected != string(out) {
+						t.Fatalf("unqueal %v and %v", test.Expected, string(out))
+					}
 				})
 			}
 		})
@@ -334,7 +335,9 @@ func TestJSON(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					require.Equal(t, test.Expected, string(out))
+					if test.Expected != string(out) {
+						t.Fatalf("unqueal %v and %v", test.Expected, string(out))
+					}
 				})
 			}
 		})
@@ -350,7 +353,9 @@ func TestJSON(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					require.Equal(t, test.Expected, string(out))
+					if test.Expected != string(out) {
+						t.Fatalf("unqueal %v and %v", test.Expected, string(out))
+					}
 				})
 			}
 		})

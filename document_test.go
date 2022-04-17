@@ -82,7 +82,14 @@ func TestDocument(t *testing.T) {
 				if err != tc.err {
 					t.Errorf("Did not get expected error. got %#v; want %#v", err, tc.err)
 				}
-				require.Equal(t, tc.want, got)
+				if len(tc.want.elems) != len(got.elems) {
+					t.Fatal("unequal lengths")
+				}
+				for idx := range tc.want.elems {
+					if !tc.want.elems[idx].Equal(got.elems[idx]) {
+						t.Fatal("uneuqal elements at index", idx)
+					}
+				}
 			})
 		}
 	})
@@ -166,7 +173,16 @@ func TestDocument(t *testing.T) {
 				got := NewDocument()
 				got.IgnoreNilInsert = true
 				got.Append(nil)
-				require.Equal(t, want, got)
+
+				if len(want.elems) != len(got.elems) {
+					t.Fatal("unequal lengths")
+				}
+				for idx := range want.elems {
+					if !want.elems[idx].Equal(got.elems[idx]) {
+						t.Fatal("uneuqal elements at index", idx)
+					}
+				}
+
 			}()
 		})
 		testCases := []struct {
@@ -212,7 +228,15 @@ func TestDocument(t *testing.T) {
 						if r != bsonerr.NilElement {
 							t.Errorf("Did not received expected error from panic. got %#v; want %#v", r, bsonerr.NilElement)
 						}
-						require.Equal(t, tc.want, got)
+
+						if len(tc.want.elems) != len(got.elems) {
+							t.Fatal("unequal lengths")
+						}
+						for idx := range tc.want.elems {
+							if !tc.want.elems[idx].Equal(got.elems[idx]) {
+								t.Fatal("uneuqal elements at index", idx)
+							}
+						}
 					}()
 					got = NewDocument()
 					got.Prepend(tc.elems...)
@@ -240,8 +264,14 @@ func TestDocument(t *testing.T) {
 						if r != nil {
 							t.Errorf("Did not received expected error from panic. got %#v; want %#v", r, nil)
 						}
-						require.Equal(t, tc.want, got)
-
+						if len(tc.want.elems) != len(got.elems) {
+							t.Fatal("unequal lengths")
+						}
+						for idx := range tc.want.elems {
+							if !tc.want.elems[idx].Equal(got.elems[idx]) {
+								t.Fatal("uneuqal elements at index", idx)
+							}
+						}
 					}()
 					got = NewDocument()
 					got.IgnoreNilInsert = true
@@ -345,7 +375,14 @@ func TestDocument(t *testing.T) {
 							t.Errorf("Did not receive expected error from panic. got %#v; want %#v", r, bsonerr.NilElement)
 						}
 
-						require.Equal(t, tc.want, got)
+						if len(tc.want.elems) != len(got.elems) {
+							t.Fatal("unequal lengths")
+						}
+						for idx := range tc.want.elems {
+							if !tc.want.elems[idx].Equal(got.elems[idx]) {
+								t.Fatal("uneuqal elements at index", idx)
+							}
+						}
 					}()
 					got = NewDocument()
 					got.Set(tc.elem)
@@ -374,7 +411,15 @@ func TestDocument(t *testing.T) {
 							t.Errorf("Did not received expected error from panic. got %#v; want %#v", r, nil)
 						}
 
-						require.Equal(t, tc.want, got)
+						if len(tc.want.elems) != len(got.elems) {
+							t.Fatal("unequal lengths")
+						}
+						for idx := range tc.want.elems {
+							if !tc.want.elems[idx].Equal(got.elems[idx]) {
+								t.Fatal("uneuqal elements at index", idx)
+							}
+						}
+
 					}()
 					got = NewDocument()
 					got.IgnoreNilInsert = true
@@ -418,7 +463,14 @@ func TestDocument(t *testing.T) {
 			t.Run(tc.name, func(t *testing.T) {
 				got := tc.d.Set(tc.elem)
 
-				require.Equal(t, tc.want, got)
+				if len(tc.want.elems) != len(got.elems) {
+					t.Fatal("unequal lengths")
+				}
+				for idx := range tc.want.elems {
+					if !tc.want.elems[idx].Equal(got.elems[idx]) {
+						t.Fatal("uneuqal elements at index", idx)
+					}
+				}
 			})
 		}
 	})
@@ -555,7 +607,10 @@ func TestDocument(t *testing.T) {
 					t.Errorf("ElementAtOK returned ok=false when true was expected")
 				}
 
-				require.Equal(t, tc.want, got)
+				if !tc.want.Equal(got) {
+					t.Fatalf("unqueal %v and %v", tc.want, got)
+				}
+
 			})
 		}
 	})
@@ -566,7 +621,9 @@ func TestDocument(t *testing.T) {
 		iter := d.Iterator()
 
 		for _, elem := range elems {
-			require.True(t, iter.Next())
+			if !iter.Next() {
+				t.Fatal("truth assertion failed")
+			}
 			if err := iter.Err(); err != nil {
 				t.Fatal(err)
 			}
@@ -583,7 +640,15 @@ func TestDocument(t *testing.T) {
 		gotSlc := d.elems
 		d.Reset()
 		wantSlc := make([]*Element, 5)
-		require.Equal(t, wantSlc, gotSlc)
+
+		if len(wantSlc) != len(gotSlc) {
+			t.Fatalf("unqueal lengths %v and %v", len(wantSlc), len(gotSlc))
+		}
+		for idx := range wantSlc {
+			if !wantSlc[idx].Equal(gotSlc[idx]) {
+				t.Fatal("unequal values at index", idx)
+			}
+		}
 		if len(d.elems) != 0 {
 			t.Errorf("Expected length of elements slice to be 0. got %d; want %d", len(d.elems), 0)
 		}
@@ -612,7 +677,9 @@ func TestDocument(t *testing.T) {
 				if err != tc.err {
 					t.Errorf("Returned error does not match expected error. got %s; want %s", err, tc.err)
 				}
-				require.Equal(t, tc.want, buf.Bytes())
+				if !bytes.Equal(tc.want, buf.Bytes()) {
+					t.Fatalf("unqueal %v and %v", tc.want, buf.Bytes())
+				}
 
 			})
 		}
@@ -664,7 +731,9 @@ func TestDocument(t *testing.T) {
 			if err != tc.err {
 				t.Errorf("Returned error does not match expected error. got %s; want %s", err, tc.err)
 			}
-			require.Equal(t, tc.want, b)
+			if !bytes.Equal(tc.want, b) {
+				t.Fatalf("unqueal %v and %v", tc.want, b)
+			}
 
 		}
 	})
@@ -757,20 +826,23 @@ func TestDocument(t *testing.T) {
 			if err != tc.err {
 				t.Errorf("Returned error does not match expected error. got %s; want %s", err, tc.err)
 			}
-			require.Equal(t, tc.want, d)
-
-			// if diff := cmp.Diff(d, tc.want, cmp.AllowUnexported(Document{}, Element{})); diff != "" {
-			// 	t.Errorf("Written bytes differ: (-got +want)\n%s", diff)
-			// }
+			if len(tc.want.elems) != len(d.elems) {
+				t.Fatal("documents of different sizes")
+			}
+			for idx := range tc.want.elems {
+				if !tc.want.elems[idx].Equal(d.elems[idx]) {
+					t.Fatal("elements at index unequal", idx)
+				}
+			}
 		}
 	})
 	t.Run("Sort", func(t *testing.T) {
 		t.Run("EqualKeys", func(t *testing.T) {
 			doc := DC.New().Append(EC.Int32("_id", 42), EC.Int32("_id", 0))
-			assert.EqualValues(t, 42, doc.Elements()[0].Value().Int32())
+			if 42 != doc.Elements()[0].Value().Int32() { t.Fatalf("values are not equal %v and %v", 42, doc.Elements()[0].Value().Int32()) }
 			sdoc := doc.Sorted()
-			assert.EqualValues(t, 42, doc.Elements()[0].Value().Int32())
-			assert.EqualValues(t, 0, sdoc.Elements()[0].Value().Int32())
+			if 42 != doc.Elements()[0].Value().Int32() { t.Fatalf("values are not equal %v and %v", 42, doc.Elements()[0].Value().Int32()) }
+			if 0 != sdoc.Elements()[0].Value().Int32() { t.Fatalf("values are not equal %v and %v", 0, sdoc.Elements()[0].Value().Int32()) }
 		})
 		t.Run("DifferentKeys", func(t *testing.T) {
 			doc := DC.New().Append(EC.Int64("id", 42), EC.Int64("_id", 0), EC.String("_first", "hi"))
@@ -781,9 +853,9 @@ func TestDocument(t *testing.T) {
 		})
 		t.Run("DifferentTypes", func(t *testing.T) {
 			doc := DC.New().Append(EC.Int32("_id", 42), EC.String("_id", "forty-two"))
-			assert.EqualValues(t, 42, doc.Elements()[0].Value().Int32())
+			if 42 != doc.Elements()[0].Value().Int32() { t.Fatalf("values are not equal %v and %v", 42, doc.Elements()[0].Value().Int32()) }
 			sdoc := doc.Sorted()
-			assert.EqualValues(t, 42, doc.Elements()[0].Value().Int32())
+			if 42 != doc.Elements()[0].Value().Int32() { t.Fatalf("values are not equal %v and %v", 42, doc.Elements()[0].Value().Int32()) }
 			assert.Equal(t, "forty-two", sdoc.Elements()[0].Value().StringValue())
 		})
 	})
@@ -792,7 +864,7 @@ func TestDocument(t *testing.T) {
 		t.Run("Element", func(t *testing.T) {
 			elem := doc.LookupElement("id")
 			assert.Equal(t, "id", elem.Key())
-			assert.EqualValues(t, 42, elem.Value().Int64())
+			if 42 != elem.Value().Int64() { t.Fatalf("values are not equal %v and %v", 42, elem.Value().Int64()) }
 		})
 		t.Run("ElementErr", func(t *testing.T) {
 			elem, err := doc.LookupElementErr("_id")
@@ -800,18 +872,18 @@ func TestDocument(t *testing.T) {
 				t.Fatal(err)
 			}
 			assert.Equal(t, "_id", elem.Key())
-			assert.EqualValues(t, 11, elem.Value().Int64())
+			if 11 != elem.Value().Int64() { t.Fatalf("values are not equal %v and %v", 11, elem.Value().Int64()) }
 		})
 		t.Run("Value", func(t *testing.T) {
 			val := doc.Lookup("id")
-			assert.EqualValues(t, 42, val.Int64())
+			if 42 != val.Int64() { t.Fatalf("values are not equal %v and %v", 42, val.Int64()) }
 		})
 		t.Run("ValueErr", func(t *testing.T) {
 			val, err := doc.LookupErr("_id")
 			if err != nil {
 				t.Fatal(err)
 			}
-			assert.EqualValues(t, 11, val.Int64())
+			if 11 != val.Int64() { t.Fatalf("values are not equal %v and %v", 11, val.Int64()) }
 		})
 		t.Run("Missing", func(t *testing.T) {
 			assert.Nil(t, doc.Lookup("NOT REAL"))

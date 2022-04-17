@@ -46,7 +46,15 @@ func TestArray(t *testing.T) {
 				got.doc.IgnoreNilInsert = true
 				got.Append(nil)
 
-				require.Equal(t, want, got)
+				if len(want.doc.elems) != len(got.doc.elems) {
+					t.Fatal("unquela lengths")
+				}
+				for idx := range want.doc.elems {
+					if !want.doc.elems[idx].Equal(got.doc.elems[idx]) {
+						t.Fatal("uneuqal elements at index", idx)
+					}
+				}
+
 				// if diff := cmp.Diff(got, want, cmp.AllowUnexported(Document{}, Array{})); diff != "" {
 				// 	t.Errorf("Documents differ: (-got +want)\n%s", diff)
 				// }
@@ -118,10 +126,14 @@ func TestArray(t *testing.T) {
 							t.Errorf("Did not received expected error from panic. got %#v; want %#v", r, nil)
 						}
 
-						require.Equal(t, tc.want, got)
-						// if diff := cmp.Diff(got, tc.want, cmp.AllowUnexported(Document{}, Array{})); diff != "" {
-						// 	t.Errorf("Documents differ: (-got +want)\n%s", diff)
-						// }
+						if len(tc.want.doc.elems) != len(got.doc.elems) {
+							t.Fatal("unquela lengths")
+						}
+						for idx := range tc.want.doc.elems {
+							if !tc.want.doc.elems[idx].Equal(got.doc.elems[idx]) {
+								t.Fatal("uneuqal elements at index", idx)
+							}
+						}
 					}()
 					got = NewArray()
 					got.doc.IgnoreNilInsert = true
@@ -276,12 +288,16 @@ func TestArray(t *testing.T) {
 	t.Run("Constructors", func(t *testing.T) {
 		t.Run("FromDocument", func(t *testing.T) {
 			doc := NewDocument(EC.Int("foo", 42), EC.Int("bar", 84))
-			require.Equal(t, 2, doc.Len())
+			if 2 != doc.Len() {
+				t.Fatalf("unqueal %v and %v", 2, doc.Len())
+			}
 
 			ar := ArrayFromDocument(doc)
 			assert.Equal(t, 2, ar.Len())
 			iter := ar.Iterator()
-			require.NotNil(t, iter)
+			if iter == nil {
+				t.Fatalf("%T value is nil", iter)
+			}
 			total := 0
 			for iter.Next() {
 				total += iter.Value().Int()
@@ -307,7 +323,9 @@ func TestArray(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			require.True(t, ln > 0)
+			if ln == 0 {
+				t.Fatal("truth assertion failed", ln)
+			}
 		})
 		t.Run("Fail", func(t *testing.T) {
 			ar := NewArray(&Value{})
@@ -359,8 +377,12 @@ func TestArray(t *testing.T) {
 			slice := NewArray(VC.Int(42), VC.Int(84)).Interface()
 
 			assert.Len(t, slice, 2)
-			assert.EqualValues(t, slice[0], 42)
-			assert.EqualValues(t, slice[1], 84)
+			if slice[0].(int32) != 42 {
+				t.Fatalf("values are not equal %v and %v", slice[0], 42)
+			}
+			if slice[1].(int32) != 84 {
+				t.Fatalf("values are not equal %v and %v", slice[1], 84)
+			}
 		})
 	})
 	t.Run("String", func(t *testing.T) {
@@ -384,9 +406,13 @@ func TestArray(t *testing.T) {
 		})
 		t.Run("Replace", func(t *testing.T) {
 			ar := NewArray(VC.Int(42))
-			assert.EqualValues(t, 42, ar.Lookup(0).Interface())
+			if 42 != ar.Lookup(0).Interface().(int32) {
+				t.Fatalf("values are not equal %v and %v", 42, ar.Lookup(0).Interface())
+			}
 			ar.Set(0, VC.Int(84))
-			assert.EqualValues(t, 84, ar.Lookup(0).Interface())
+			if 84 != ar.Lookup(0).Interface().(int32) {
+				t.Fatalf("values are not equal %v and %v", 84, ar.Lookup(0).Interface())
+			}
 		})
 
 	})

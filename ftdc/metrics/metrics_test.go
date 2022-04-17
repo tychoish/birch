@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch/ftdc"
 )
 
@@ -82,8 +81,12 @@ func TestCollectRuntime(t *testing.T) {
 				for iter.Next() {
 					counter++
 					doc := iter.Document()
-					require.NotNil(t, doc)
-					require.Equal(t, 4, doc.Len())
+					if doc == nil {
+						t.Fatalf("%T value is nil", doc)
+					}
+					if 4 != doc.Len() {
+						t.Fatalf("unqueal %v and %v", 4, doc.Len())
+					}
 				}
 				if err := iter.Err(); err != nil {
 					t.Fatal(err)
@@ -117,8 +120,12 @@ func TestCollectRuntime(t *testing.T) {
 				for iter.Next() {
 					counter++
 					doc := iter.Document()
-					require.NotNil(t, doc)
-					require.Equal(t, 15, doc.Len())
+					if doc == nil {
+						t.Fatalf("%T value is nil", doc)
+					}
+					if 15 != doc.Len() {
+						t.Fatalf("unqueal %v and %v", 15, doc.Len())
+					}
 				}
 				if err := iter.Err(); err != nil {
 					t.Fatal(err)

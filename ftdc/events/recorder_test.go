@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch/ftdc"
 )
 
@@ -61,15 +60,23 @@ func TestRecorder(t *testing.T) {
 							assert.Len(t, c.Data, i)
 							dur := time.Since(start)
 							r.EndIteration(dur)
-							require.Len(t, c.Data, i+1)
+							if len(c.Data) != i+1 {
+								t.Fatalf("lengths of %d and %d are not expected", len(c.Data), i+1)
+							}
 
 							totalDur += dur
 
 							payload, ok := c.Data[i].(*Performance)
-							require.True(t, ok)
+							if !ok {
+								t.Fatal("truth assertion failed")
+							}
 
-							assert.EqualValues(t, (i+1)*10, payload.Counters.Operations)
-							assert.EqualValues(t, i+1, payload.Counters.Number)
+							if int64((i+1)*10) != payload.Counters.Operations {
+								t.Fatalf("values are not equal %v and %v", (i+1)*10, payload.Counters.Operations)
+							}
+							if int64(i+1) != payload.Counters.Number {
+								t.Fatalf("values are not equal %v and %v", i+1, payload.Counters.Number)
+							}
 							assert.Equal(t, totalDur, payload.Timers.Duration)
 							assert.True(t, payload.Timers.Total > lastTotal)
 							assert.True(t, payload.Timers.Total >= payload.Timers.Duration)
@@ -79,9 +86,15 @@ func TestRecorder(t *testing.T) {
 							t.Fatal(err)
 						}
 						payload, ok := c.Data[len(c.Data)-1].(*Performance)
-						require.True(t, ok)
-						assert.EqualValues(t, iterations*10, payload.Counters.Operations)
-						assert.EqualValues(t, iterations, payload.Counters.Number)
+						if !ok {
+							t.Fatal("truth assertion failed")
+						}
+						if int64(iterations*10) != payload.Counters.Operations {
+							t.Fatalf("values are not equal %v and %v", iterations*10, payload.Counters.Operations)
+						}
+						if int64(iterations) != payload.Counters.Number {
+							t.Fatalf("values are not equal %v and %v", iterations, payload.Counters.Number)
+						}
 						assert.Equal(t, totalDur, payload.Timers.Duration)
 						assert.Equal(t, lastTotal, payload.Timers.Total)
 						assert.True(t, payload.Timers.Total >= payload.Timers.Duration)
@@ -115,12 +128,20 @@ func TestRecorder(t *testing.T) {
 						r.IncOperations(10)
 						assert.Len(t, c.Data, 0)
 						r.EndIteration(time.Minute)
-						require.Len(t, c.Data, 1)
+						if len(c.Data) != 1 {
+							t.Fatalf("lengths of %d and %d are not expected", len(c.Data), 1)
+						}
 
 						payload, ok := c.Data[0].(*Performance)
-						require.True(t, ok)
-						assert.EqualValues(t, 10, payload.Counters.Operations)
-						assert.EqualValues(t, 1, payload.Counters.Number)
+						if !ok {
+							t.Fatal("truth assertion failed")
+						}
+						if 10 != payload.Counters.Operations {
+							t.Fatalf("values are not equal %v and %v", 10, payload.Counters.Operations)
+						}
+						if 1 != payload.Counters.Number {
+							t.Fatalf("values are not equal %v and %v", 1, payload.Counters.Number)
+						}
 						assert.Equal(t, time.Minute, payload.Timers.Duration)
 						assert.True(t, payload.Timers.Total > 0)
 					},
@@ -210,22 +231,32 @@ func TestRecorder(t *testing.T) {
 						if err := r.EndTest(); err != nil {
 							t.Fatal(err)
 						}
-						require.True(t, len(c.Data) > 0)
+						if len(c.Data) == 0 {
+							t.Fatal("truth assertion failed")
+						}
 
 						switch data := c.Data[len(c.Data)-1].(type) {
 						case *Performance:
 							assert.True(t, data.Timers.Duration >= 9*time.Second, "%s", data.Timers.Duration)
 							assert.True(t, data.Timers.Total > 0)
-							assert.EqualValues(t, data.Counters.Operations, 10)
+							if data.Counters.Operations != 10 {
+								t.Fatalf("values are not equal %v and %v", data.Counters.Operations, 10)
+							}
 							assert.True(t, time.Since(data.Timestamp) <= time.Second)
 						case *PerformanceHDR:
-							assert.EqualValues(t, 10, data.Counters.Number.TotalCount())
+							if 10 != data.Counters.Number.TotalCount() {
+								t.Fatalf("values are not equal %v and %v", 10, data.Counters.Number.TotalCount())
+							}
 							assert.Equal(t, 1.0, data.Counters.Number.Mean())
 
-							assert.EqualValues(t, 10, data.Timers.Duration.TotalCount())
+							if 10 != data.Timers.Duration.TotalCount() {
+								t.Fatalf("values are not equal %v and %v", 10, data.Timers.Duration.TotalCount())
+							}
 							assert.InDelta(t, time.Second, int64(data.Timers.Duration.Mean()), float64(time.Microsecond))
 
-							assert.EqualValues(t, 10, data.Counters.Operations.TotalCount())
+							if 10 != data.Counters.Operations.TotalCount() {
+								t.Fatalf("values are not equal %v and %v", 10, data.Counters.Operations.TotalCount())
+							}
 							assert.Equal(t, 1.0, data.Counters.Operations.Mean())
 						default:
 							assert.True(t, false, "%T", data)
@@ -245,21 +276,31 @@ func TestRecorder(t *testing.T) {
 						if err := r.EndTest(); err != nil {
 							t.Fatal(err)
 						}
-						require.True(t, len(c.Data) > 0)
+						if len(c.Data) == 0 {
+							t.Fatal("truth assertion failed")
+						}
 
 						switch data := c.Data[len(c.Data)-1].(type) {
 						case *Performance:
 							assert.True(t, data.Timers.Duration >= time.Second, "%s", data.Timers.Duration)
 							assert.True(t, data.Timers.Total > 0)
-							assert.EqualValues(t, data.Counters.Size, 10*1024)
+							if data.Counters.Size != 10*1024 {
+								t.Fatalf("values are not equal %v and %v", data.Counters.Size, 10*1024)
+							}
 						case *PerformanceHDR:
-							assert.EqualValues(t, 10, data.Counters.Number.TotalCount())
+							if 10 != data.Counters.Number.TotalCount() {
+								t.Fatalf("values are not equal %v and %v", 10, data.Counters.Number.TotalCount())
+							}
 							assert.Equal(t, 1.0, data.Counters.Number.Mean())
 
-							assert.EqualValues(t, 10, data.Timers.Duration.TotalCount())
+							if 10 != data.Timers.Duration.TotalCount() {
+								t.Fatalf("values are not equal %v and %v", 10, data.Timers.Duration.TotalCount())
+							}
 							assert.InDelta(t, 100*time.Millisecond, int64(data.Timers.Duration.Mean()), float64(time.Microsecond))
 
-							assert.EqualValues(t, 10, data.Counters.Size.TotalCount())
+							if 10 != data.Counters.Size.TotalCount() {
+								t.Fatalf("values are not equal %v and %v", 10, data.Counters.Size.TotalCount())
+							}
 							assert.Equal(t, 1024.0, data.Counters.Size.Mean())
 						default:
 							assert.True(t, false, "%T", data)
@@ -279,17 +320,23 @@ func TestRecorder(t *testing.T) {
 						if err := r.EndTest(); err != nil {
 							t.Fatal(err)
 						}
-						require.True(t, len(c.Data) > 0)
+						if len(c.Data) == 0 {
+							t.Fatal("truth assertion failed")
+						}
 
 						switch data := c.Data[len(c.Data)-1].(type) {
 						case *Performance:
 							assert.True(t, data.Timers.Duration >= 100*time.Millisecond, "%s", data.Timers.Duration)
 							assert.True(t, data.Timers.Total > 0)
 						case *PerformanceHDR:
-							assert.EqualValues(t, 10, data.Counters.Number.TotalCount())
+							if 10 != data.Counters.Number.TotalCount() {
+								t.Fatalf("values are not equal %v and %v", 10, data.Counters.Number.TotalCount())
+							}
 							assert.Equal(t, 1.0, data.Counters.Number.Mean())
 
-							assert.EqualValues(t, 10, data.Timers.Duration.TotalCount())
+							if 10 != data.Timers.Duration.TotalCount() {
+								t.Fatalf("values are not equal %v and %v", 10, data.Timers.Duration.TotalCount())
+							}
 							assert.InDelta(t, 10*time.Millisecond, int64(data.Timers.Duration.Mean()), float64(time.Microsecond))
 						default:
 							assert.True(t, false, "%T", data)
@@ -326,13 +373,16 @@ func TestRecorder(t *testing.T) {
 						if err := r.EndTest(); err != nil {
 							t.Fatal(err)
 						}
-						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
 						case *Performance:
-							assert.EqualValues(t, data.Gauges.State, 422)
+							if data.Gauges.State != 422 {
+								t.Fatalf("values are not equal %v and %v", data.Gauges.State, 422)
+							}
 						case *PerformanceHDR:
-							assert.EqualValues(t, data.Gauges.State, 422, "%+v", data.Gauges)
+							if data.Gauges.State != 422 {
+								t.Fatalf("values are not equal %v and %v", data.Gauges.State, 422)
+							}
 						default:
 							assert.True(t, false, "%T", data)
 						}
@@ -350,13 +400,16 @@ func TestRecorder(t *testing.T) {
 						if err := r.EndTest(); err != nil {
 							t.Fatal(err)
 						}
-						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
 						case *Performance:
-							assert.EqualValues(t, data.Gauges.Workers, 422)
+							if data.Gauges.Workers != 422 {
+								t.Fatalf("values are not equal %v and %v", data.Gauges.Workers, 422)
+							}
 						case *PerformanceHDR:
-							assert.EqualValues(t, data.Gauges.Workers, 422, "%+v", data.Gauges)
+							if data.Gauges.Workers != 422 {
+								t.Fatalf("values are not equal %v and %v", data.Gauges.Workers, 422)
+							}
 						default:
 							assert.True(t, false, "%T", data)
 						}
@@ -373,7 +426,6 @@ func TestRecorder(t *testing.T) {
 						if err := r.EndTest(); err != nil {
 							t.Fatal(err)
 						}
-						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
 						case *Performance:
@@ -397,7 +449,6 @@ func TestRecorder(t *testing.T) {
 						if err := r.EndTest(); err != nil {
 							t.Fatal(err)
 						}
-						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
 						case *Performance:
@@ -423,7 +474,6 @@ func TestRecorder(t *testing.T) {
 						if err := r.EndTest(); err != nil {
 							t.Fatal(err)
 						}
-						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
 						case *Performance:
@@ -446,7 +496,6 @@ func TestRecorder(t *testing.T) {
 						if err := r.EndTest(); err != nil {
 							t.Fatal(err)
 						}
-						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
 						case *Performance:
@@ -472,7 +521,6 @@ func TestRecorder(t *testing.T) {
 						if err := r.EndTest(); err != nil {
 							t.Fatal(err)
 						}
-						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
 						case *Performance:
@@ -498,7 +546,6 @@ func TestRecorder(t *testing.T) {
 						if err := r.EndTest(); err != nil {
 							t.Fatal(err)
 						}
-						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
 						case *Performance:
@@ -507,7 +554,9 @@ func TestRecorder(t *testing.T) {
 						case *PerformanceHDR:
 							count := data.Counters.Number.TotalCount()
 							assert.True(t, 1 <= count, "count=%d", count)
-							assert.EqualValues(t, 42, data.Counters.Number.Max())
+							if 42 != data.Counters.Number.Max() {
+								t.Fatalf("values are not equal %v and %v", 42, data.Counters.Number.Max())
+							}
 						default:
 							assert.True(t, false, "%T", data)
 						}
@@ -525,13 +574,16 @@ func TestRecorder(t *testing.T) {
 						if err := r.EndTest(); err != nil {
 							t.Fatal(err)
 						}
-						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
 						case *Performance:
-							assert.EqualValues(t, ts, data.Timestamp)
+							if ts != data.Timestamp {
+								t.Fatalf("values are not equal %v and %v", ts, data.Timestamp)
+							}
 						case *PerformanceHDR:
-							assert.EqualValues(t, ts, data.Timestamp)
+							if ts != data.Timestamp {
+								t.Fatalf("values are not equal %v and %v", ts, data.Timestamp)
+							}
 						default:
 							assert.True(t, false, "%T", data)
 						}
@@ -549,13 +601,16 @@ func TestRecorder(t *testing.T) {
 						if err := r.EndTest(); err != nil {
 							t.Fatal(err)
 						}
-						require.True(t, len(c.Data) >= 1)
 
 						switch data := c.Data[0].(type) {
 						case *Performance:
-							assert.EqualValues(t, id, data.ID)
+							if id != data.ID {
+								t.Fatalf("values are not equal %v and %v", id, data.ID)
+							}
 						case *PerformanceHDR:
-							assert.EqualValues(t, id, data.ID)
+							if id != data.ID {
+								t.Fatalf("values are not equal %v and %v", id, data.ID)
+							}
 						default:
 							assert.True(t, false, "%T", data)
 						}

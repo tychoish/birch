@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc/testutil"
 )
@@ -110,11 +109,15 @@ func TestReadPathIntegration(t *testing.T) {
 					counter++
 					if num == 0 {
 						num = len(c.Metrics)
-						require.Equal(t, test.expectedNum, num)
+						if test.expectedNum != num {
+							t.Fatalf("unqueal %v and %v", test.expectedNum, num)
+						}
 					}
 
 					metric := c.Metrics[rand.Intn(num)]
-					require.True(t, len(metric.Values) > 0)
+					if len(metric.Values) > 0 {
+						t.Fatal("truth assertion failed")
+					}
 					hasSeries++
 					assert.Equal(t, metric.startingValue, metric.Values[0], "key=%s", metric.Key())
 					assert.Len(t, metric.Values, test.expectedMetrics, "%d: %d", len(metric.Values), test.expectedMetrics)
@@ -146,7 +149,9 @@ func TestReadPathIntegration(t *testing.T) {
 						elems := 0
 						for docIter.Next() {
 							array := docIter.Element().Value().MutableArray()
-							require.Equal(t, test.expectedMetrics, array.Len())
+							if test.expectedMetrics != array.Len() {
+								t.Fatalf("unqueal %v and %v", test.expectedMetrics, array.Len())
+							}
 							elems++
 						}
 						// this is inexact
@@ -173,8 +178,12 @@ func TestReadPathIntegration(t *testing.T) {
 				counter := 0
 				for iter.Next() {
 					doc := iter.Document()
-					require.NotNil(t, doc)
-					require.True(t, doc.Len() > 0)
+					if doc == nil {
+						t.Fatalf("%T value is nil", doc)
+					}
+					if doc.Len() > 0 {
+						t.Fatal("truth assertion failed")
+					}
 					counter++
 				}
 				assert.Equal(t, test.expectedChunks, counter)
@@ -202,8 +211,12 @@ func TestReadPathIntegration(t *testing.T) {
 					}
 
 					doc := iter.Document()
-					require.NotNil(t, doc)
-					require.True(t, doc.Len() > 0)
+					if doc == nil {
+						t.Fatalf("%T value is nil", doc)
+					}
+					if doc.Len() > 0 {
+						t.Fatal("truth assertion failed")
+					}
 				}
 				if err := iter.Err(); err != nil {
 					t.Fatal(err)
@@ -236,7 +249,9 @@ func TestReadPathIntegration(t *testing.T) {
 						}
 
 						doc := iter.Document()
-						require.NotNil(t, doc)
+						if doc == nil {
+							t.Fatalf("%T value is nil", doc)
+						}
 						if counter%test.reportInterval == 0 {
 							fmt.Println(testMessage{
 								"flavor":   "STRC",
@@ -247,7 +262,9 @@ func TestReadPathIntegration(t *testing.T) {
 							startAt = time.Now()
 						}
 
-						require.Equal(t, test.docLen, doc.Len())
+						if test.docLen != doc.Len() {
+							t.Fatalf("unqueal %v and %v", test.docLen, doc.Len())
+						}
 					}
 					assert.NoError(t, iter.Err())
 					assert.True(t, counter >= expectedSamples/10)
@@ -266,7 +283,9 @@ func TestReadPathIntegration(t *testing.T) {
 							continue
 						}
 						doc := iter.Document()
-						require.NotNil(t, doc)
+						if doc == nil {
+							t.Fatalf("%T value is nil", doc)
+						}
 						if counter%test.reportInterval == 0 {
 							fmt.Println(testMessage{
 								"flavor":   "FLAT",
@@ -277,7 +296,9 @@ func TestReadPathIntegration(t *testing.T) {
 							startAt = time.Now()
 						}
 
-						require.Equal(t, test.expectedNum, doc.Len())
+						if test.expectedNum != doc.Len() {
+							t.Fatalf("unqueal %v and %v", test.expectedNum, doc.Len())
+						}
 					}
 					assert.NoError(t, iter.Err())
 					assert.True(t, counter >= expectedSamples/10)
@@ -320,7 +341,9 @@ func TestRoundTrip(t *testing.T) {
 
 					docNum := 0
 					for iter.Next() {
-						require.True(t, docNum < len(docs))
+						if docNum < len(docs) {
+							t.Fatal("truth assertion failed")
+						}
 						roundtripDoc := iter.Document()
 
 						assert.Equal(t, fmt.Sprint(roundtripDoc), fmt.Sprint(docs[docNum]))

@@ -443,13 +443,19 @@ func TestReader(t *testing.T) {
 				}
 
 				for _, elem := range tc.elems {
-					require.True(t, itr.Next())
+					if !itr.Next() {
+						t.Fatal("truth assertion failed")
+					}
 					require.NoError(t, itr.Err())
-					require.True(t, readerElementComparer(elem, itr.Element()))
+					if !readerElementComparer(elem, itr.Element()) {
+						t.Fatal("truth assertion failed")
+					}
 				}
 
 				require.False(t, itr.Next())
-				require.Equal(t, tc.finalErr, itr.Err())
+				if tc.finalErr != itr.Err() {
+					t.Fatalf("unqueal %v and %v", tc.finalErr, itr.Err())
+				}
 			})
 		}
 	})
@@ -529,8 +535,12 @@ func TestReader(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
 				reader, err := NewFromIOReader(tc.ioReader)
-				require.Equal(t, err, tc.err)
-				require.True(t, bytes.Equal(tc.bsonReader, reader))
+				if err != tc.err {
+					t.Fatalf("unqueal %v and %v", err, tc.err)
+				}
+				if !bytes.Equal(tc.bsonReader, reader) {
+					t.Fatal("truth assertion failed")
+				}
 			})
 		}
 	})

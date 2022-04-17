@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc/testutil"
 )
@@ -124,8 +123,12 @@ func BenchmarkDocumentCreation(b *testing.B) {
 			for n := 0; n < b.N; n++ {
 				for i := 0; i < test.Samples; i++ {
 					doc, _ = restoreDocument(test.Reference, i, test.Metrics, 0)
-					require.NotNil(b, doc)
-					require.Equal(b, test.Length, doc.Len())
+					if doc == nil {
+						b.Fatalf("%T value is nil", doc)
+					}
+					if test.Length != doc.Len() {
+						b.Fatalf("unqueal %v and %v", test.Length, doc.Len())
+					}
 				}
 			}
 		})

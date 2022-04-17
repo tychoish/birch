@@ -100,7 +100,9 @@ func TestCollectorInterface(t *testing.T) {
 						}
 						time.Sleep(time.Millisecond) // force context switch so that the buffered collector flushes
 						info := collector.Info()
-						require.Equal(t, info.SampleCount, count)
+						if info.SampleCount != count {
+							t.Fatalf("unqueal %v and %v", info.SampleCount, count)
+						}
 
 						out, err := collector.Resolve()
 						if err != nil {
@@ -173,7 +175,9 @@ func TestStreamingEncoding(t *testing.T) {
 						idx := 0
 						for iter.Next() {
 							doc := iter.Document()
-							require.NotNil(t, doc)
+							if doc == nil {
+								t.Fatalf("%T value is nil", doc)
+							}
 							val := doc.Lookup("foo").Int64()
 							res = append(res, val)
 							assert.Equal(t, val, test.dataset[idx])
@@ -182,7 +186,9 @@ func TestStreamingEncoding(t *testing.T) {
 						if err := iter.Err(); err != nil {
 							t.Fatal(err)
 						}
-						require.Equal(t, len(test.dataset), len(res))
+						if len(test.dataset) != len(res) {
+							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
+						}
 						assert.Equal(t, test.dataset, res)
 					})
 					t.Run("MultipleValues", func(t *testing.T) {
@@ -208,7 +214,9 @@ func TestStreamingEncoding(t *testing.T) {
 						res := []int64{}
 						for iter.Next() {
 							doc := iter.Document()
-							require.NotNil(t, doc)
+							if doc == nil {
+								t.Fatalf("%T value is nil", doc)
+							}
 							val := doc.Lookup("foo").Int64()
 							res = append(res, val)
 							idx := len(res) - 1
@@ -219,7 +227,9 @@ func TestStreamingEncoding(t *testing.T) {
 						if err := iter.Err(); err != nil {
 							t.Fatal(err)
 						}
-						require.Equal(t, len(test.dataset), len(res))
+						if len(test.dataset) != len(res) {
+							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
+						}
 						assert.Equal(t, test.dataset, res)
 					})
 
@@ -255,7 +265,9 @@ func TestStreamingEncoding(t *testing.T) {
 						res := []int64{}
 						for iter.Next() {
 							doc := iter.Document()
-							require.NotNil(t, doc)
+							if doc == nil {
+								t.Fatalf("%T value is nil", doc)
+							}
 							val := doc.Lookup("foo").Int64()
 							res = append(res, val)
 							idx := len(res) - 1
@@ -266,7 +278,9 @@ func TestStreamingEncoding(t *testing.T) {
 						if err := iter.Err(); err != nil {
 							t.Fatal(err)
 						}
-						require.Equal(t, len(test.dataset), len(res), "%v -> %v", test.dataset, res)
+						if len(test.dataset) != len(res) {
+							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
+						}
 						assert.Equal(t, test.dataset, res)
 					})
 					t.Run("DifferentKeys", func(t *testing.T) {
@@ -304,7 +318,9 @@ func TestStreamingEncoding(t *testing.T) {
 						res := []int64{}
 						for iter.Next() {
 							doc := iter.Document()
-							require.NotNil(t, doc)
+							if doc == nil {
+								t.Fatalf("%T value is nil", doc)
+							}
 							val := doc.Lookup("foo").Int64()
 							res = append(res, val)
 							idx := len(res) - 1
@@ -314,8 +330,9 @@ func TestStreamingEncoding(t *testing.T) {
 						if err := iter.Err(); err != nil {
 							t.Fatal(err)
 						}
-						require.Equal(t, len(test.dataset), len(res), "%v -> %v", test.dataset, res)
-						require.Equal(t, len(test.dataset), len(res))
+						if len(test.dataset) != len(res) {
+							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
+						}
 					})
 				})
 			}
@@ -362,7 +379,9 @@ func TestFixedEncoding(t *testing.T) {
 						idx := 0
 						for iter.Next() {
 							doc := iter.Document()
-							require.NotNil(t, doc)
+							if doc == nil {
+								t.Fatalf("%T value is nil", doc)
+							}
 							val := doc.Lookup("foo").Int64()
 							res = append(res, val)
 							assert.Equal(t, val, test.dataset[idx])
@@ -371,7 +390,9 @@ func TestFixedEncoding(t *testing.T) {
 						if err := iter.Err(); err != nil {
 							t.Fatal(err)
 						}
-						require.Equal(t, len(test.dataset), len(res))
+						if len(test.dataset) != len(res) {
+							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
+						}
 						assert.Equal(t, test.dataset, res)
 					})
 					t.Run("MultipleValues", func(t *testing.T) {
@@ -398,7 +419,9 @@ func TestFixedEncoding(t *testing.T) {
 						res := []int64{}
 						for iter.Next() {
 							doc := iter.Document()
-							require.NotNil(t, doc)
+							if doc == nil {
+								t.Fatalf("%T value is nil", doc)
+							}
 							val := doc.Lookup("foo").Int64()
 							res = append(res, val)
 							idx := len(res) - 1
@@ -409,7 +432,9 @@ func TestFixedEncoding(t *testing.T) {
 						if err := iter.Err(); err != nil {
 							t.Fatal(err)
 						}
-						require.Equal(t, len(test.dataset), len(res))
+						if len(test.dataset) != len(res) {
+							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
+						}
 						assert.Equal(t, test.dataset, res)
 					})
 				})
@@ -574,7 +599,7 @@ func TestTimestampHandling(t *testing.T) {
 						doc := iter.Document()
 						val, ok := doc.Lookup("ts").TimeOK()
 						if assert.True(t, ok) {
-							assert.EqualValues(t, test.Values[idx], val)
+							if test.Values[idx] != val { t.Fatalf("values are not equal %v and %v", test.Values[idx], val) }
 						}
 						idx++
 					}

@@ -7,8 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 func BenchmarkIterator(b *testing.B) {
@@ -56,14 +54,18 @@ func BenchmarkIterator(b *testing.B) {
 						if !iter.Next() {
 							break
 						}
-						require.NotNil(b, iter.Chunk())
+						if iter.Chunk() == nil {
+							b.Fatalf("%T value is nil", iter.Chunk())
+						}
 					}
 				})
 				b.Run("Iterating", func(b *testing.B) {
 					for n := 0; n < b.N; n++ {
 						iter := ReadChunks(ctx, bytes.NewBuffer(data))
 						for iter.Next() {
-							require.NotNil(b, iter.Chunk())
+							if iter.Chunk() == nil {
+								b.Fatalf("%T value is nil", iter.Chunk())
+							}
 						}
 					}
 				})
@@ -76,14 +78,18 @@ func BenchmarkIterator(b *testing.B) {
 						if !iter.Next() {
 							break
 						}
-						require.NotNil(b, iter.Document())
+						if iter.Document() == nil {
+							b.Fatalf("%T value is nil", iter.Document())
+						}
 					}
 				})
 				b.Run("Iterating", func(b *testing.B) {
 					for n := 0; n < b.N; n++ {
 						iter := ReadSeries(ctx, bytes.NewBuffer(data))
 						for iter.Next() {
-							require.NotNil(b, iter.Document())
+							if iter.Document() == nil {
+								b.Fatalf("%T value is nil", iter.Document())
+							}
 						}
 					}
 				})
@@ -96,14 +102,18 @@ func BenchmarkIterator(b *testing.B) {
 						if !iter.Next() {
 							break
 						}
-						require.NotNil(b, iter.Document())
+						if iter.Document() == nil {
+							b.Fatalf("%T value is nil", iter.Document())
+						}
 					}
 				})
 				b.Run("Iterating", func(b *testing.B) {
 					for n := 0; n < b.N; n++ {
 						iter := ReadMatrix(ctx, bytes.NewBuffer(data))
 						for iter.Next() {
-							require.NotNil(b, iter.Document())
+							if iter.Document() == nil {
+								b.Fatalf("%T value is nil", iter.Document())
+							}
 						}
 					}
 				})
@@ -116,14 +126,18 @@ func BenchmarkIterator(b *testing.B) {
 						if !iter.Next() {
 							break
 						}
-						require.NotNil(b, iter.Document())
+						if iter.Document() == nil {
+							b.Fatalf("%T value is nil", iter.Document())
+						}
 					}
 				})
 				b.Run("Iterating", func(b *testing.B) {
 					for n := 0; n < b.N; n++ {
 						iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
 						for iter.Next() {
-							require.NotNil(b, iter.Document())
+							if iter.Document() == nil {
+								b.Fatalf("%T value is nil", iter.Document())
+							}
 						}
 					}
 				})
@@ -136,14 +150,18 @@ func BenchmarkIterator(b *testing.B) {
 						if !iter.Next() {
 							break
 						}
-						require.NotNil(b, iter.Document())
+						if iter.Document() == nil {
+							b.Fatalf("%T value is nil", iter.Document())
+						}
 					}
 				})
 				b.Run("Iterating", func(b *testing.B) {
 					for n := 0; n < b.N; n++ {
 						iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
 						for iter.Next() {
-							require.NotNil(b, iter.Document())
+							if iter.Document() == nil {
+								b.Fatalf("%T value is nil", iter.Document())
+							}
 						}
 					}
 				})

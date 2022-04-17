@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/ftdc/testutil"
@@ -611,7 +610,18 @@ func TestExtractingMetrics(t *testing.T) {
 
 			keys, num := testutil.IsMetricsValue("keyname", test.Value)
 			if test.NumEncodedValues > 0 {
-				assert.EqualValues(t, test.FirstEncodedValue, metrics.values[0].Interface())
+				switch metrics.values[0].Interface().(type) {
+				case int64:
+					if test.FirstEncodedValue != metrics.values[0].Interface() {
+						t.Fatalf("values are not equal %v and %v", test.FirstEncodedValue, metrics.values[0].Interface())
+					}
+				case float64:
+					if float64(test.FirstEncodedValue) != metrics.values[0].Interface() {
+						t.Fatalf("values are not equal %v and %v", test.FirstEncodedValue, metrics.values[0].Interface())
+					}
+				default:
+					t.Fatalf("%T", metrics.values[0].Interface())
+				}
 				assert.True(t, len(keys) >= 1)
 				assert.True(t, strings.HasPrefix(keys[0], "keyname"))
 			} else {
@@ -619,7 +629,9 @@ func TestExtractingMetrics(t *testing.T) {
 				assert.Zero(t, num)
 			}
 
-			require.Len(t, metrics.types, len(test.Types))
+			if len(metrics.types) != len(test.Types) {
+				t.Fatalf("lengths of %d and %d are not expected", len(metrics.types), len(test.Types))
+			}
 			for i := range metrics.types {
 				assert.Equal(t, test.Types[i], metrics.types[i])
 			}
@@ -682,9 +694,13 @@ func TestDocumentExtraction(t *testing.T) {
 			assert.Equal(t, test.NumEncodedValues, len(metrics.values))
 			assert.False(t, metrics.ts.IsZero())
 			if len(metrics.values) > 0 {
-				assert.EqualValues(t, test.FirstEncodedValue, metrics.values[0].Interface())
+				if test.FirstEncodedValue != metrics.values[0].Interface() {
+					t.Fatalf("values are not equal %v and %v", test.FirstEncodedValue, metrics.values[0].Interface())
+				}
 			}
-			require.Len(t, metrics.types, len(test.Types))
+			if len(metrics.types) != len(test.Types) {
+				t.Fatalf("lengths of %d and %d are not expected", len(metrics.types), len(test.Types))
+			}
 			for i := range metrics.types {
 				assert.Equal(t, test.Types[i], metrics.types[i])
 			}
@@ -740,9 +756,13 @@ func TestArrayExtraction(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, test.NumEncodedValues, len(metrics.values))
 			if test.NumEncodedValues >= 1 {
-				assert.EqualValues(t, test.FirstEncodedValue, metrics.values[0].Interface())
+				if test.FirstEncodedValue != metrics.values[0].Interface() {
+					t.Fatalf("values are not equal %v and %v", test.FirstEncodedValue, metrics.values[0].Interface())
+				}
 			}
-			require.Len(t, metrics.types, len(test.Types))
+			if len(metrics.types) != len(test.Types) {
+				t.Fatalf("lengths of %d and %d are not expected", len(metrics.types), len(test.Types))
+			}
 			for i := range metrics.types {
 				assert.Equal(t, test.Types[i], metrics.types[i])
 			}

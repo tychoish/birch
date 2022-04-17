@@ -1105,13 +1105,19 @@ func TestDocumentConstructor(t *testing.T) {
 					t.Fatal(err)
 				}
 				if test.IsNil {
-					require.Nil(t, doc)
+					if doc != nil {
+						t.Fatal("doc should be nil")
+					}
 					return
 				}
 
-				require.NotNil(t, doc)
+				if doc == nil {
+					t.Fatalf("%T value is nil", doc)
+				}
 
-				require.Equal(t, test.Size, doc.Len())
+				if test.Size != doc.Len() {
+					t.Fatalf("unqueal %v and %v", test.Size, doc.Len())
+				}
 				if test.Check != nil {
 					t.Run("Check", func(t *testing.T) {
 						test.Check(t, doc)
@@ -1285,8 +1291,12 @@ func TestDocumentConstructor(t *testing.T) {
 			t.Run(test.Name, func(t *testing.T) {
 				t.Run("NoErrors", func(t *testing.T) {
 					doc := DC.Interface(test.Input)
-					require.NotNil(t, doc)
-					require.Equal(t, test.Size, doc.Len())
+					if doc == nil {
+						t.Fatalf("%T value is nil", doc)
+					}
+					if test.Size != doc.Len() {
+						t.Fatalf("unqueal %v and %v", test.Size, doc.Len())
+					}
 				})
 				t.Run("Errors", func(t *testing.T) {
 					edoc, err := DC.InterfaceErr(test.Input)
@@ -1294,19 +1304,29 @@ func TestDocumentConstructor(t *testing.T) {
 						if err == nil {
 							t.Fatal(err)
 						}
-						require.Nil(t, edoc)
+						if edoc != nil {
+							t.Fatal("doc should be nil")
+						}
 					} else {
 						if err != nil {
 							t.Fatal(err)
 						}
-						require.NotNil(t, edoc)
-						require.Equal(t, test.Size, edoc.Len())
+						if edoc == nil {
+							t.Fatalf("%T value is nil", edoc)
+						}
+						if test.Size != edoc.Len() {
+							t.Fatalf("unqueal %v and %v", test.Size, edoc.Len())
+						}
 					}
 				})
 				t.Run("ValueConstructor", func(t *testing.T) {
 					val := VC.Interface(test.Input)
-					require.NotNil(t, val)
-					require.Equal(t, test.Type, val.Type())
+					if val == nil {
+						t.Fatalf("%T value is nil", val)
+					}
+					if test.Type != val.Type() {
+						t.Fatalf("unqueal %v and %v", test.Type, val.Type())
+					}
 				})
 			})
 		}
