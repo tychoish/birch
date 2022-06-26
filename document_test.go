@@ -920,7 +920,9 @@ func TestDocument(t *testing.T) {
 		})
 		t.Run("MissingErr", func(t *testing.T) {
 			val, err := doc.LookupErr("NOT REAL")
-			assert.Error(t, err)
+			if err == nil {
+				t.Error("error should not be nil")
+			}
 			assert.Nil(t, val)
 		})
 		t.Run("MissingElement", func(t *testing.T) {
@@ -928,7 +930,9 @@ func TestDocument(t *testing.T) {
 		})
 		t.Run("MissingElementErr", func(t *testing.T) {
 			elem, err := doc.LookupElementErr("NOT REAL")
-			assert.Error(t, err)
+			if err == nil {
+				t.Error("error should not be nil")
+			}
 			assert.Nil(t, elem)
 		})
 

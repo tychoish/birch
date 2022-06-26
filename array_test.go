@@ -349,7 +349,9 @@ func TestArray(t *testing.T) {
 		})
 		t.Run("Marshal", func(t *testing.T) {
 			_, err := NewArray(&Value{}).MarshalBSON()
-			assert.Error(t, err)
+			if err == nil {
+				t.Error("error should not be nil")
+			}
 		})
 
 	})
@@ -397,12 +399,16 @@ func TestArray(t *testing.T) {
 	t.Run("InterfaceExport", func(t *testing.T) {
 		t.Run("Empty", func(t *testing.T) {
 			ar := NewArray()
-			assert.Len(t, ar.Interface(), 0)
+			if len(ar.Interface()) != 0 {
+				t.Errorf("length should be %d", 0)
+			}
 		})
 		t.Run("Value", func(t *testing.T) {
 			slice := NewArray(VC.Int(42), VC.Int(84)).Interface()
 
-			assert.Len(t, slice, 2)
+			if len(slice) != 2 {
+				t.Errorf("length should be %d", 2)
+			}
 			if slice[0].(int32) != 42 {
 				t.Fatalf("values are not equal %v and %v", slice[0], 42)
 			}

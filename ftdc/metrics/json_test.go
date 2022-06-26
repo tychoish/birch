@@ -72,7 +72,9 @@ func TestCollectJSONOptions(t *testing.T) {
 					t.Error(err)
 				}
 			} else {
-				assert.Error(t, test.opts.validate())
+				if err := test.opts.validate(); err == nil {
+					t.Error("error should be nil")
+				}
 			}
 		})
 	}
@@ -171,7 +173,9 @@ func TestCollectJSON(t *testing.T) {
 		}
 
 		err = CollectJSONStream(ctx, opts)
-		assert.Error(t, err)
+		if err == nil {
+			t.Error("error should not be nil")
+		}
 	})
 	t.Run("ReadFromFile", func(t *testing.T) {
 		fn := filepath.Join(dir, "json-read-file-one")
@@ -232,7 +236,9 @@ func TestCollectJSON(t *testing.T) {
 		}
 
 		err = CollectJSONStream(ctx, opts)
-		assert.Error(t, err)
+		if err == nil {
+			t.Error("error should not be nil")
+		}
 		assert.Contains(t, err.Error(), "operation aborted")
 	})
 	t.Run("RoundTrip", func(t *testing.T) {

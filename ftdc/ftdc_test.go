@@ -125,7 +125,9 @@ func TestReadPathIntegration(t *testing.T) {
 					assert.Len(t, metric.Values, test.expectedMetrics, "%d: %d", len(metric.Values), test.expectedMetrics)
 					if counter == 10 {
 						for _, v := range c.renderMap() {
-							assert.Len(t, v.Values, test.expectedMetrics)
+							if len(v.Values) != test.expectedMetrics {
+								t.Errorf("length should be %d", test.expectedMetrics)
+							}
 							if v.startingValue != v.Values[0] {
 								t.Error("values should be equal")
 							}

@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc/testutil"
 )
@@ -27,7 +26,9 @@ func TestWriteCSVIntegration(t *testing.T) {
 		}
 
 		lines := strings.Split(out.String(), "\n")
-		assert.Len(t, lines, 12)
+		if len(lines) != 12 {
+			t.Errorf("length should be %d", 12)
+		}
 	})
 	t.Run("ResuseIterPass", func(t *testing.T) {
 		iter := ReadChunks(ctx, bytes.NewBuffer(newChunk(10)))
@@ -145,7 +146,9 @@ func TestReadCSVIntegration(t *testing.T) {
 		}
 		csvw.Flush()
 
-		assert.Error(t, ConvertFromCSV(ctx, 1000, buf, &bytes.Buffer{}))
+		if err := ConvertFromCSV(ctx, 1000, buf, &bytes.Buffer{}); err == nil {
+			t.Error("error should be nil")
+		}
 	})
 	t.Run("SchemaChangeShrink", func(t *testing.T) {
 		buf := &bytes.Buffer{}
@@ -165,6 +168,8 @@ func TestReadCSVIntegration(t *testing.T) {
 		}
 		csvw.Flush()
 
-		assert.Error(t, ConvertFromCSV(ctx, 1000, buf, &bytes.Buffer{}))
+		if err := ConvertFromCSV(ctx, 1000, buf, &bytes.Buffer{}); err == nil {
+			t.Error("error should be nil")
+		}
 	})
 }

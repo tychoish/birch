@@ -65,7 +65,9 @@ func TestCollectorInterface(t *testing.T) {
 						}
 						assert.NotZero(t, out)
 					} else {
-						assert.Error(t, err)
+						if err == nil {
+							t.Error("error should not be nil")
+						}
 						assert.Zero(t, out)
 					}
 
@@ -78,7 +80,9 @@ func TestCollectorInterface(t *testing.T) {
 				collector := collect.factory()
 				out, err := collector.Resolve()
 				assert.Nil(t, out)
-				assert.Error(t, err)
+				if err == nil {
+					t.Error("error should not be nil")
+				}
 			})
 			t.Run("RoundTrip", func(t *testing.T) {
 				if collect.uncompressed {
@@ -506,7 +510,9 @@ func TestFixedEncoding(t *testing.T) {
 						t.Error(err)
 					}
 				} else {
-					assert.Error(t, collector.Add(birch.NewDocument(birch.EC.Int64("one", 43))))
+					if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43))); err == nil {
+						t.Error("error should be nil")
+					}
 				}
 			})
 		})
@@ -531,7 +537,9 @@ func TestCollectorSizeCap(t *testing.T) {
 			if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err != nil {
 				t.Error(err)
 			}
-			assert.Error(t, collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))))
+			if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err == nil {
+				t.Error("error should be nil")
+			}
 		})
 	}
 }
@@ -540,7 +548,9 @@ func TestWriter(t *testing.T) {
 	t.Run("NilDocuments", func(t *testing.T) {
 		collector := NewWriterCollector(2, &noopWriter{})
 		_, err := collector.Write(nil)
-		assert.Error(t, err)
+		if err == nil {
+			t.Error("error should not be nil")
+		}
 		if err := collector.Close(); err != nil {
 			t.Error(err)
 		}
@@ -575,7 +585,9 @@ func TestWriter(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		assert.Error(t, collector.Close())
+		if err := collector.Close(); err == nil {
+			t.Error("error should be nil")
+		}
 	})
 }
 

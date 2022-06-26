@@ -55,9 +55,13 @@ func TestRecorder(t *testing.T) {
 							r.BeginIteration()
 							time.Sleep(time.Millisecond)
 							start := time.Now()
-							assert.Len(t, c.Data, i)
+							if len(c.Data) != i {
+								t.Errorf("length should be %d", i)
+							}
 							r.IncOperations(10)
-							assert.Len(t, c.Data, i)
+							if len(c.Data) != i {
+								t.Errorf("length should be %d", i)
+							}
 							dur := time.Since(start)
 							r.EndIteration(dur)
 							if len(c.Data) != i+1 {
@@ -130,9 +134,13 @@ func TestRecorder(t *testing.T) {
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
 						r.BeginIteration()
 						time.Sleep(time.Millisecond)
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						r.IncOperations(10)
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						r.EndIteration(time.Minute)
 						if len(c.Data) != 1 {
 							t.Fatalf("lengths of %d and %d are not expected", len(c.Data), 1)
@@ -229,7 +237,9 @@ func TestRecorder(t *testing.T) {
 				{
 					Name: "BeginEndOpsCycle",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						for i := 0; i < 10; i++ {
 							r.BeginIteration()
 							time.Sleep(time.Millisecond)
@@ -278,7 +288,9 @@ func TestRecorder(t *testing.T) {
 				{
 					Name: "BeginEndSizeCycle",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						for i := 0; i < 10; i++ {
 							r.BeginIteration()
 							time.Sleep(time.Millisecond)
@@ -326,7 +338,9 @@ func TestRecorder(t *testing.T) {
 				{
 					Name: "BeginEndErrorCycle",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						for i := 0; i < 10; i++ {
 							r.BeginIteration()
 							time.Sleep(time.Millisecond)
@@ -364,25 +378,37 @@ func TestRecorder(t *testing.T) {
 				{
 					Name: "ResetCall",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						r.Reset()
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 					},
 				},
 				{
 					Name: "IncrementAndSetDoNotTriggerEndTest",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						r.IncOperations(21)
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						r.SetState(2)
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 					},
 				},
 				{
 					Name: "SetStateReplaces",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						r.BeginIteration()
 						r.SetState(20)
 						r.SetState(422)
@@ -409,7 +435,9 @@ func TestRecorder(t *testing.T) {
 				{
 					Name: "SetWorkersReplaces",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						r.BeginIteration()
 						r.SetWorkers(20)
 						r.SetWorkers(422)
@@ -437,7 +465,9 @@ func TestRecorder(t *testing.T) {
 				{
 					Name: "SetFailedDefault",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						r.BeginIteration()
 						r.EndIteration(time.Second)
 						r.BeginIteration()
@@ -459,7 +489,9 @@ func TestRecorder(t *testing.T) {
 				{
 					Name: "SetFailedOverrides",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						r.BeginIteration()
 						r.SetFailed(true)
 						r.EndIteration(time.Second)
@@ -482,7 +514,9 @@ func TestRecorder(t *testing.T) {
 				{
 					Name: "SetFailedCycle",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						r.BeginIteration()
 						r.SetFailed(true)
 						r.SetFailed(false)
@@ -507,7 +541,9 @@ func TestRecorder(t *testing.T) {
 				{
 					Name: "SetTotalDuration",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						r.BeginIteration()
 						r.SetTotalDuration(time.Minute)
 
@@ -535,7 +571,9 @@ func TestRecorder(t *testing.T) {
 				{
 					Name: "SetDuration",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						r.BeginIteration()
 						r.SetDuration(time.Minute)
 						r.EndIteration(0)
@@ -564,7 +602,9 @@ func TestRecorder(t *testing.T) {
 				{
 					Name: "IncIterations",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						r.BeginIteration()
 						r.IncIterations(42)
 						r.EndIteration(0)
@@ -592,7 +632,9 @@ func TestRecorder(t *testing.T) {
 				{
 					Name: "SetTime",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						ts := time.Now().Add(time.Hour).Round(time.Second)
 						r.BeginIteration()
 						r.SetTime(ts)
@@ -619,7 +661,9 @@ func TestRecorder(t *testing.T) {
 				{
 					Name: "SetID",
 					Case: func(t *testing.T, r Recorder, c *MockCollector) {
-						assert.Len(t, c.Data, 0)
+						if len(c.Data) != 0 {
+							t.Errorf("length should be %d", 0)
+						}
 						var id int64 = 42
 						r.BeginIteration()
 						r.SetID(id)

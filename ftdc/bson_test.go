@@ -19,17 +19,23 @@ func TestFlattenArray(t *testing.T) {
 	t.Run("NilArray", func(t *testing.T) {
 		out := metricForArray("", nil, nil)
 		assert.NotNil(t, out)
-		assert.Len(t, out, 0)
+		if len(out) != 0 {
+			t.Errorf("length should be %d", 0)
+		}
 	})
 	t.Run("EmptyArray", func(t *testing.T) {
 		out := metricForArray("", nil, birch.NewArray())
 		assert.NotNil(t, out)
-		assert.Len(t, out, 0)
+		if len(out) != 0 {
+			t.Errorf("length should be %d", 0)
+		}
 	})
 	t.Run("TwoElements", func(t *testing.T) {
 		m := metricForArray("foo", nil, birch.NewArray(birch.VC.Boolean(true), birch.VC.Boolean(false)))
 		assert.NotNil(t, m)
-		assert.Len(t, m, 2)
+		if len(m) != 2 {
+			t.Errorf("length should be %d", 2)
+		}
 
 		if m[0].Key() != "foo.0" {
 			t.Error("values should be equal")
@@ -47,7 +53,9 @@ func TestFlattenArray(t *testing.T) {
 	t.Run("TwoElementsWithSkippedValue", func(t *testing.T) {
 		m := metricForArray("foo", nil, birch.NewArray(birch.VC.String("foo"), birch.VC.Boolean(false)))
 		assert.NotNil(t, m)
-		assert.Len(t, m, 1)
+		if len(m) != 1 {
+			t.Errorf("length should be %d", 1)
+		}
 
 		if m[0].Key() != "foo.1" {
 			t.Error("values should be equal")
@@ -59,7 +67,9 @@ func TestFlattenArray(t *testing.T) {
 	t.Run("ArrayWithOnlyStrings", func(t *testing.T) {
 		out := metricForArray("foo", nil, birch.NewArray(birch.VC.String("foo"), birch.VC.String("bar")))
 		assert.NotNil(t, out)
-		assert.Len(t, out, 0)
+		if len(out) != 0 {
+			t.Errorf("length should be %d", 0)
+		}
 	})
 }
 
@@ -191,7 +201,9 @@ func TestReadDocument(t *testing.T) {
 			}
 			doc, err := readDocument(test.in)
 			if test.shouldError {
-				assert.Error(t, err)
+				if err == nil {
+					t.Error("error should not be nil")
+				}
 			} else {
 				if err != nil {
 					t.Error(err)
@@ -390,7 +402,9 @@ func TestBSONValueToMetric(t *testing.T) {
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			m := metricForType(test.Key, test.Path, test.Value)
-			assert.Len(t, m, test.OutputLen)
+			if len(m) != test.OutputLen {
+				t.Errorf("length should be %d", test.OutputLen)
+			}
 
 			if test.OutputLen > 0 {
 				if test.Expected != m[0].startingValue {
@@ -647,7 +661,9 @@ func TestExtractingMetrics(t *testing.T) {
 				assert.True(t, len(keys) >= 1)
 				assert.True(t, strings.HasPrefix(keys[0], "keyname"))
 			} else {
-				assert.Len(t, keys, 0)
+				if len(keys) != 0 {
+					t.Errorf("length should be %d", 0)
+				}
 				assert.Zero(t, num)
 			}
 

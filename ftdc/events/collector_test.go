@@ -85,7 +85,9 @@ func TestCollector(t *testing.T) {
 					})
 					t.Run("AddEvent", func(t *testing.T) {
 						collector := collectorTest.constructor(fcTest.constructor())
-						assert.Error(t, collector.AddEvent(nil))
+						if err := collector.AddEvent(nil); err == nil {
+							t.Error("error should be nil")
+						}
 						if 0 != collector.Info().SampleCount {
 							t.Error("values should be equal")
 						}

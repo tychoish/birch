@@ -2,8 +2,6 @@ package events
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestRollupRoundTrip(t *testing.T) {
@@ -20,8 +18,12 @@ func TestRollupRoundTrip(t *testing.T) {
 	if err := data.Add("d", []int64{45, 32}); err != nil {
 		t.Error(err)
 	}
-	assert.Error(t, data.Add("foo", Custom{}))
-	assert.Len(t, data, 4)
+	if err := data.Add("foo", Custom{}); err == nil {
+		t.Error("error should be nil")
+	}
+	if len(data) != 4 {
+		t.Errorf("length should be %d", 4)
+	}
 
 	t.Run("NewBSON", func(t *testing.T) {
 		payload, err := data.MarshalBSON()

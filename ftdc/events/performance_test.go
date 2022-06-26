@@ -18,7 +18,9 @@ func TestPerformanceType(t *testing.T) {
 		})
 		assert.Panics(t, func() {
 			_, err := perf.MarshalBSON()
-			assert.Error(t, err)
+			if err == nil {
+				t.Error("error should not be nil")
+			}
 		})
 		assert.Panics(t, func() {
 			perf.Add(nil)

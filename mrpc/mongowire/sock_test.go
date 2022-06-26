@@ -78,7 +78,9 @@ func TestReadMessage(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			message, err := ReadMessage(test.ctx, test.reader)
 			if test.hasErr {
-				assert.Error(t, err)
+				if err == nil {
+					t.Error("error should not be nil")
+				}
 				assert.Nil(t, message)
 			} else {
 				if err != nil {
@@ -100,7 +102,9 @@ func TestSendMessage(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 		w := &mockWriter{}
-		assert.Error(t, SendMessage(ctx, createSmallMessage(t), w))
+		if err := SendMessage(ctx, createSmallMessage(t), w); err == nil {
+			t.Error("error should be nil")
+		}
 		assert.Empty(t, w.data)
 	})
 	t.Run("SmallMessage", func(t *testing.T) {
