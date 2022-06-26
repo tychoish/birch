@@ -82,7 +82,9 @@ func TestCollector(t *testing.T) {
 					t.Run("AddEvent", func(t *testing.T) {
 						collector := collectorTest.constructor(fcTest.constructor())
 						assert.Error(t, collector.AddEvent(nil))
-						assert.Equal(t, 0, collector.Info().SampleCount)
+						if 0 != collector.Info().SampleCount {
+							t.Error("values should be equal")
+						}
 
 						for idx, e := range []*Performance{
 							{},
@@ -92,7 +94,9 @@ func TestCollector(t *testing.T) {
 							},
 						} {
 							assert.NoError(t, collector.AddEvent(e))
-							assert.Equal(t, idx+1, collector.Info().SampleCount)
+							if idx+1 != collector.Info().SampleCount {
+								t.Error("values should be equal")
+							}
 						}
 					})
 				})

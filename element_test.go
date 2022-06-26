@@ -12,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/types"
@@ -1725,7 +1724,9 @@ func TestElement(t *testing.T) {
 	t.Run("SetValue", func(t *testing.T) {
 		elem := EC.Int("foo", 300)
 		elem.SetValue(VC.Int32(42))
-		assert.Equal(t, 42, elem.Value().Int())
+		if 42 != elem.Value().Int() {
+			t.Error("values should be equal")
+		}
 	})
 }
 

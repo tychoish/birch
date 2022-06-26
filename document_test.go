@@ -839,51 +839,81 @@ func TestDocument(t *testing.T) {
 	t.Run("Sort", func(t *testing.T) {
 		t.Run("EqualKeys", func(t *testing.T) {
 			doc := DC.New().Append(EC.Int32("_id", 42), EC.Int32("_id", 0))
-			if 42 != doc.Elements()[0].Value().Int32() { t.Fatalf("values are not equal %v and %v", 42, doc.Elements()[0].Value().Int32()) }
+			if 42 != doc.Elements()[0].Value().Int32() {
+				t.Fatalf("values are not equal %v and %v", 42, doc.Elements()[0].Value().Int32())
+			}
 			sdoc := doc.Sorted()
-			if 42 != doc.Elements()[0].Value().Int32() { t.Fatalf("values are not equal %v and %v", 42, doc.Elements()[0].Value().Int32()) }
-			if 0 != sdoc.Elements()[0].Value().Int32() { t.Fatalf("values are not equal %v and %v", 0, sdoc.Elements()[0].Value().Int32()) }
+			if 42 != doc.Elements()[0].Value().Int32() {
+				t.Fatalf("values are not equal %v and %v", 42, doc.Elements()[0].Value().Int32())
+			}
+			if 0 != sdoc.Elements()[0].Value().Int32() {
+				t.Fatalf("values are not equal %v and %v", 0, sdoc.Elements()[0].Value().Int32())
+			}
 		})
 		t.Run("DifferentKeys", func(t *testing.T) {
 			doc := DC.New().Append(EC.Int64("id", 42), EC.Int64("_id", 0), EC.String("_first", "hi"))
-			assert.Equal(t, "id", doc.Elements()[0].Key())
+			if "id" != doc.Elements()[0].Key() {
+				t.Error("values should be equal")
+			}
 			sdoc := doc.Sorted()
-			assert.Equal(t, "id", doc.Elements()[0].Key())
-			assert.Equal(t, "_first", sdoc.Elements()[0].Key())
+			if "id" != doc.Elements()[0].Key() {
+				t.Error("values should be equal")
+			}
+			if "_first" != sdoc.Elements()[0].Key() {
+				t.Error("values should be equal")
+			}
 		})
 		t.Run("DifferentTypes", func(t *testing.T) {
 			doc := DC.New().Append(EC.Int32("_id", 42), EC.String("_id", "forty-two"))
-			if 42 != doc.Elements()[0].Value().Int32() { t.Fatalf("values are not equal %v and %v", 42, doc.Elements()[0].Value().Int32()) }
+			if 42 != doc.Elements()[0].Value().Int32() {
+				t.Fatalf("values are not equal %v and %v", 42, doc.Elements()[0].Value().Int32())
+			}
 			sdoc := doc.Sorted()
-			if 42 != doc.Elements()[0].Value().Int32() { t.Fatalf("values are not equal %v and %v", 42, doc.Elements()[0].Value().Int32()) }
-			assert.Equal(t, "forty-two", sdoc.Elements()[0].Value().StringValue())
+			if 42 != doc.Elements()[0].Value().Int32() {
+				t.Fatalf("values are not equal %v and %v", 42, doc.Elements()[0].Value().Int32())
+			}
+			if "forty-two" != sdoc.Elements()[0].Value().StringValue() {
+				t.Error("values should be equal")
+			}
 		})
 	})
 	t.Run("Lookup", func(t *testing.T) {
 		doc := DC.New().Append(EC.Int64("id", 42), EC.Int64("_id", 11), EC.String("hi", "hi"))
 		t.Run("Element", func(t *testing.T) {
 			elem := doc.LookupElement("id")
-			assert.Equal(t, "id", elem.Key())
-			if 42 != elem.Value().Int64() { t.Fatalf("values are not equal %v and %v", 42, elem.Value().Int64()) }
+			if "id" != elem.Key() {
+				t.Error("values should be equal")
+			}
+			if 42 != elem.Value().Int64() {
+				t.Fatalf("values are not equal %v and %v", 42, elem.Value().Int64())
+			}
 		})
 		t.Run("ElementErr", func(t *testing.T) {
 			elem, err := doc.LookupElementErr("_id")
 			if err != nil {
 				t.Fatal(err)
 			}
-			assert.Equal(t, "_id", elem.Key())
-			if 11 != elem.Value().Int64() { t.Fatalf("values are not equal %v and %v", 11, elem.Value().Int64()) }
+			if "_id" != elem.Key() {
+				t.Error("values should be equal")
+			}
+			if 11 != elem.Value().Int64() {
+				t.Fatalf("values are not equal %v and %v", 11, elem.Value().Int64())
+			}
 		})
 		t.Run("Value", func(t *testing.T) {
 			val := doc.Lookup("id")
-			if 42 != val.Int64() { t.Fatalf("values are not equal %v and %v", 42, val.Int64()) }
+			if 42 != val.Int64() {
+				t.Fatalf("values are not equal %v and %v", 42, val.Int64())
+			}
 		})
 		t.Run("ValueErr", func(t *testing.T) {
 			val, err := doc.LookupErr("_id")
 			if err != nil {
 				t.Fatal(err)
 			}
-			if 11 != val.Int64() { t.Fatalf("values are not equal %v and %v", 11, val.Int64()) }
+			if 11 != val.Int64() {
+				t.Fatalf("values are not equal %v and %v", 11, val.Int64())
+			}
 		})
 		t.Run("Missing", func(t *testing.T) {
 			assert.Nil(t, doc.Lookup("NOT REAL"))

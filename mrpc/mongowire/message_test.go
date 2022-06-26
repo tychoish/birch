@@ -3,7 +3,6 @@ package mongowire
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/mrpc/model"
 )
@@ -114,17 +113,31 @@ func TestMessage(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			assert.Equal(t, test.header, test.message.Header())
-			assert.Equal(t, test.hasResponse, test.message.HasResponse())
-			assert.Equal(t, test.scope, test.message.Scope())
-			assert.Equal(t, headerSize+test.bodySize, len(test.message.Serialize()))
-			assert.Equal(t, int32(headerSize+test.bodySize), test.message.Header().Size)
+			if test.header != test.message.Header() {
+				t.Error("values should be equal")
+			}
+			if test.hasResponse != test.message.HasResponse() {
+				t.Error("values should be equal")
+			}
+			if test.scope != test.message.Scope() {
+				t.Error("values should be equal")
+			}
+			if headerSize+test.bodySize != len(test.message.Serialize()) {
+				t.Error("values should be equal")
+			}
+			if int32(headerSize+test.bodySize) != test.message.Header().Size {
+				t.Error("values should be equal")
+			}
 			m, err := test.header.Parse(test.message.Serialize()[headerSize:])
 			if err != nil {
 				t.Fatal(err)
 			}
-			assert.Equal(t, test.message.Serialize(), m.Serialize())
-			assert.Equal(t, test.message.Header(), m.Header())
+			if test.message.Serialize() != m.Serialize() {
+				t.Error("values should be equal")
+			}
+			if test.message.Header() != m.Header() {
+				t.Error("values should be equal")
+			}
 		})
 	}
 }

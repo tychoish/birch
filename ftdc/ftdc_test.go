@@ -119,12 +119,16 @@ func TestReadPathIntegration(t *testing.T) {
 						t.Fatal("truth assertion failed")
 					}
 					hasSeries++
-					assert.Equal(t, metric.startingValue, metric.Values[0], "key=%s", metric.Key())
+					if metric.startingValue != metric.Values[0] {
+						t.Error("values should be equal")
+					}
 					assert.Len(t, metric.Values, test.expectedMetrics, "%d: %d", len(metric.Values), test.expectedMetrics)
 					if counter == 10 {
 						for _, v := range c.renderMap() {
 							assert.Len(t, v.Values, test.expectedMetrics)
-							assert.Equal(t, v.startingValue, v.Values[0], "key=%s", metric.Key())
+							if v.startingValue != v.Values[0] {
+								t.Error("values should be equal")
+							}
 						}
 
 						numSamples := 0
@@ -134,10 +138,14 @@ func TestReadPathIntegration(t *testing.T) {
 
 							numSamples++
 							if assert.NotNil(t, doc) {
-								assert.Equal(t, doc.Len(), test.expectedNum)
+								if doc.Len() != test.expectedNum {
+									t.Error("values should be equal")
+								}
 							}
 						}
-						assert.Equal(t, test.expectedMetrics, numSamples)
+						if test.expectedMetrics != numSamples {
+							t.Error("values should be equal")
+						}
 
 						data, err := c.export()
 						if err != nil {
@@ -157,14 +165,20 @@ func TestReadPathIntegration(t *testing.T) {
 						// this is inexact
 						// because of timestamps...l
 						assert.True(t, len(c.Metrics) >= elems)
-						assert.Equal(t, elems, data.Len())
+						if elems != data.Len() {
+							t.Error("values should be equal")
+						}
 					}
 				}
 
 				assert.NoError(t, iter.Err())
 
-				assert.Equal(t, test.expectedNum, num)
-				assert.Equal(t, test.expectedChunks, counter)
+				if test.expectedNum != num {
+					t.Error("values should be equal")
+				}
+				if test.expectedChunks != counter {
+					t.Error("values should be equal")
+				}
 				fmt.Println(testMessage{
 					"parser":   "chunks",
 					"series":   num,
@@ -186,7 +200,9 @@ func TestReadPathIntegration(t *testing.T) {
 					}
 					counter++
 				}
-				assert.Equal(t, test.expectedChunks, counter)
+				if test.expectedChunks != counter {
+					t.Error("values should be equal")
+				}
 				if err := iter.Err(); err != nil {
 					t.Fatal(err)
 				}
@@ -221,7 +237,9 @@ func TestReadPathIntegration(t *testing.T) {
 				if err := iter.Err(); err != nil {
 					t.Fatal(err)
 				}
-				assert.Equal(t, test.expectedChunks, counter)
+				if test.expectedChunks != counter {
+					t.Error("values should be equal")
+				}
 
 				fmt.Println(testMessage{
 					"parser":   "matrix",
@@ -346,7 +364,9 @@ func TestRoundTrip(t *testing.T) {
 						}
 						roundtripDoc := iter.Document()
 
-						assert.Equal(t, fmt.Sprint(roundtripDoc), fmt.Sprint(docs[docNum]))
+						if fmt.Sprint(roundtripDoc) != fmt.Sprint(docs[docNum]) {
+							t.Error("values should be equal")
+						}
 						docNum++
 					}
 				})

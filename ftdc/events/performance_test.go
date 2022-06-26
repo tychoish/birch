@@ -36,7 +36,9 @@ func TestPerformanceType(t *testing.T) {
 		if doc == nil {
 			t.Fatalf("%T value is nil", doc)
 		}
-		assert.Equal(t, 5, doc.Len())
+		if 5 != doc.Len() {
+			t.Error("values should be equal")
+		}
 	})
 	t.Run("BSON", func(t *testing.T) {
 		perf := &Performance{}
@@ -48,21 +50,31 @@ func TestPerformanceType(t *testing.T) {
 		t.Run("Zero", func(t *testing.T) {
 			perf := &Performance{}
 			perf.Add(&Performance{})
-			assert.Equal(t, &Performance{ID: 1}, perf)
+			if (&Performance{ID: 1}) != perf {
+				t.Error("values should be equal")
+			}
 		})
 		t.Run("OverridesID", func(t *testing.T) {
 			perf := &Performance{}
 			perf.Add(&Performance{ID: 100})
-			if 100 != perf.ID { t.Fatalf("values are not equal %v and %v", 100, perf.ID) }
+			if 100 != perf.ID {
+				t.Fatalf("values are not equal %v and %v", 100, perf.ID)
+			}
 			perf.Add(&Performance{ID: 100})
-			if 100 != perf.ID { t.Fatalf("values are not equal %v and %v", 100, perf.ID) }
+			if 100 != perf.ID {
+				t.Fatalf("values are not equal %v and %v", 100, perf.ID)
+			}
 		})
 		t.Run("Counter", func(t *testing.T) {
 			perf := &Performance{}
 			perf.Add(&Performance{Counters: PerformanceCounters{Number: 100}})
-			if 100 != perf.Counters.Number { t.Fatalf("values are not equal %v and %v", 100, perf.Counters.Number) }
+			if 100 != perf.Counters.Number {
+				t.Fatalf("values are not equal %v and %v", 100, perf.Counters.Number)
+			}
 			perf.Add(&Performance{Counters: PerformanceCounters{Number: 100}})
-			if 200 != perf.Counters.Number { t.Fatalf("values are not equal %v and %v", 200, perf.Counters.Number) }
+			if 200 != perf.Counters.Number {
+				t.Fatalf("values are not equal %v and %v", 200, perf.Counters.Number)
+			}
 		})
 	})
 }

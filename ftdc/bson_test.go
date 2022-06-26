@@ -31,18 +31,30 @@ func TestFlattenArray(t *testing.T) {
 		assert.NotNil(t, m)
 		assert.Len(t, m, 2)
 
-		assert.Equal(t, m[0].Key(), "foo.0")
-		assert.Equal(t, m[1].Key(), "foo.1")
-		assert.Equal(t, int64(1), m[0].startingValue)
-		assert.Equal(t, int64(0), m[1].startingValue)
+		if m[0].Key() != "foo.0" {
+			t.Error("values should be equal")
+		}
+		if m[1].Key() != "foo.1" {
+			t.Error("values should be equal")
+		}
+		if int64(1) != m[0].startingValue {
+			t.Error("values should be equal")
+		}
+		if int64(0) != m[1].startingValue {
+			t.Error("values should be equal")
+		}
 	})
 	t.Run("TwoElementsWithSkippedValue", func(t *testing.T) {
 		m := metricForArray("foo", nil, birch.NewArray(birch.VC.String("foo"), birch.VC.Boolean(false)))
 		assert.NotNil(t, m)
 		assert.Len(t, m, 1)
 
-		assert.Equal(t, m[0].Key(), "foo.1")
-		assert.Equal(t, int64(0), m[0].startingValue)
+		if m[0].Key() != "foo.1" {
+			t.Error("values should be equal")
+		}
+		if int64(0) != m[0].startingValue {
+			t.Error("values should be equal")
+		}
 	})
 	t.Run("ArrayWithOnlyStrings", func(t *testing.T) {
 		out := metricForArray("foo", nil, birch.NewArray(birch.VC.String("foo"), birch.VC.String("bar")))
@@ -185,7 +197,9 @@ func TestReadDocument(t *testing.T) {
 			}
 
 			if doc != nil {
-				assert.Equal(t, test.len, doc.Len())
+				if test.len != doc.Len() {
+					t.Error("values should be equal")
+				}
 			}
 		})
 	}
@@ -377,7 +391,9 @@ func TestBSONValueToMetric(t *testing.T) {
 			assert.Len(t, m, test.OutputLen)
 
 			if test.OutputLen > 0 {
-				assert.Equal(t, test.Expected, m[0].startingValue)
+				if test.Expected != m[0].startingValue {
+					t.Error("values should be equal")
+				}
 				assert.True(t, strings.HasPrefix(m[0].KeyName, test.Key))
 				assert.True(t, strings.HasPrefix(m[0].Key(), strings.Join(test.Path, ".")))
 			} else {
@@ -606,7 +622,9 @@ func TestExtractingMetrics(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			metrics, err := extractMetricsFromValue(test.Value)
 			assert.NoError(t, err)
-			assert.Equal(t, test.NumEncodedValues, len(metrics.values))
+			if test.NumEncodedValues != len(metrics.values) {
+				t.Error("values should be equal")
+			}
 
 			keys, num := testutil.IsMetricsValue("keyname", test.Value)
 			if test.NumEncodedValues > 0 {
@@ -633,7 +651,9 @@ func TestExtractingMetrics(t *testing.T) {
 				t.Fatalf("lengths of %d and %d are not expected", len(metrics.types), len(test.Types))
 			}
 			for i := range metrics.types {
-				assert.Equal(t, test.Types[i], metrics.types[i])
+				if test.Types[i] != metrics.types[i] {
+					t.Error("values should be equal")
+				}
 			}
 		})
 	}
@@ -691,7 +711,9 @@ func TestDocumentExtraction(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			metrics, err := extractMetricsFromDocument(test.Document)
 			assert.NoError(t, err)
-			assert.Equal(t, test.NumEncodedValues, len(metrics.values))
+			if test.NumEncodedValues != len(metrics.values) {
+				t.Error("values should be equal")
+			}
 			assert.False(t, metrics.ts.IsZero())
 			if len(metrics.values) > 0 {
 				if test.FirstEncodedValue != metrics.values[0].Interface() {
@@ -702,7 +724,9 @@ func TestDocumentExtraction(t *testing.T) {
 				t.Fatalf("lengths of %d and %d are not expected", len(metrics.types), len(test.Types))
 			}
 			for i := range metrics.types {
-				assert.Equal(t, test.Types[i], metrics.types[i])
+				if test.Types[i] != metrics.types[i] {
+					t.Error("values should be equal")
+				}
 			}
 		})
 	}
@@ -754,7 +778,9 @@ func TestArrayExtraction(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			metrics, err := extractMetricsFromArray(test.Array)
 			assert.NoError(t, err)
-			assert.Equal(t, test.NumEncodedValues, len(metrics.values))
+			if test.NumEncodedValues != len(metrics.values) {
+				t.Error("values should be equal")
+			}
 			if test.NumEncodedValues >= 1 {
 				if test.FirstEncodedValue != metrics.values[0].Interface() {
 					t.Fatalf("values are not equal %v and %v", test.FirstEncodedValue, metrics.values[0].Interface())
@@ -764,7 +790,9 @@ func TestArrayExtraction(t *testing.T) {
 				t.Fatalf("lengths of %d and %d are not expected", len(metrics.types), len(test.Types))
 			}
 			for i := range metrics.types {
-				assert.Equal(t, test.Types[i], metrics.types[i])
+				if test.Types[i] != metrics.types[i] {
+					t.Error("values should be equal")
+				}
 			}
 		})
 	}
@@ -938,11 +966,17 @@ func TestMetricsHashValue(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Run("Legacy", func(t *testing.T) {
 				keys, num := testutil.IsMetricsValue("key", test.value)
-				assert.Equal(t, test.expectedNum, num)
-				assert.Equal(t, test.keyElems, len(keys))
+				if test.expectedNum != num {
+					t.Error("values should be equal")
+				}
+				if test.keyElems != len(keys) {
+					t.Error("values should be equal")
+				}
 			})
 			t.Run("Checksum", func(t *testing.T) {
-				assert.Equal(t, test.expectedNum, metricKeyHashValue(fnv.New128(), "key", test.value))
+				if test.expectedNum != metricKeyHashValue(fnv.New128(), "key") {
+					t.Error("values should be equal")
+				}
 			})
 		})
 	}
@@ -1086,11 +1120,17 @@ func TestMetricsToElement(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			elem, num := restoreElement(test.ref, 0, test.metrics, 0)
-			assert.Equal(t, test.outNum, num)
+			if test.outNum != num {
+				t.Error("values should be equal")
+			}
 			if !test.isDocument {
-				assert.Equal(t, test.expected, elem)
+				if test.expected != elem {
+					t.Error("values should be equal")
+				}
 			} else {
-				assert.Equal(t, fmt.Sprint(test.expected.Value().Interface()), fmt.Sprint(elem.Value().Interface()))
+				if fmt.Sprint(test.expected.Value().Interface()) != fmt.Sprint(elem.Value().Interface()) {
+					t.Error("values shold be equal")
+				}
 			}
 
 		})

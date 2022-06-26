@@ -117,9 +117,13 @@ func TestReadCSVIntegration(t *testing.T) {
 			for iter.Next() {
 				count++
 				doc := iter.Document()
-				assert.Equal(t, test.Fields, doc.Len())
+				if test.Fields != doc.Len() {
+					t.Error("values should be equal")
+				}
 			}
-			assert.Equal(t, test.Rows, count)
+			if test.Rows != count {
+				t.Error("values should be equal")
+			}
 		})
 	}
 	t.Run("SchemaChangeGrow", func(t *testing.T) {

@@ -117,14 +117,16 @@ func TestCollectorInterface(t *testing.T) {
 							t.Run(fmt.Sprintf("DocumentNumber_%d", idx), func(t *testing.T) {
 								s := iter.Document()
 
-								if !assert.Equal(t, fmt.Sprint(s), fmt.Sprint(docs[idx])) {
-									fmt.Println("---", idx)
-									fmt.Println("in: ", docs[idx])
-									fmt.Println("out:", s)
+								if fmt.Sprint(s) != fmt.Sprint(docs[idx]) {
+									t.Error("---", idx)
+									t.Error("in: ", docs[idx])
+									t.Error("out:", s)
 								}
 							})
 						}
-						assert.Equal(t, len(docs)-1, idx) // zero index
+						if len(docs)-1 != idx {
+							t.Error("values should be equal")
+						} // zero index
 						if err := iter.Err(); err != nil {
 							t.Fatal(err)
 						}
@@ -180,7 +182,9 @@ func TestStreamingEncoding(t *testing.T) {
 							}
 							val := doc.Lookup("foo").Int64()
 							res = append(res, val)
-							assert.Equal(t, val, test.dataset[idx])
+							if val != test.dataset[idx] {
+								t.Error("values should be equal")
+							}
 							idx++
 						}
 						if err := iter.Err(); err != nil {
@@ -189,7 +193,9 @@ func TestStreamingEncoding(t *testing.T) {
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
 						}
-						assert.Equal(t, test.dataset, res)
+						if test.dataset != res {
+							t.Error("values should be equal")
+						}
 					})
 					t.Run("MultipleValues", func(t *testing.T) {
 						collector, buf := impl.factory()
@@ -221,7 +227,9 @@ func TestStreamingEncoding(t *testing.T) {
 							res = append(res, val)
 							idx := len(res) - 1
 
-							assert.Equal(t, fmt.Sprint(doc), fmt.Sprint(docs[idx]))
+							if fmt.Sprint(doc) != fmt.Sprint(docs[idx]) {
+								t.Error("values should be equal")
+							}
 						}
 
 						if err := iter.Err(); err != nil {
@@ -230,7 +238,9 @@ func TestStreamingEncoding(t *testing.T) {
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
 						}
-						assert.Equal(t, test.dataset, res)
+						if test.dataset != res {
+							t.Error("values should be equal")
+						}
 					})
 
 					t.Run("MultiValueKeyOrder", func(t *testing.T) {
@@ -272,7 +282,9 @@ func TestStreamingEncoding(t *testing.T) {
 							res = append(res, val)
 							idx := len(res) - 1
 
-							assert.Equal(t, fmt.Sprint(doc), fmt.Sprint(docs[idx]))
+							if fmt.Sprint(doc) != fmt.Sprint(docs[idx]) {
+								t.Error("values should be equal")
+							}
 						}
 
 						if err := iter.Err(); err != nil {
@@ -281,7 +293,9 @@ func TestStreamingEncoding(t *testing.T) {
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
 						}
-						assert.Equal(t, test.dataset, res)
+						if test.dataset != res {
+							t.Error("values should be equal")
+						}
 					})
 					t.Run("DifferentKeys", func(t *testing.T) {
 						collector, buf := impl.factory()
@@ -325,7 +339,9 @@ func TestStreamingEncoding(t *testing.T) {
 							res = append(res, val)
 							idx := len(res) - 1
 
-							assert.Equal(t, fmt.Sprint(doc), fmt.Sprint(docs[idx]))
+							if fmt.Sprint(doc) != fmt.Sprint(docs[idx]) {
+								t.Error("values should be equal")
+							}
 						}
 						if err := iter.Err(); err != nil {
 							t.Fatal(err)
@@ -384,7 +400,9 @@ func TestFixedEncoding(t *testing.T) {
 							}
 							val := doc.Lookup("foo").Int64()
 							res = append(res, val)
-							assert.Equal(t, val, test.dataset[idx])
+							if val != test.dataset[idx] {
+								t.Error("values should be equal")
+							}
 							idx++
 						}
 						if err := iter.Err(); err != nil {
@@ -393,7 +411,9 @@ func TestFixedEncoding(t *testing.T) {
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
 						}
-						assert.Equal(t, test.dataset, res)
+						if test.dataset != res {
+							t.Error("values should be equal")
+						}
 					})
 					t.Run("MultipleValues", func(t *testing.T) {
 						collector := impl.factory()
@@ -426,7 +446,9 @@ func TestFixedEncoding(t *testing.T) {
 							res = append(res, val)
 							idx := len(res) - 1
 
-							assert.Equal(t, fmt.Sprint(doc), fmt.Sprint(docs[idx]))
+							if fmt.Sprint(doc) != fmt.Sprint(docs[idx]) {
+								t.Error("values should be equal")
+							}
 						}
 
 						if err := iter.Err(); err != nil {
@@ -435,7 +457,9 @@ func TestFixedEncoding(t *testing.T) {
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
 						}
-						assert.Equal(t, test.dataset, res)
+						if test.dataset != res {
+							t.Error("values should be equal")
+						}
 					})
 				})
 			}
@@ -584,7 +608,9 @@ func TestTimestampHandling(t *testing.T) {
 
 						val, ok := doc.Lookup("ts").TimeOK()
 						if !assert.True(t, ok) {
-							assert.Equal(t, test.Values[idx], val)
+							if test.Values[idx] != val {
+								t.Error("values should be equal")
+							}
 						}
 						idx++
 					}
@@ -599,7 +625,9 @@ func TestTimestampHandling(t *testing.T) {
 						doc := iter.Document()
 						val, ok := doc.Lookup("ts").TimeOK()
 						if assert.True(t, ok) {
-							if test.Values[idx] != val { t.Fatalf("values are not equal %v and %v", test.Values[idx], val) }
+							if test.Values[idx] != val {
+								t.Fatalf("values are not equal %v and %v", test.Values[idx], val)
+							}
 						}
 						idx++
 					}
@@ -613,7 +641,9 @@ func TestTimestampHandling(t *testing.T) {
 					for chunks.Next() {
 						chunk := chunks.Chunk()
 						assert.NotNil(t, chunk)
-						assert.Equal(t, len(test.Values), chunk.nPoints)
+						if len(test.Values) != chunk.nPoints {
+							t.Error("values should be equal")
+						}
 						idx++
 					}
 					require.NoError(t, chunks.Err())
@@ -640,7 +670,9 @@ func TestTimestampHandling(t *testing.T) {
 
 					val, ok := doc.Lookup("ts").Int64OK()
 					if assert.True(t, ok) {
-						assert.Equal(t, test.Values[idx].Unix(), val)
+						if test.Values[idx].Unix() != val {
+							t.Error("values should be equal")
+						}
 					}
 					idx++
 				}
@@ -668,7 +700,9 @@ func TestTimestampHandling(t *testing.T) {
 
 					val, ok := doc.Lookup("ts").Int64OK()
 					if assert.True(t, ok) {
-						assert.Equal(t, test.Values[idx].UnixNano(), val)
+						if test.Values[idx].UnixNano() != val {
+							t.Error("values should be equal")
+						}
 					}
 
 					idx++

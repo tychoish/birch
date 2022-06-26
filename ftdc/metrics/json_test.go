@@ -283,7 +283,9 @@ func TestCollectJSON(t *testing.T) {
 			idx++
 
 			s := iter.Document()
-			assert.Equal(t, 2, s.Len())
+			if 2 != s.Len() {
+				t.Error("values should be equal")
+			}
 			for k, v := range inputs[idx] {
 				out := s.Lookup(k)
 				if int(v.(int64)) != int(out.Interface().(int32)) {
@@ -294,6 +296,8 @@ func TestCollectJSON(t *testing.T) {
 		if err := iter.Err(); err != nil {
 			t.Fatal(err)
 		}
-		assert.Equal(t, 2, idx) // zero indexed
+		if 2 != idx {
+			t.Error("values should be equal")
+		} // zero indexed
 	})
 }

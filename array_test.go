@@ -293,7 +293,9 @@ func TestArray(t *testing.T) {
 			}
 
 			ar := ArrayFromDocument(doc)
-			assert.Equal(t, 2, ar.Len())
+			if 2 != ar.Len() {
+				t.Error("values should be equal")
+			}
 			iter := ar.Iterator()
 			if iter == nil {
 				t.Fatalf("%T value is nil", iter)
@@ -302,19 +304,29 @@ func TestArray(t *testing.T) {
 			for iter.Next() {
 				total += iter.Value().Int()
 			}
-			assert.Equal(t, 126, total)
+			if 126 != total {
+				t.Error("values should be equal")
+			}
 		})
 		t.Run("Make", func(t *testing.T) {
 			ar := MakeArray(42)
-			assert.Equal(t, 0, ar.Len())
-			assert.Equal(t, 42, cap(ar.doc.elems))
+			if 0 != ar.Len() {
+				t.Error("values should be equal")
+			}
+			if 42 != cap(ar.doc.elems) {
+				t.Error("values should be equal")
+			}
 		})
 	})
 	t.Run("Reset", func(t *testing.T) {
 		ar := NewArray(VC.Int(42))
-		assert.Equal(t, 1, ar.Len())
+		if 1 != ar.Len() {
+			t.Error("values should be equal")
+		}
 		ar.Reset()
-		assert.Equal(t, 0, ar.Len())
+		if 0 != ar.Len() {
+			t.Error("values should be equal")
+		}
 	})
 	t.Run("Validate", func(t *testing.T) {
 		t.Run("Passing", func(t *testing.T) {
@@ -343,8 +355,12 @@ func TestArray(t *testing.T) {
 		t.Run("FindValue", func(t *testing.T) {
 			ar := NewArray(VC.Int(42), VC.Int(84))
 
-			assert.Equal(t, 42, ar.Lookup(0).Int())
-			assert.Equal(t, 84, ar.Lookup(1).Int())
+			if 42 != ar.Lookup(0).Int() {
+				t.Error("values should be equal")
+			}
+			if 84 != ar.Lookup(1).Int() {
+				t.Error("values should be equal")
+			}
 		})
 		t.Run("MissingValue", func(t *testing.T) {
 			ar := NewArray(VC.Int(42), VC.Int(84))
@@ -354,8 +370,12 @@ func TestArray(t *testing.T) {
 		t.Run("FindElement", func(t *testing.T) {
 			ar := NewArray(VC.Int(42), VC.Int(84))
 
-			assert.Equal(t, 42, ar.LookupElement(0).Value().Int())
-			assert.Equal(t, 84, ar.LookupElement(1).Value().Int())
+			if 42 != ar.LookupElement(0).Value().Int() {
+				t.Error("values should be equal")
+			}
+			if 84 != ar.LookupElement(1).Value().Int() {
+				t.Error("values should be equal")
+			}
 		})
 		t.Run("MissingElement", func(t *testing.T) {
 			ar := NewArray(VC.Int(42), VC.Int(84))
@@ -364,8 +384,12 @@ func TestArray(t *testing.T) {
 		})
 		t.Run("ElementKeys", func(t *testing.T) {
 			ar := NewArray(VC.Int(42), VC.Int(84))
-			assert.Equal(t, "", ar.LookupElement(0).Key())
-			assert.Equal(t, "", ar.LookupElement(1).Key())
+			if "" != ar.LookupElement(0).Key() {
+				t.Error("values should be equal")
+			}
+			if "" != ar.LookupElement(1).Key() {
+				t.Error("values should be equal")
+			}
 		})
 	})
 	t.Run("InterfaceExport", func(t *testing.T) {
@@ -388,11 +412,15 @@ func TestArray(t *testing.T) {
 	t.Run("String", func(t *testing.T) {
 		t.Run("Empty", func(t *testing.T) {
 			ar := NewArray()
-			assert.Equal(t, "bson.Array[]", ar.String())
+			if "bson.Array[]" != ar.String() {
+				t.Error("values should be equal")
+			}
 		})
 		t.Run("Content", func(t *testing.T) {
 			ar := NewArray(VC.String("hello"), VC.String("world"))
-			assert.Equal(t, "bson.Array[hello, world]", ar.String())
+			if "bson.Array[hello, world]" != ar.String() {
+				t.Error("values should be equal")
+			}
 		})
 	})
 	t.Run("Set", func(t *testing.T) {

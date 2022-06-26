@@ -38,7 +38,9 @@ func TestSampleIterator(t *testing.T) {
 		assert.NotPanics(t, func() {
 			iter.Close()
 		})
-		assert.Equal(t, 1, counter)
+		if 1 != counter {
+			t.Error("values should be equal")
+		}
 
 	})
 

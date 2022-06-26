@@ -33,7 +33,9 @@ func TestCollectRuntime(t *testing.T) {
 			SkipSystem:  true,
 		}
 		doc := opts.generate(ctx, 1)
-		assert.Equal(t, 4, doc.Len())
+		if 4 != doc.Len() {
+			t.Error("values should be equal")
+		}
 	})
 
 	t.Run("CollectData", func(t *testing.T) {

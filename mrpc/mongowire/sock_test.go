@@ -83,8 +83,12 @@ func TestReadMessage(t *testing.T) {
 				assert.Nil(t, message)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, test.expectedMessage.Header(), message.Header())
-				assert.Equal(t, test.expectedMessage.Serialize(), message.Serialize())
+				if test.expectedMessage.Header() != message.Header() {
+					t.Error("values should be equal")
+				}
+				if test.expectedMessage.Serialize() != message.Serialize() {
+					t.Error("values should be equal")
+				}
 			}
 		})
 	}
@@ -102,13 +106,17 @@ func TestSendMessage(t *testing.T) {
 		w := &mockWriter{}
 		smallMessage := createSmallMessage(t)
 		require.NoError(t, SendMessage(context.TODO(), smallMessage, w))
-		assert.Equal(t, w.data, smallMessage.Serialize())
+		if w.data != smallMessage.Serialize() {
+			t.Error("values should be equal")
+		}
 	})
 	t.Run("LargeMessage", func(t *testing.T) {
 		w := &mockWriter{}
 		largeMessage := createLargeMessage(t, 3*1024*1024)
 		require.NoError(t, SendMessage(context.TODO(), largeMessage, w))
-		assert.Equal(t, w.data, largeMessage.Serialize())
+		if w.data != largeMessage.Serialize() {
+			t.Error("values should be equal")
+		}
 	})
 }
 

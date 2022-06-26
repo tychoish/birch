@@ -30,12 +30,24 @@ func TestRollupRoundTrip(t *testing.T) {
 		if len(rt) != 4 {
 			t.Fatalf("lengths of %d and %d are not expected", len(rt), 4)
 		}
-		assert.Equal(t, "a", rt[0].Name)
-		assert.Equal(t, "b", rt[1].Name)
-		assert.Equal(t, "d", rt[2].Name)
-		assert.Equal(t, "f", rt[3].Name)
-		assert.Equal(t, 1.2, rt[0].Value)
-		assert.Equal(t, 45.0, rt[1].Value)
+		if "a" != rt[0].Name {
+			t.Error("values should be equal")
+		}
+		if "b" != rt[1].Name {
+			t.Error("values should be equal")
+		}
+		if "d" != rt[2].Name {
+			t.Error("values should be equal")
+		}
+		if "f" != rt[3].Name {
+			t.Error("values should be equal")
+		}
+		if 1.2 != rt[0].Value {
+			t.Error("values should be equal")
+		}
+		if 45.0 != rt[1].Value {
+			t.Error("values should be equal")
+		}
 		if 100 != rt[3].Value.(int32) {
 			t.Fatalf("values are not equal %v and %v", 100, rt[3].Value)
 		}
