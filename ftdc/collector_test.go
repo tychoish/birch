@@ -35,13 +35,17 @@ func TestCollectorInterface(t *testing.T) {
 				t.Run(test.name, func(t *testing.T) {
 					collector := collect.factory()
 
-					assert.NoError(t, collector.SetMetadata(testutil.CreateEventRecord(42, int64(time.Minute), rand.Int63n(7), 4)))
+					if err := collector.SetMetadata(testutil.CreateEventRecord(42, int64(time.Minute), rand.Int63n(7), 4)); err != nil {
+						t.Error(err)
+					}
 
 					info := collector.Info()
 					assert.Zero(t, info)
 
 					for _, d := range test.docs {
-						require.NoError(t, collector.Add(d))
+						if err := collector.Add(d); err != nil {
+							t.Fatal(err)
+						}
 					}
 					info = collector.Info()
 
@@ -49,13 +53,16 @@ func TestCollectorInterface(t *testing.T) {
 						require.True(t, info.MetricsCount >= test.numStats,
 							"%d >= %d", info.MetricsCount, test.numStats)
 					} else {
-						require.Equal(t, test.numStats, info.MetricsCount,
-							"info=%+v, %v", info, test.docs)
+						if test.numStats != info.MetricsCount {
+							t.Fatalf("info=%+v, %v", info, test.docs)
+						}
 					}
 
 					out, err := collector.Resolve()
 					if len(test.docs) > 0 {
-						assert.NoError(t, err)
+						if err != nil {
+							t.Error(err)
+						}
 						assert.NotZero(t, out)
 					} else {
 						assert.Error(t, err)
@@ -96,7 +103,9 @@ func TestCollectorInterface(t *testing.T) {
 						count := 0
 						for _, d := range docs {
 							count++
-							assert.NoError(t, collector.Add(d))
+							if err := collector.Add(d); err != nil {
+								t.Error(err)
+							}
 						}
 						time.Sleep(time.Millisecond) // force context switch so that the buffered collector flushes
 						info := collector.Info()
@@ -167,9 +176,13 @@ func TestStreamingEncoding(t *testing.T) {
 					t.Run("SingleValues", func(t *testing.T) {
 						collector, buf := impl.factory()
 						for _, val := range test.dataset {
-							assert.NoError(t, collector.Add(birch.NewDocument(birch.EC.Int64("foo", val))))
+							if err := collector.Add(birch.NewDocument(birch.EC.Int64("foo", val))); err != nil {
+								t.Error(err)
+							}
 						}
-						require.NoError(t, FlushCollector(collector, buf))
+						if err := FlushCollector(collector, buf); err != nil {
+							t.Fatal(err)
+						}
 						payload := buf.Bytes()
 
 						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
@@ -210,10 +223,14 @@ func TestStreamingEncoding(t *testing.T) {
 								birch.EC.Int64("mag", 10*val),
 							)
 							docs = append(docs, doc)
-							assert.NoError(t, collector.Add(doc))
+							if err := collector.Add(doc); err != nil {
+								t.Error(err)
+							}
 						}
 
-						require.NoError(t, FlushCollector(collector, buf))
+						if err := FlushCollector(collector, buf); err != nil {
+							t.Fatal(err)
+						}
 						payload := buf.Bytes()
 
 						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
@@ -266,9 +283,13 @@ func TestStreamingEncoding(t *testing.T) {
 							}
 
 							docs = append(docs, doc)
-							assert.NoError(t, collector.Add(doc))
+							if err := collector.Add(doc); err != nil {
+								t.Error(err)
+							}
 						}
-						require.NoError(t, FlushCollector(collector, buf))
+						if err := FlushCollector(collector, buf); err != nil {
+							t.Fatal(err)
+						}
 						payload := buf.Bytes()
 
 						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
@@ -322,10 +343,14 @@ func TestStreamingEncoding(t *testing.T) {
 							}
 
 							docs = append(docs, doc)
-							assert.NoError(t, collector.Add(doc))
+							if err := collector.Add(doc); err != nil {
+								t.Error(err)
+							}
 						}
 
-						require.NoError(t, FlushCollector(collector, buf))
+						if err := FlushCollector(collector, buf); err != nil {
+							t.Fatal(err)
+						}
 						payload := buf.Bytes()
 
 						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
@@ -383,7 +408,9 @@ func TestFixedEncoding(t *testing.T) {
 					t.Run("SingleValues", func(t *testing.T) {
 						collector := impl.factory()
 						for _, val := range test.dataset {
-							assert.NoError(t, collector.Add(birch.NewDocument(birch.EC.Int64("foo", val))))
+							if err := collector.Add(birch.NewDocument(birch.EC.Int64("foo", val))); err != nil {
+								t.Error(err)
+							}
 						}
 
 						payload, err := collector.Resolve()
@@ -428,7 +455,9 @@ func TestFixedEncoding(t *testing.T) {
 								birch.EC.Int64("mag", 10*val),
 							)
 							docs = append(docs, doc)
-							assert.NoError(t, collector.Add(doc))
+							if err := collector.Add(doc); err != nil {
+								t.Error(err)
+							}
 						}
 
 						payload, err := collector.Resolve()
@@ -465,11 +494,17 @@ func TestFixedEncoding(t *testing.T) {
 			}
 			t.Run("SizeMismatch", func(t *testing.T) {
 				collector := impl.factory()
-				assert.NoError(t, collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))))
-				assert.NoError(t, collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))))
+				if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err != nil {
+					t.Error(err)
+				}
+				if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err != nil {
+					t.Error(err)
+				}
 
 				if strings.Contains(impl.name, "Dynamic") {
-					assert.NoError(t, collector.Add(birch.NewDocument(birch.EC.Int64("one", 43))))
+					if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43))); err != nil {
+						t.Error(err)
+					}
 				} else {
 					assert.Error(t, collector.Add(birch.NewDocument(birch.EC.Int64("one", 43))))
 				}
@@ -490,8 +525,12 @@ func TestCollectorSizeCap(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			collector := test.factory()
-			assert.NoError(t, collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))))
-			assert.NoError(t, collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))))
+			if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err != nil {
+				t.Error(err)
+			}
+			if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err != nil {
+				t.Error(err)
+			}
 			assert.Error(t, collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))))
 		})
 	}
@@ -502,7 +541,9 @@ func TestWriter(t *testing.T) {
 		collector := NewWriterCollector(2, &noopWriter{})
 		_, err := collector.Write(nil)
 		assert.Error(t, err)
-		assert.NoError(t, collector.Close())
+		if err := collector.Close(); err != nil {
+			t.Error(err)
+		}
 	})
 	t.Run("RealDocument", func(t *testing.T) {
 		collector := NewWriterCollector(2, &noopWriter{})
@@ -511,12 +552,18 @@ func TestWriter(t *testing.T) {
 			t.Fatal(err)
 		}
 		_, err = collector.Write(doc)
-		assert.NoError(t, err)
-		assert.NoError(t, collector.Close())
+		if err != nil {
+			t.Error(err)
+		}
+		if err := collector.Close(); err != nil {
+			t.Error(err)
+		}
 	})
 	t.Run("CloseNoError", func(t *testing.T) {
 		collector := NewWriterCollector(2, &noopWriter{})
-		assert.NoError(t, collector.Close())
+		if err := collector.Close(); err != nil {
+			t.Error(err)
+		}
 	})
 	t.Run("CloseError", func(t *testing.T) {
 		collector := NewWriterCollector(2, &errWriter{})
@@ -591,9 +638,9 @@ func TestTimestampHandling(t *testing.T) {
 			t.Run("TimeValue", func(t *testing.T) {
 				collector := NewBaseCollector(100)
 				for _, ts := range test.Values {
-					require.NoError(t, collector.Add(birch.NewDocument(
-						birch.EC.Time("ts", ts),
-					)))
+					if err := collector.Add(birch.NewDocument(birch.EC.Time("ts", ts))); err != nil {
+						t.Fatal(err)
+					}
 				}
 
 				out, err := collector.Resolve()
@@ -646,16 +693,18 @@ func TestTimestampHandling(t *testing.T) {
 						}
 						idx++
 					}
-					require.NoError(t, chunks.Err())
+					if err := chunks.Err(); err != nil {
+						t.Fatal(err)
+					}
 				})
 
 			})
 			t.Run("UnixSecond", func(t *testing.T) {
 				collector := NewBaseCollector(100)
 				for _, ts := range test.Values {
-					require.NoError(t, collector.Add(birch.NewDocument(
-						birch.EC.Int64("ts", ts.Unix()),
-					)))
+					if err := collector.Add(birch.NewDocument(birch.EC.Int64("ts", ts.Unix()))); err != nil {
+						t.Fatal(err)
+					}
 				}
 
 				out, err := collector.Resolve()
@@ -683,9 +732,9 @@ func TestTimestampHandling(t *testing.T) {
 			t.Run("UnixNano", func(t *testing.T) {
 				collector := NewBaseCollector(100)
 				for _, ts := range test.Values {
-					require.NoError(t, collector.Add(birch.NewDocument(
-						birch.EC.Int64("ts", ts.UnixNano()),
-					)))
+					if err := collector.Add(birch.NewDocument(birch.EC.Int64("ts", ts.UnixNano()))); err != nil {
+						t.Fatal(err)
+					}
 				}
 
 				out, err := collector.Resolve()

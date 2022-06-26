@@ -68,7 +68,9 @@ func TestCollectJSONOptions(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			if test.valid {
-				assert.NoError(t, test.opts.validate())
+				if err := test.opts.validate(); err != nil {
+					t.Error(err)
+				}
 			} else {
 				assert.Error(t, test.opts.validate())
 			}
@@ -137,7 +139,9 @@ func TestCollectJSON(t *testing.T) {
 		}
 
 		err = CollectJSONStream(ctx, opts)
-		assert.NoError(t, err)
+		if err != nil {
+			t.Error(err)
+		}
 	})
 	t.Run("SingleReaderBotchedDocument", func(t *testing.T) {
 		buf := &bytes.Buffer{}
@@ -177,8 +181,12 @@ func TestCollectJSON(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		require.NoError(t, writeStream(hundredDocs, f))
-		require.NoError(t, f.Close())
+		if err := writeStream(hundredDocs, f); err != nil {
+			t.Fatal(err)
+		}
+		if err := f.Close(); err != nil {
+			t.Fatal(err)
+		}
 
 		opts := CollectJSONOptions{
 			OutputFilePrefix: filepath.Join(dir, fmt.Sprintf("json.%d.%s",
@@ -189,7 +197,9 @@ func TestCollectJSON(t *testing.T) {
 		}
 
 		err = CollectJSONStream(ctx, opts)
-		assert.NoError(t, err)
+		if err != nil {
+			t.Error(err)
+		}
 	})
 	t.Run("FollowFile", func(t *testing.T) {
 		fn := filepath.Join(dir, "json-read-file-two")
@@ -201,8 +211,12 @@ func TestCollectJSON(t *testing.T) {
 
 		go func() {
 			time.Sleep(10 * time.Millisecond)
-			require.NoError(t, writeStream(hundredDocs, f))
-			require.NoError(t, f.Close())
+			if err := writeStream(hundredDocs, f); err != nil {
+				t.Fatal(err)
+			}
+			if err := f.Close(); err != nil {
+				t.Fatal(err)
+			}
 		}()
 
 		ctx, cancel = context.WithTimeout(ctx, 250*time.Millisecond)
@@ -255,7 +269,9 @@ func TestCollectJSON(t *testing.T) {
 
 		buf := &bytes.Buffer{}
 
-		require.NoError(t, writeStream(docs, buf))
+		if err := writeStream(docs, buf); err != nil {
+			t.Fatal(err)
+		}
 
 		reader := bytes.NewReader(buf.Bytes())
 
@@ -268,7 +284,9 @@ func TestCollectJSON(t *testing.T) {
 		ctx := context.Background()
 
 		err = CollectJSONStream(ctx, opts)
-		assert.NoError(t, err)
+		if err != nil {
+			t.Error(err)
+		}
 		_, err := os.Stat(filepath.Join(dir, "roundtrip.0"))
 		require.False(t, os.IsNotExist(err))
 

@@ -171,7 +171,9 @@ func TestReadPathIntegration(t *testing.T) {
 					}
 				}
 
-				assert.NoError(t, iter.Err())
+				if err := iter.Err(); err != nil {
+					t.Error(err)
+				}
 
 				if test.expectedNum != num {
 					t.Error("values should be equal")
@@ -284,7 +286,9 @@ func TestReadPathIntegration(t *testing.T) {
 							t.Fatalf("unqueal %v and %v", test.docLen, doc.Len())
 						}
 					}
-					assert.NoError(t, iter.Err())
+					if err := iter.Err(); err != nil {
+						t.Error(err)
+					}
 					assert.True(t, counter >= expectedSamples/10)
 
 				})
@@ -318,7 +322,9 @@ func TestReadPathIntegration(t *testing.T) {
 							t.Fatalf("unqueal %v and %v", test.expectedNum, doc.Len())
 						}
 					}
-					assert.NoError(t, iter.Err())
+					if err := iter.Err(); err != nil {
+						t.Error(err)
+					}
 					assert.True(t, counter >= expectedSamples/10)
 				})
 			})
@@ -343,11 +349,15 @@ func TestRoundTrip(t *testing.T) {
 				}
 				t.Run(test.name, func(t *testing.T) {
 					collector := collect.factory()
-					assert.NoError(t, collector.SetMetadata(testutil.CreateEventRecord(42, int64(time.Minute), rand.Int63n(7), 4)))
+					if err := collector.SetMetadata(testutil.CreateEventRecord(42, int64(time.Minute), rand.Int63n(7), 4)); err != nil {
+						t.Error(err)
+					}
 
 					var docs []*birch.Document
 					for _, d := range test.docs {
-						assert.NoError(t, collector.Add(d))
+						if err := collector.Add(d); err != nil {
+							t.Error(err)
+						}
 						docs = append(docs, d)
 					}
 

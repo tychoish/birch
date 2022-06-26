@@ -342,7 +342,9 @@ func TestArray(t *testing.T) {
 		t.Run("Fail", func(t *testing.T) {
 			ar := NewArray(&Value{})
 			ln, err := ar.Validate()
-			require.Error(t, err)
+			if err == nil {
+				t.Fatal("error should not be nill")
+			}
 			require.Zero(t, ln)
 		})
 		t.Run("Marshal", func(t *testing.T) {

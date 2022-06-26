@@ -446,7 +446,9 @@ func TestReader(t *testing.T) {
 					if !itr.Next() {
 						t.Fatal("truth assertion failed")
 					}
-					require.NoError(t, itr.Err())
+					if err := itr.Err(); err != nil {
+						t.Fatal(err)
+					}
 					if !readerElementComparer(elem, itr.Element()) {
 						t.Fatal("truth assertion failed")
 					}

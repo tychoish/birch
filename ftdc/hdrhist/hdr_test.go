@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch/ftdc/hdrhist"
 )
 
@@ -17,7 +16,9 @@ func TestHighSigFig(t *testing.T) {
 
 	hist := hdrhist.New(459876, 12718782, 5)
 	for _, sample := range input {
-		assert.NoError(t, hist.RecordValue(sample))
+		if err := hist.RecordValue(sample); err != nil {
+			t.Error(err)
+		}
 	}
 
 	if v, want := hist.ValueAtQuantile(50), int64(1048575); v != want {
@@ -315,7 +316,9 @@ func TestUnitMagnitudeOverflow(t *testing.T) {
 func TestSubBucketMaskOverflow(t *testing.T) {
 	hist := hdrhist.New(2e7, 1e8, 5)
 	for _, sample := range [...]int64{1e8, 2e7, 3e7} {
-		assert.NoError(t, hist.RecordValue(sample))
+		if err := hist.RecordValue(sample); err != nil {
+			t.Error(err)
+		}
 	}
 
 	for q, want := range map[float64]int64{

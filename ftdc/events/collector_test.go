@@ -76,8 +76,12 @@ func TestCollector(t *testing.T) {
 					})
 					t.Run("AddMethod", func(t *testing.T) {
 						collector := collectorTest.constructor(fcTest.constructor())
-						assert.NoError(t, collector.Add(nil))
-						assert.NoError(t, collector.Add(map[string]string{"foo": "bar"}))
+						if err := collector.Add(nil); err != nil {
+							t.Error(err)
+						}
+						if err := collector.Add(map[string]string{"foo": "bar"}); err != nil {
+							t.Error(err)
+						}
 					})
 					t.Run("AddEvent", func(t *testing.T) {
 						collector := collectorTest.constructor(fcTest.constructor())
@@ -93,7 +97,9 @@ func TestCollector(t *testing.T) {
 								ID:        12,
 							},
 						} {
-							assert.NoError(t, collector.AddEvent(e))
+							if err := collector.AddEvent(e); err != nil {
+								t.Error(err)
+							}
 							if idx+1 != collector.Info().SampleCount {
 								t.Error("values should be equal")
 							}

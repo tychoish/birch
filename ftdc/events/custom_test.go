@@ -8,10 +8,18 @@ import (
 
 func TestRollupRoundTrip(t *testing.T) {
 	data := MakeCustom(4)
-	assert.NoError(t, data.Add("a", 1.2))
-	assert.NoError(t, data.Add("f", 100))
-	assert.NoError(t, data.Add("b", 45.0))
-	assert.NoError(t, data.Add("d", []int64{45, 32}))
+	if err := data.Add("a", 1.2); err != nil {
+		t.Error(err)
+	}
+	if err := data.Add("f", 100); err != nil {
+		t.Error(err)
+	}
+	if err := data.Add("b", 45.0); err != nil {
+		t.Error(err)
+	}
+	if err := data.Add("d", []int64{45, 32}); err != nil {
+		t.Error(err)
+	}
 	assert.Error(t, data.Add("foo", Custom{}))
 	assert.Len(t, data, 4)
 

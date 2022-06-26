@@ -77,7 +77,11 @@ func TestCollectRuntime(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				defer func() { assert.NoError(t, f.Close()) }()
+				defer func() {
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
+				}()
 				iter := ftdc.ReadStructuredMetrics(ctx, f)
 				counter := 0
 				for iter.Next() {
@@ -116,7 +120,11 @@ func TestCollectRuntime(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				defer func() { assert.NoError(t, f.Close()) }()
+				defer func() {
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
+				}()
 				iter := ftdc.ReadMetrics(ctx, f)
 				counter := 0
 				for iter.Next() {

@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc/testutil"
 )
@@ -60,7 +59,9 @@ func TestWriteCSVIntegration(t *testing.T) {
 		out := &bytes.Buffer{}
 		err := WriteCSV(ctx, iter, out)
 
-		require.Error(t, err)
+		if err == nil {
+			t.Fatal("error should not be nill")
+		}
 	})
 }
 
@@ -129,12 +130,18 @@ func TestReadCSVIntegration(t *testing.T) {
 	t.Run("SchemaChangeGrow", func(t *testing.T) {
 		buf := &bytes.Buffer{}
 		csvw := csv.NewWriter(buf)
-		require.NoError(t, csvw.Write([]string{"a", "b", "c", "d"}))
+		if err := csvw.Write([]string{"a", "b", "c", "d"}); err != nil {
+			t.Fatal(err)
+		}
 		for j := 0; j < 2; j++ {
 			for i := 0; i < 10; i++ {
-				require.NoError(t, csvw.Write([]string{"1", "2", "3", "4"}))
+				if err := csvw.Write([]string{"1", "2", "3", "4"}); err != nil {
+					t.Fatal(err)
+				}
 			}
-			require.NoError(t, csvw.Write([]string{"1", "2", "3", "4", "5"}))
+			if err := csvw.Write([]string{"1", "2", "3", "4", "5"}); err != nil {
+				t.Fatal(err)
+			}
 		}
 		csvw.Flush()
 
@@ -143,12 +150,18 @@ func TestReadCSVIntegration(t *testing.T) {
 	t.Run("SchemaChangeShrink", func(t *testing.T) {
 		buf := &bytes.Buffer{}
 		csvw := csv.NewWriter(buf)
-		require.NoError(t, csvw.Write([]string{"a", "b", "c", "d"}))
+		if err := csvw.Write([]string{"a", "b", "c", "d"}); err != nil {
+			t.Fatal(err)
+		}
 		for j := 0; j < 2; j++ {
 			for i := 0; i < 10; i++ {
-				require.NoError(t, csvw.Write([]string{"1", "2", "3", "4"}))
+				if err := csvw.Write([]string{"1", "2", "3", "4"}); err != nil {
+					t.Fatal(err)
+				}
 			}
-			require.NoError(t, csvw.Write([]string{"1", "2"}))
+			if err := csvw.Write([]string{"1", "2"}); err != nil {
+				t.Fatal(err)
+			}
 		}
 		csvw.Flush()
 

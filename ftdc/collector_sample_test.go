@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch/ftdc/testutil"
 )
 
@@ -14,7 +13,9 @@ func TestSamplingCollector(t *testing.T) {
 		t.Error("values should be equal")
 	}
 	for i := 0; i < 10; i++ {
-		assert.NoError(t, collector.Add(testutil.RandFlatDocument(20)))
+		if err := collector.Add(testutil.RandFlatDocument(20)); err != nil {
+			t.Error(err)
+		}
 	}
 	if 1 != collector.Info().SampleCount {
 		t.Error("values should be equal")
@@ -22,7 +23,9 @@ func TestSamplingCollector(t *testing.T) {
 
 	for i := 0; i < 4; i++ {
 		time.Sleep(10 * time.Millisecond)
-		assert.NoError(t, collector.Add(testutil.RandFlatDocument(20)))
+		if err := collector.Add(testutil.RandFlatDocument(20)); err != nil {
+			t.Error(err)
+		}
 	}
 
 	if 5 != collector.Info().SampleCount {

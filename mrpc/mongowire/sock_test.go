@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch"
 )
 
@@ -82,7 +81,9 @@ func TestReadMessage(t *testing.T) {
 				assert.Error(t, err)
 				assert.Nil(t, message)
 			} else {
-				assert.NoError(t, err)
+				if err != nil {
+					t.Error(err)
+				}
 				if test.expectedMessage.Header() != message.Header() {
 					t.Error("values should be equal")
 				}
@@ -105,7 +106,9 @@ func TestSendMessage(t *testing.T) {
 	t.Run("SmallMessage", func(t *testing.T) {
 		w := &mockWriter{}
 		smallMessage := createSmallMessage(t)
-		require.NoError(t, SendMessage(context.TODO(), smallMessage, w))
+		if err := SendMessage(context.TODO(), smallMessage, w); err != nil {
+			t.Fatal(err)
+		}
 		if w.data != smallMessage.Serialize() {
 			t.Error("values should be equal")
 		}
@@ -113,7 +116,9 @@ func TestSendMessage(t *testing.T) {
 	t.Run("LargeMessage", func(t *testing.T) {
 		w := &mockWriter{}
 		largeMessage := createLargeMessage(t, 3*1024*1024)
-		require.NoError(t, SendMessage(context.TODO(), largeMessage, w))
+		if err := SendMessage(context.TODO(), largeMessage, w); err != nil {
+			t.Fatal(err)
+		}
 		if w.data != largeMessage.Serialize() {
 			t.Error("values should be equal")
 		}

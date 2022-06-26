@@ -3,7 +3,6 @@ package hdrhist_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch/ftdc/hdrhist"
 )
 
@@ -11,17 +10,23 @@ func TestWindowedHistogram(t *testing.T) {
 	w := hdrhist.NewWindowed(2, 1, 1000, 3)
 
 	for i := 0; i < 100; i++ {
-		assert.NoError(t, w.Current.RecordValue(int64(i)))
+		if err := w.Current.RecordValue(int64(i)); err != nil {
+			t.Error(err)
+		}
 	}
 	w.Rotate()
 
 	for i := 100; i < 200; i++ {
-		assert.NoError(t, w.Current.RecordValue(int64(i)))
+		if err := w.Current.RecordValue(int64(i)); err != nil {
+			t.Error(err)
+		}
 	}
 	w.Rotate()
 
 	for i := 200; i < 300; i++ {
-		assert.NoError(t, w.Current.RecordValue(int64(i)))
+		if err := w.Current.RecordValue(int64(i)); err != nil {
+			t.Error(err)
+		}
 	}
 
 	if v, want := w.Merge().ValueAtQuantile(50), int64(199); v != want {

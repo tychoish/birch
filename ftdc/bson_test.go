@@ -193,7 +193,9 @@ func TestReadDocument(t *testing.T) {
 			if test.shouldError {
 				assert.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				if err != nil {
+					t.Error(err)
+				}
 			}
 
 			if doc != nil {
@@ -621,7 +623,9 @@ func TestExtractingMetrics(t *testing.T) {
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			metrics, err := extractMetricsFromValue(test.Value)
-			assert.NoError(t, err)
+			if err != nil {
+				t.Error(err)
+			}
 			if test.NumEncodedValues != len(metrics.values) {
 				t.Error("values should be equal")
 			}
@@ -710,7 +714,9 @@ func TestDocumentExtraction(t *testing.T) {
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			metrics, err := extractMetricsFromDocument(test.Document)
-			assert.NoError(t, err)
+			if err != nil {
+				t.Error(err)
+			}
 			if test.NumEncodedValues != len(metrics.values) {
 				t.Error("values should be equal")
 			}
@@ -777,7 +783,9 @@ func TestArrayExtraction(t *testing.T) {
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			metrics, err := extractMetricsFromArray(test.Array)
-			assert.NoError(t, err)
+			if err != nil {
+				t.Error(err)
+			}
 			if test.NumEncodedValues != len(metrics.values) {
 				t.Error("values should be equal")
 			}
