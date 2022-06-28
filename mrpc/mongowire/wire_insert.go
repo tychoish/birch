@@ -30,7 +30,7 @@ func (m *insertMessage) Serialize() []byte {
 	size := 16 /* header */ + 4 /* update header */
 	size += len(m.Namespace) + 1
 	for _, d := range m.Docs {
-		size += int(getDocSize(&d))
+		size += getDocSize(&d)
 	}
 
 	m.header.Size = int32(size)

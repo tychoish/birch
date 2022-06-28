@@ -120,8 +120,13 @@ func TestMessage(t *testing.T) {
 			if test.hasResponse != test.message.HasResponse() {
 				t.Error("values should be equal")
 			}
-			if test.scope != test.message.Scope() {
-				t.Error("values should be equal")
+			if test.scope != nil {
+				if test.scope.Type != test.message.Scope().Type {
+					t.Error("values should be equal")
+				}
+				if test.scope.Context != test.message.Scope().Context {
+					t.Error("values should be equal")
+				}
 			}
 			if headerSize+test.bodySize != len(test.message.Serialize()) {
 				t.Error("values should be equal")

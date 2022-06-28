@@ -177,9 +177,11 @@ func (r *Runtime) MarshalDocument() (*birch.Document, error) {
 
 		proc.AppendOmitEmpty(marshalMemExtra(&r.Process.MemoryPlatform))
 		na := birch.MakeArray(len(r.Process.NetStat))
+
 		for _, netstat := range r.Process.NetStat {
 			na.Append(birch.VC.Document(marshalNetStat(&netstat)))
 		}
+
 		proc.Append(birch.EC.Array("net", na))
 		doc.Append(birch.EC.SubDocument("process", proc))
 	}

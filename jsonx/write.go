@@ -111,6 +111,7 @@ func writeJSONString(s []byte) []byte {
 	out := make([]byte, 0, len(s))
 
 	valLen := len(s)
+
 	out = append(out, '"')
 
 	// write string, the fast path, without utf8 and escape support
@@ -123,6 +124,7 @@ func writeJSONString(s []byte) []byte {
 			break
 		}
 	}
+
 	if i == valLen {
 		return append(out, '"')
 	}
@@ -137,9 +139,11 @@ func writeJSONString(s []byte) []byte {
 				i++
 				continue
 			}
+
 			if start < i {
-				out = append(out, []byte(s[start:i])...)
+				out = append(out, s[start:i]...)
 			}
+
 			switch b {
 			case '\\', '"':
 				out = append(out, '\\', b)
@@ -160,12 +164,15 @@ func writeJSONString(s []byte) []byte {
 			}
 			i++
 			start = i
+
 			continue
 		}
+
 		i++
+
 		continue
 	}
 
-	out = append(out, []byte(s[start:])...)
+	out = append(out, s[start:]...)
 	return append(out, '"')
 }

@@ -53,9 +53,9 @@ func (opts CollectJSONOptions) getSource(ctx context.Context) (<-chan *birch.Doc
 	case opts.InputSource != nil:
 		go func() {
 			defer recovery.LogStackTraceAndContinue("collect json metrics")
+			defer close(errs)
 
 			stream := bufio.NewScanner(opts.InputSource)
-			defer close(errs)
 
 			for stream.Scan() {
 				jd, err := jsonx.DC.BytesErr(stream.Bytes())
@@ -83,8 +83,8 @@ func (opts CollectJSONOptions) getSource(ctx context.Context) (<-chan *birch.Doc
 				return
 			}
 			defer func() { errs <- f.Close() }()
-			stream := bufio.NewScanner(f)
 
+			stream := bufio.NewScanner(f)
 			for stream.Scan() {
 				jd, err := jsonx.DC.BytesErr(stream.Bytes())
 				if err != nil {
@@ -116,10 +116,8 @@ func (opts CollectJSONOptions) getSource(ctx context.Context) (<-chan *birch.Doc
 				errs <- fmt.Errorf("problem setting up file follower of '%s': %w", opts.FileName, err)
 				return
 			}
-			defer func() {
-				tail.Close()
-				errs <- tail.Err()
-			}()
+
+			defer func() { tail.Close(); errs <- tail.Err() }()
 
 			for line := range tail.Lines() {
 				jd, err := jsonx.DC.BytesErr([]byte(line.String()))
@@ -163,6 +161,7 @@ func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 
 	outputCount := 0
 	collector := ftdc.NewDynamicCollector(opts.SampleCount)
+
 	flushTimer := time.NewTimer(opts.FlushInterval)
 	defer flushTimer.Stop()
 
@@ -184,7 +183,9 @@ func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 		}
 
 		outputCount++
+
 		collector.Reset()
+
 		flushTimer.Reset(opts.FlushInterval)
 
 		return nil

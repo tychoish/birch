@@ -85,10 +85,8 @@ func extractMetricsFromValue(val *birch.Value) (extractedMetrics, error) {
 	switch btype {
 	case bsontype.Array:
 		metrics, err = extractMetricsFromArray(val.MutableArray())
-		err = err
 	case bsontype.EmbeddedDocument:
 		metrics, err = extractMetricsFromDocument(val.MutableDocument())
-		err = err
 	case bsontype.Boolean:
 		if val.Boolean() {
 			metrics.values = append(metrics.values, birch.VC.Int64(1))

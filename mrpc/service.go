@@ -48,31 +48,18 @@ func (s *basicService) Run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("problem listening on %s: %w", s.addr, err)
 	}
-
-	go func() {
-		select {
-		case <-ctx.Done():
-			grip.Warning(message.WrapError(l.Close(), message.Fields{
-				"message": "error occurred while closing service",
-				"context": "mrpc service",
-			}))
-		}
-	}()
-
-	grip.Infof("listening for connections on %s", s.addr)
+	defer func() { _ = l.Close() }()
 
 	for {
 		if ctx.Err() != nil {
-			grip.Info(message.Fields{
-				"message": "service shut down because context is done",
-				"context": "mrpc service",
-			})
 			return nil
 		}
 
 		conn, err := l.Accept()
-		if err != nil {
-			grip.WarningWhen(ctx.Err() == nil, message.WrapError(err, "problem accepting connection"))
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			return nil
+		} else if err != nil {
+			grip.Warning(message.WrapError(err, "problem accepting connection"))
 			continue
 		}
 
@@ -88,7 +75,6 @@ func (s *basicService) dispatchRequest(ctx context.Context, conn net.Conn) {
 			grip.Error(message.WrapErrorf(err, "error closing connection from %s", conn.RemoteAddr()))
 			return
 		}
-		grip.Debugf("closed connection from %s", conn.RemoteAddr())
 	}()
 
 	if c, ok := conn.(*tls.Conn); ok {
@@ -97,7 +83,6 @@ func (s *basicService) dispatchRequest(ctx context.Context, conn net.Conn) {
 			grip.Warning(message.WrapError(err, "error doing tls handshake"))
 			return
 		}
-		grip.Debugf("ssl connection to %s", c.ConnectionState().ServerName)
 	}
 
 	for {

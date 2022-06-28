@@ -70,11 +70,15 @@ func IsMetricsDocument(key string, doc *birch.Document) ([]string, int) {
 	iter := doc.Iterator()
 	keys := []string{}
 	seen := 0
+
 	for iter.Next() {
 		elem := iter.Element()
+
 		k, num := IsMetricsValue(fmt.Sprintf("%s/%s", key, elem.Key()), elem.Value())
+
 		if num > 0 {
 			seen += num
+
 			keys = append(keys, k...)
 		}
 	}
@@ -87,11 +91,13 @@ func IsMetricsArray(key string, array *birch.Array) ([]string, int) {
 	numKeys := 0
 	keys := []string{}
 	iter := array.Iterator()
+
 	for iter.Next() {
 		ks, num := IsMetricsValue(key+strconv.Itoa(idx), iter.Value())
 
 		if num > 0 {
 			numKeys += num
+
 			keys = append(keys, ks...)
 		}
 

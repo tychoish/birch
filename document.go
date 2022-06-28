@@ -170,6 +170,7 @@ func (d *Document) AppendOmitEmpty(elems ...*Element) *Document {
 		if elem.Value().IsEmpty() {
 			continue
 		}
+
 		d.Append(elem)
 	}
 	return d
@@ -468,7 +469,7 @@ func (d *Document) Extend(d2 *Document) *Document { d.Append(d2.elems...); retur
 // with duplicate keys.
 func (d *Document) ExtendReader(r Reader) *Document { d.Append(DC.Reader(r).elems...); return d }
 
-// ExtendInterface constructs a document using the interace
+// ExtendInterface constructs a document using the interface
 // constructor method
 func (d *Document) ExtendInterface(in interface{}) *Document {
 	d.Append(DC.Interface(in).elems...)

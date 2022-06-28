@@ -123,7 +123,7 @@ func (m *OpMessage) Serialize() []byte {
 		sections = append(sections, section.Serialize()...)
 		switch p := section.(type) {
 		case *opMessagePayloadType0:
-			size += 1 // kind
+			size += 1 // kind // nolint
 			size += getDocSize(p.Document)
 		case *opMessagePayloadType1:
 			size += int(p.Size)

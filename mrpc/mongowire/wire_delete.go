@@ -26,7 +26,7 @@ func (m *deleteMessage) Scope() *OpScope {
 func (m *deleteMessage) Serialize() []byte {
 	size := 16 /* header */ + 8 /* update header */
 	size += len(m.Namespace) + 1
-	size += int(getDocSize(m.Filter))
+	size += getDocSize(m.Filter)
 
 	m.header.Size = int32(size)
 

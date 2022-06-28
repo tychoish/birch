@@ -29,6 +29,7 @@ func (d *Document) UnmarshalJSON(in []byte) error {
 		d.Append(EC.Value(key.Str, val))
 		return true
 	})
+
 	if err != nil {
 		return err
 	}
@@ -100,6 +101,7 @@ func getValueForResult(value internal.Result) (*Value, error) {
 	case value.IsArray():
 		source := value.Array()
 		array := AC.Make(len(source))
+
 		for _, elem := range source {
 			val, err := getValueForResult(elem)
 			if err != nil {
@@ -112,9 +114,11 @@ func getValueForResult(value internal.Result) (*Value, error) {
 		return VC.Array(array), nil
 	case value.IsObject():
 		var err error
-		doc := DC.New()
+		var doc = DC.New()
+
 		value.ForEach(func(key, value internal.Result) bool {
-			val, err := getValueForResult(value)
+			var val *Value
+			val, err = getValueForResult(value)
 			if err != nil {
 				err = fmt.Errorf("problem with subdocument at key %q: %w", key.Str, err)
 				return false
@@ -122,6 +126,7 @@ func getValueForResult(value internal.Result) (*Value, error) {
 			doc.Append(EC.Value(key.Str, val))
 			return true
 		})
+
 		if err != nil {
 			return nil, err
 		}

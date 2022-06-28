@@ -4,23 +4,23 @@ linters:
     - deadcode
     - errcheck
     - goconst
-    - gocritic
+    # - gocritic
     - gofmt
     - goimports
-    - golint
-    - gosimple
+    # - golint
+    # - gosimple
     - govet
     - ineffassign
-    - interfacer
-    - maligned
+    # - interfacer
+    # - maligned
     - misspell
-    - staticcheck
-    - structcheck
+    # - staticcheck
+    # - structcheck
     - typecheck
     - unconvert
     - varcheck
-    - stylecheck
-    - wsl
+    # - stylecheck
+    # - wsl
     # - godox
     - prealloc
     - nakedret
@@ -43,6 +43,8 @@ issues:
         - goconst
       # Ignore GOOS warnings.
       text: "string `windows`"
+    - path: ./jsonx/internal/
+      linters: ["wsl", "deadcode"]
     - path: _test\.go
       linters:
         - gocognit

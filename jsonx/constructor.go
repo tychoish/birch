@@ -135,6 +135,7 @@ func (ValueConstructor) BytesErr(in []byte) (*Value, error) {
 	if err := val.UnmarshalJSON(in); err != nil {
 		return nil, err
 	}
+
 	return val, nil
 }
 

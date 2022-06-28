@@ -21,14 +21,17 @@ func ReadMessage(ctx context.Context, reader io.Reader) (Message, error) {
 	sizeBuf := make([]byte, 4)
 
 	readFinished := make(chan readResult)
+
 	go func() {
 		defer close(readFinished)
+
 		n, err := reader.Read(sizeBuf)
 		select {
 		case readFinished <- readResult{n: n, err: err}:
 		case <-ctx.Done():
 		}
 	}()
+
 	select {
 	case <-ctx.Done():
 		return nil, (ctx.Err())

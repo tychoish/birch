@@ -74,8 +74,8 @@ func TestPerformanceType(t *testing.T) {
 		t.Run("Zero", func(t *testing.T) {
 			perf := &Performance{}
 			perf.Add(&Performance{})
-			if (&Performance{ID: 1}) != perf {
-				t.Error("values should be equal")
+			if perf.ID != 1 {
+				t.Errorf("values should be equal: %d", perf.ID)
 			}
 		})
 		t.Run("OverridesID", func(t *testing.T) {

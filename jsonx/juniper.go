@@ -12,6 +12,7 @@ func (d *Document) Copy() *Document {
 	for _, elem := range d.elems {
 		nd.Append(elem.Copy())
 	}
+
 	return nd
 }
 
@@ -45,6 +46,7 @@ func (a *Array) Copy() *Array {
 	for _, elem := range a.elems {
 		na.Append(elem.Copy())
 	}
+
 	return na
 }
 

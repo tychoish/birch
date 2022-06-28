@@ -16,10 +16,12 @@ func (d *Document) MarshalJSON() ([]byte, error) { return d.toJSON().MarshalJSON
 func (d *Document) toJSON() *jsonx.Document {
 	iter := d.Iterator()
 	out := jsonx.DC.Make(d.Len())
+
 	for iter.Next() {
 		elem := iter.Element()
 		out.Append(jsonx.EC.Value(elem.Key(), elem.Value().toJSON()))
 	}
+
 	if iter.Err() != nil {
 		return nil
 	}
@@ -40,7 +42,6 @@ func (a *Array) toJSON() *jsonx.Array {
 	}
 	if iter.Err() != nil {
 		panic(iter.Err())
-		return nil
 	}
 
 	return out

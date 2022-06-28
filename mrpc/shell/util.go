@@ -7,60 +7,45 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/mrpc/mongowire"
-	"github.com/tychoish/grip"
-	"github.com/tychoish/grip/message"
 )
 
 // WriteResponse sends a response the the writer output.
-func WriteResponse(ctx context.Context, w io.Writer, resp mongowire.Message, op string) {
-	grip.Error(message.WrapError(mongowire.SendMessage(ctx, resp, w), message.Fields{
-		"message": "could not write response",
-		"op":      op,
-	}))
+func WriteResponse(ctx context.Context, w io.Writer, resp mongowire.Message, op string) error {
+	if err := mongowire.SendMessage(ctx, resp, w); err != nil {
+		return fmt.Errorf("could not write response op=%q to message: %w", op, err)
+	}
+	return nil
 }
 
 // WriteErrorResponse writes a response indicating an error occurred to the
 // writer output.
-func WriteErrorResponse(ctx context.Context, w io.Writer, t mongowire.OpType, err error, op string) {
+func WriteErrorResponse(ctx context.Context, w io.Writer, t mongowire.OpType, err error, op string) error {
 	doc, _ := MakeErrorResponse(false, err).MarshalDocument()
 	resp, err := ResponseToMessage(t, doc)
 	if err != nil {
-		grip.Error(message.WrapError(err, message.Fields{
-			"message": "could not write response",
-			"op":      op,
-		}))
-		return
+		return fmt.Errorf("could not form response op=%q to message: %w", op, err)
 	}
-	WriteResponse(ctx, w, resp, op)
+	return WriteResponse(ctx, w, resp, op)
 }
 
 // WriteOKResponse writes a response indicating that the request was ok.
-func WriteOKResponse(ctx context.Context, w io.Writer, t mongowire.OpType, op string) {
+func WriteOKResponse(ctx context.Context, w io.Writer, t mongowire.OpType, op string) error {
 	doc, _ := MakeErrorResponse(true, nil).MarshalDocument()
 	resp, err := ResponseToMessage(t, doc)
 	if err != nil {
-		grip.Error(message.WrapError(err, message.Fields{
-			"message": "could not write response",
-			"op":      op,
-		}))
-		return
+		return fmt.Errorf("could not form response op=%q to message: %w", op, err)
 	}
-	WriteResponse(ctx, w, resp, op)
+	return WriteResponse(ctx, w, resp, op)
 }
 
 // WriteOKResponse writes a response indicating that the request was not ok.
-func WriteNotOKResponse(ctx context.Context, w io.Writer, t mongowire.OpType, op string) {
+func WriteNotOKResponse(ctx context.Context, w io.Writer, t mongowire.OpType, op string) error {
 	doc, _ := MakeErrorResponse(false, nil).MarshalDocument()
 	resp, err := ResponseToMessage(t, doc)
 	if err != nil {
-		grip.Error(message.WrapError(err, message.Fields{
-			"message": "could not write response",
-			"op":      op,
-		}))
-		return
+		return fmt.Errorf("could not form response op=%q to message: %w", op, err)
 	}
-	WriteResponse(ctx, w, resp, op)
-
+	return WriteResponse(ctx, w, resp, op)
 }
 
 // ResponseToMessage converts a response into a wire protocol reply.

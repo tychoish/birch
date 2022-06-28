@@ -83,6 +83,7 @@ func (opts *CollectOptions) generate(ctx context.Context, id int) *birch.Documen
 	}
 
 	doc := birch.DC.Make(len(opts.Collectors) + 1).Append(birch.EC.SubDocument("runtime", docb))
+
 	if !opts.RunParallelCollectors {
 		for _, ec := range opts.Collectors {
 			doc.Append(birch.EC.SubDocument(ec.Name, ec.Operation(ctx)))
@@ -101,11 +102,13 @@ func (opts *CollectOptions) generate(ctx context.Context, id int) *birch.Documen
 	for _, coll := range opts.Collectors {
 		collectors <- coll
 	}
+
 	close(collectors)
 
 	wg := &sync.WaitGroup{}
 	for i := 0; i < num; i++ {
 		wg.Add(1)
+
 		go func() {
 			defer recovery.LogStackTraceAndContinue("ftdc metrics collector")
 			defer wg.Done()
@@ -214,11 +217,13 @@ func CollectRuntime(ctx context.Context, opts CollectOptions) error {
 				return fmt.Errorf("problem collecting results: %w", err)
 			}
 			collectCount++
+
 			collectTimer.Reset(opts.CollectionInterval)
 		case <-flushTimer.C:
 			if err := flusher(); err != nil {
 				return err
 			}
+
 			flushTimer.Reset(opts.FlushInterval)
 		}
 	}

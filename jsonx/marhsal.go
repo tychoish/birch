@@ -86,6 +86,7 @@ func (v *Value) MarshalJSON() ([]byte, error) {
 			if bv {
 				return []byte("true"), nil
 			}
+
 			return []byte("false"), nil
 		default:
 			return nil, fmt.Errorf("unsupported bool type %T", bv)

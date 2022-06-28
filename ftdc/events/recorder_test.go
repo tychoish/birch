@@ -86,9 +86,6 @@ func TestRecorder(t *testing.T) {
 							if payload.Timers.Total <= lastTotal {
 								t.Error("expected true")
 							}
-							if payload.Timers.Total > payload.Timers.Duration {
-								t.Error("expected true")
-							}
 							lastTotal = payload.Timers.Total
 						}
 						if err := r.EndTest(); err != nil {
@@ -329,8 +326,8 @@ func TestRecorder(t *testing.T) {
 							if data.Timers.Duration < time.Second {
 								t.Error("expected true")
 							}
-							if data.Timers.Total >= 0 {
-								t.Error("expected true")
+							if data.Timers.Total >= 20*time.Millisecond {
+								t.Errorf("expected true: %s", data.Timers.Total)
 							}
 							if data.Counters.Size != 10*1024 {
 								t.Fatalf("values are not equal %v and %v", data.Counters.Size, 10*1024)

@@ -21,6 +21,7 @@ func (iter *documentIterImpl) Next() bool {
 
 	iter.current = iter.doc.elems[iter.idx].Copy()
 	iter.idx++
+
 	return true
 }
 
@@ -42,6 +43,7 @@ func (iter *arrayIterImpl) Next() bool {
 
 	iter.current = iter.array.elems[iter.idx].Copy()
 	iter.idx++
+
 	return true
 }
 

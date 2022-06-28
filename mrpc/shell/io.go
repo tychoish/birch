@@ -12,6 +12,7 @@ func intOK(ok bool) int {
 	if ok {
 		return 1
 	}
+
 	return 0
 }
 
@@ -29,6 +30,7 @@ func MakeErrorResponse(ok bool, err error) ErrorResponse {
 	if err != nil {
 		resp.ErrorMessage = err.Error()
 	}
+
 	return resp
 }
 

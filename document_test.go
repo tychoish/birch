@@ -108,27 +108,27 @@ func TestDocument(t *testing.T) {
 				Keys{{Name: "foo"}, {Prefix: []string{"foo"}, Name: "a"}, {Prefix: []string{"foo"}, Name: "b"}}, nil, true,
 			},
 			// {"one-array-recursive", (&Document{}).Append(c.ArrayFromElements("foo", VC.Null(())),
-			// 	Keys{{Name: "foo"}, {Prefix: []string{"foo"}, Name: "1"}, {Prefix: []string{"foo"}, Name: "2"}}, nil, true,
+			//	Keys{{Name: "foo"}, {Prefix: []string{"foo"}, Name: "1"}, {Prefix: []string{"foo"}, Name: "2"}}, nil, true,
 			// },
 			// {"invalid-subdocument",
-			// 	Reader{
-			// 		'\x15', '\x00', '\x00', '\x00',
-			// 		'\x03',
-			// 		'f', 'o', 'o', '\x00',
-			// 		'\x0B', '\x00', '\x00', '\x00', '\x01', '1', '\x00',
-			// 		'\x0A', '2', '\x00', '\x00', '\x00',
-			// 	},
-			// 	nil, errTooSmall, true,
+			//	Reader{
+			//		'\x15', '\x00', '\x00', '\x00',
+			//		'\x03',
+			//		'f', 'o', 'o', '\x00',
+			//		'\x0B', '\x00', '\x00', '\x00', '\x01', '1', '\x00',
+			//		'\x0A', '2', '\x00', '\x00', '\x00',
+			//	},
+			//	nil, errTooSmall, true,
 			// },
 			// {"invalid-array",
-			// 	Reader{
-			// 		'\x15', '\x00', '\x00', '\x00',
-			// 		'\x04',
-			// 		'f', 'o', 'o', '\x00',
-			// 		'\x0B', '\x00', '\x00', '\x00', '\x01', '1', '\x00',
-			// 		'\x0A', '2', '\x00', '\x00', '\x00',
-			// 	},
-			// 	nil, errTooSmall, true,
+			//	Reader{
+			//		'\x15', '\x00', '\x00', '\x00',
+			//		'\x04',
+			//		'f', 'o', 'o', '\x00',
+			//		'\x0B', '\x00', '\x00', '\x00', '\x01', '1', '\x00',
+			//		'\x0A', '2', '\x00', '\x00', '\x00',
+			//	},
+			//	nil, errTooSmall, true,
 			// },
 		}
 
@@ -998,7 +998,7 @@ func (testPrependAppendGenerator) twoOneAppendBytes() []byte {
 	return []byte{
 		// size
 		0x1f, 0x0, 0x0, 0x0,
-		//type - key - value
+		// type - key - value
 		0x1, 0x66, 0x6f, 0x6f, 0x0, 0x58, 0x39, 0xb4, 0xc8, 0x76, 0xbe, 0xf3, 0x3f,
 		// type - key - value
 		0x1, 0x66, 0x6f, 0x6f, 0x0, 0x83, 0xc0, 0xca, 0xa1, 0x45, 0xb6, 0x16, 0x40,

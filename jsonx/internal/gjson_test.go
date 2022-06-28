@@ -30,7 +30,7 @@ func TestRandomData(t *testing.T) {
 			t.Fatal(err)
 		}
 		lstr = string(b[:n])
-		Parse(lstr)
+		_, _ = Parse(lstr)
 	}
 }
 
@@ -44,29 +44,29 @@ var basicJSON = `{"age":100, "name":{"here":"B\\\"R"},
 	"created":"2014-05-16T08:28:06.989Z",
 	"loggy":{
 		"programmers": [
-    	    {
-    	        "firstName": "Brett",
-    	        "lastName": "McLaughlin",
-    	        "email": "aaaa",
+	    {
+		"firstName": "Brett",
+		"lastName": "McLaughlin",
+		"email": "aaaa",
 				"tag": "good"
-    	    },
-    	    {
-    	        "firstName": "Jason",
-    	        "lastName": "Hunter",
-    	        "email": "bbbb",
+	    },
+	    {
+		"firstName": "Jason",
+		"lastName": "Hunter",
+		"email": "bbbb",
 				"tag": "bad"
-    	    },
-    	    {
-    	        "firstName": "Elliotte",
-    	        "lastName": "Harold",
-    	        "email": "cccc",
+	    },
+	    {
+		"firstName": "Elliotte",
+		"lastName": "Harold",
+		"email": "cccc",
 				"tag":, "good"
-    	    },
+	    },
 			{
 				"firstName": 1002.3,
 				"age": 101
 			}
-    	]
+	]
 	},
 	"lastly":{"yay":"final"}
 }`
@@ -275,7 +275,7 @@ var complicatedJSON = `
 	"nestedTagged": {
 		"Green": "Green",
 		"Map": {
-			"this": "that", 
+			"this": "that",
 			"and": "the other thing"
 		},
 		"Ints": {
@@ -388,8 +388,8 @@ func TestValidBasic(t *testing.T) {
 	testvalid(t, `"a\\b\\\uFFAAa"`, true)
 	testvalid(t, `"a\\b\\\uFFAZa"`, false)
 	testvalid(t, `"a\\b\\\uFFA"`, false)
-	testvalid(t, string(complicatedJSON), true)
-	testvalid(t, string(exampleJSON), true)
+	testvalid(t, complicatedJSON, true)
+	testvalid(t, exampleJSON, true)
 }
 
 var jsonchars = []string{"{", "[", ",", ":", "}", "]", "1", "0", "true",

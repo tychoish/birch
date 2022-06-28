@@ -22,7 +22,9 @@ func (d *Document) UnmarshalJSON(in []byte) error {
 	if err != nil {
 		return err
 	}
+
 	iter := jdoc.Iterator()
+
 	for iter.Next() {
 		elem, err := convertJSONElements(iter.Element())
 		if err != nil {
@@ -40,7 +42,9 @@ func (a *Array) UnmarshalJSON(in []byte) error {
 	if err != nil {
 		return err
 	}
+
 	iter := ja.Iterator()
+
 	for iter.Next() {
 		elem, err := convertJSONElements(iter.Element())
 		if err != nil {
@@ -60,10 +64,13 @@ func (v *Value) UnmarshalJSON(in []byte) error {
 	}
 
 	elem, err := convertJSONElements(jsonx.EC.Value("", va))
+
 	if err != nil {
 		return err
 	}
+
 	v.Set(elem.Value())
+
 	return nil
 }
 
@@ -283,6 +290,7 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 			iter := indoc.Iterator()
 
 			doc := DC.Make(indoc.Len())
+
 			for iter.Next() {
 				elem, err := convertJSONElements(iter.Element())
 				if err != nil {
@@ -291,6 +299,7 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 
 				doc.Append(elem)
 			}
+
 			return EC.SubDocument(in.Key(), doc), nil
 		}
 	case jsonx.ArrayValue:
@@ -298,6 +307,7 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 		iter := ina.Iterator()
 
 		array := MakeArray(ina.Len())
+
 		for iter.Next() {
 			elem, err := convertJSONElements(iter.Element())
 			if err != nil {
@@ -306,6 +316,7 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 
 			array.Append(elem.value)
 		}
+
 		return EC.Array(in.Key(), array), nil
 	default:
 		return nil, fmt.Errorf("unknown value type '%s' [%v]", inv.Type(), inv.Interface())

@@ -425,10 +425,8 @@ func TestBSONValueToMetric(t *testing.T) {
 				if !strings.HasPrefix(m[0].Key(), strings.Join(test.Path, ".")) {
 					t.Error("expected true")
 				}
-			} else {
-				if m == nil {
-					t.Fatal("'m' should not be nil")
-				}
+			} else if m == nil {
+				t.Fatal("'m' should not be nil")
 			}
 		})
 	}
@@ -1167,16 +1165,20 @@ func TestMetricsToElement(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			elem, num := restoreElement(test.ref, 0, test.metrics, 0)
+
 			if test.outNum != num {
-				t.Error("values should be equal")
+				t.Errorf("values should be equal expected=%d, actual=%d", test.outNum, num)
+			}
+			if test.expected == nil {
+				return
 			}
 			if !test.isDocument {
-				if test.expected != elem {
-					t.Error("values should be equal")
+				if test.expected.String() != elem.String() {
+					t.Errorf("values should be equal expected=%v actual=%v", test.expected, elem)
 				}
 			} else {
 				if fmt.Sprint(test.expected.Value().Interface()) != fmt.Sprint(elem.Value().Interface()) {
-					t.Error("values shold be equal")
+					t.Errorf("values should be equal expected=%v actual=%v", test.expected, elem)
 				}
 			}
 

@@ -64,8 +64,8 @@ func TestCollectorInterface(t *testing.T) {
 						if err != nil {
 							t.Error(err)
 						}
-						if len(out) != 0 {
-							t.Fatal("expected zero")
+						if len(out) == 0 {
+							t.Fatalf("did not expect zero")
 						}
 
 					} else {
@@ -87,11 +87,11 @@ func TestCollectorInterface(t *testing.T) {
 			t.Run("ResolveWhenNil", func(t *testing.T) {
 				collector := collect.factory()
 				out, err := collector.Resolve()
-				if out == nil {
-					t.Error("expected nil output")
-				}
 				if err == nil {
 					t.Error("error should not be nil")
+				}
+				if out != nil {
+					t.Error("expected nil output")
 				}
 			})
 			t.Run("RoundTrip", func(t *testing.T) {
@@ -99,13 +99,13 @@ func TestCollectorInterface(t *testing.T) {
 					t.Skip("without compressing these tests don't make much sense")
 				}
 				for name, docs := range map[string][]*birch.Document{
-					"Integers": []*birch.Document{
+					"Integers": {
 						testutil.RandFlatDocument(5),
 						testutil.RandFlatDocument(5),
 						testutil.RandFlatDocument(5),
 						testutil.RandFlatDocument(5),
 					},
-					"DecendingHandIntegers": []*birch.Document{
+					"DecendingHandIntegers": {
 						birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5)),
 						birch.NewDocument(birch.EC.Int64("one", 89), birch.EC.Int64("two", 4)),
 						birch.NewDocument(birch.EC.Int64("one", 99), birch.EC.Int64("two", 3)),
