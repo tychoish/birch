@@ -14,7 +14,6 @@ import (
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc"
 	"github.com/tychoish/emt"
-	"github.com/tychoish/grip/message"
 	"github.com/tychoish/grip/recovery"
 	"github.com/tychoish/grip/x/metrics"
 )
@@ -62,21 +61,16 @@ func (opts *CollectOptions) generate(ctx context.Context, id int) *birch.Documen
 		Timestamp: time.Now(),
 	}
 
-	base := message.Base{}
-
 	if !opts.SkipGolang {
 		out.Golang = metrics.CollectGoStatsTotals().(*metrics.GoRuntimeInfo)
-		out.Golang.Base = base
 	}
 
 	if !opts.SkipSystem {
 		out.System = metrics.CollectSystemInfo().(*metrics.SystemInfo)
-		out.System.Base = base
 	}
 
 	if !opts.SkipProcess {
 		out.Process = metrics.CollectProcessInfo(int32(pid)).(*metrics.ProcessInfo)
-		out.Process.Base = base
 	}
 
 	docb, err := out.MarshalDocument()

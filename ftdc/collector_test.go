@@ -9,8 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc/testutil"
 )
@@ -40,7 +38,9 @@ func TestCollectorInterface(t *testing.T) {
 					}
 
 					info := collector.Info()
-					assert.Zero(t, info)
+					if info.MetricsCount != 0 || info.SampleCount != 0 {
+						t.Errorf("unexpected info %+v", info)
+					}
 
 					for _, d := range test.docs {
 						if err := collector.Add(d); err != nil {
@@ -50,8 +50,9 @@ func TestCollectorInterface(t *testing.T) {
 					info = collector.Info()
 
 					if test.randStats {
-						require.True(t, info.MetricsCount >= test.numStats,
-							"%d >= %d", info.MetricsCount, test.numStats)
+						if info.MetricsCount < test.numStats {
+							t.Fatal("unexpeted value")
+						}
 					} else {
 						if test.numStats != info.MetricsCount {
 							t.Fatalf("info=%+v, %v", info, test.docs)
@@ -63,23 +64,32 @@ func TestCollectorInterface(t *testing.T) {
 						if err != nil {
 							t.Error(err)
 						}
-						assert.NotZero(t, out)
+						if len(out) != 0 {
+							t.Fatal("expected zero")
+						}
+
 					} else {
 						if err == nil {
 							t.Error("error should not be nil")
 						}
-						assert.Zero(t, out)
+						if len(out) != 0 {
+							t.Fatal("expected zero")
+						}
 					}
 
 					collector.Reset()
 					info = collector.Info()
-					assert.Zero(t, info)
+					if info.MetricsCount != 0 || info.SampleCount != 0 {
+						t.Fatalf("should be zero: %+v", info)
+					}
 				})
 			}
 			t.Run("ResolveWhenNil", func(t *testing.T) {
 				collector := collect.factory()
 				out, err := collector.Resolve()
-				assert.Nil(t, out)
+				if out == nil {
+					t.Error("expected nil output")
+				}
 				if err == nil {
 					t.Error("error should not be nil")
 				}
@@ -210,7 +220,7 @@ func TestStreamingEncoding(t *testing.T) {
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
 						}
-						if test.dataset != res {
+						if !int64SliceEqual(test.dataset, res) {
 							t.Error("values should be equal")
 						}
 					})
@@ -259,7 +269,7 @@ func TestStreamingEncoding(t *testing.T) {
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
 						}
-						if test.dataset != res {
+						if !int64SliceEqual(test.dataset, res) {
 							t.Error("values should be equal")
 						}
 					})
@@ -318,7 +328,7 @@ func TestStreamingEncoding(t *testing.T) {
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
 						}
-						if test.dataset != res {
+						if !int64SliceEqual(test.dataset, res) {
 							t.Error("values should be equal")
 						}
 					})
@@ -442,7 +452,7 @@ func TestFixedEncoding(t *testing.T) {
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
 						}
-						if test.dataset != res {
+						if !int64SliceEqual(test.dataset, res) {
 							t.Error("values should be equal")
 						}
 					})
@@ -490,7 +500,7 @@ func TestFixedEncoding(t *testing.T) {
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
 						}
-						if test.dataset != res {
+						if !int64SliceEqual(test.dataset, res) {
 							t.Error("values should be equal")
 						}
 					})
@@ -666,11 +676,12 @@ func TestTimestampHandling(t *testing.T) {
 						doc := iter.Document()
 
 						val, ok := doc.Lookup("ts").TimeOK()
-						if !assert.True(t, ok) {
-							if test.Values[idx] != val {
-								t.Error("values should be equal")
-							}
+						if !ok {
+							t.Error("expected true")
+						} else if test.Values[idx] != val {
+							t.Error("values should be equal")
 						}
+
 						idx++
 					}
 					if err := iter.Err(); err != nil {
@@ -683,10 +694,10 @@ func TestTimestampHandling(t *testing.T) {
 					for iter.Next() {
 						doc := iter.Document()
 						val, ok := doc.Lookup("ts").TimeOK()
-						if assert.True(t, ok) {
-							if test.Values[idx] != val {
-								t.Fatalf("values are not equal %v and %v", test.Values[idx], val)
-							}
+						if !ok {
+							t.Error("expected true")
+						} else if test.Values[idx] != val {
+							t.Fatalf("values are not equal %v and %v", test.Values[idx], val)
 						}
 						idx++
 					}
@@ -699,7 +710,9 @@ func TestTimestampHandling(t *testing.T) {
 					idx := 0
 					for chunks.Next() {
 						chunk := chunks.Chunk()
-						assert.NotNil(t, chunk)
+						if chunk == nil {
+							t.Fatal("'chunk' should not be nil")
+						}
 						if len(test.Values) != chunk.nPoints {
 							t.Error("values should be equal")
 						}
@@ -730,10 +743,10 @@ func TestTimestampHandling(t *testing.T) {
 					doc := iter.Document()
 
 					val, ok := doc.Lookup("ts").Int64OK()
-					if assert.True(t, ok) {
-						if test.Values[idx].Unix() != val {
-							t.Error("values should be equal")
-						}
+					if !ok {
+						t.Error("expected true")
+					} else if test.Values[idx].Unix() != val {
+						t.Error("values should be equal")
 					}
 					idx++
 				}
@@ -760,10 +773,10 @@ func TestTimestampHandling(t *testing.T) {
 					doc := iter.Document()
 
 					val, ok := doc.Lookup("ts").Int64OK()
-					if assert.True(t, ok) {
-						if test.Values[idx].UnixNano() != val {
-							t.Error("values should be equal")
-						}
+					if !ok {
+						t.Error("expected true")
+					} else if test.Values[idx].UnixNano() != val {
+						t.Error("values should be equal")
 					}
 
 					idx++
@@ -774,4 +787,16 @@ func TestTimestampHandling(t *testing.T) {
 			})
 		})
 	}
+}
+
+func int64SliceEqual(a, b []int64) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for idx := range a {
+		if a[idx] != b[idx] {
+			return false
+		}
+	}
+	return true
 }

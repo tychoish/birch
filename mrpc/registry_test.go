@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/tychoish/birch/mrpc/mongowire"
-	"github.com/tychoish/grip"
 )
 
 func assertRegistryLen(t *testing.T, size int, registry *OperationRegistry) {
@@ -215,7 +214,7 @@ func TestRegistry(t *testing.T) {
 			var callCount int
 			handler := func(ctx context.Context, w io.Writer, m mongowire.Message) {
 				callCount++
-				grip.Infof("test handler, call %d", callCount)
+				t.Logf("test handler, call %d", callCount)
 			}
 			registry := &OperationRegistry{
 				ops: map[mongowire.OpScope]HandlerFunc{},

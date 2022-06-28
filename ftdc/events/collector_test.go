@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc"
 )
@@ -72,7 +71,9 @@ func TestCollector(t *testing.T) {
 				t.Run(collectorTest.name, func(t *testing.T) {
 					t.Run("Fixture", func(t *testing.T) {
 						collector := collectorTest.constructor(fcTest.constructor())
-						assert.NotNil(t, collector)
+						if collector == nil {
+							t.Fatal("'collector' should not be nil")
+						}
 					})
 					t.Run("AddMethod", func(t *testing.T) {
 						collector := collectorTest.constructor(fcTest.constructor())
@@ -114,7 +115,13 @@ func TestCollector(t *testing.T) {
 }
 
 func TestFastMarshaling(t *testing.T) {
-	assert.Implements(t, (*birch.DocumentMarshaler)(nil), &Performance{})
-	assert.Implements(t, (*birch.DocumentMarshaler)(nil), &PerformanceHDR{})
-	assert.Implements(t, (*birch.DocumentMarshaler)(nil), Custom{})
+	if _, ok := (&Performance{}).(birch.DocumentMarshaler); !ok {
+		t.Error("should implement document marshaler")
+	}
+	if _, ok := (&PerformanceHDR{}).(birch.DocumentMarshaler); !ok {
+		t.Error("should implement document marshaler")
+	}
+	if _, ok := (Custom{}).(birch.DocumentMarshaler); !ok {
+		t.Error("should implement document marshaler")
+	}
 }

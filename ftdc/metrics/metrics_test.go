@@ -11,7 +11,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch/ftdc"
 )
 
@@ -66,7 +65,9 @@ func TestCollectRuntime(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		assert.True(t, len(files) >= 1)
+		if len(files) < 1 {
+			t.Error("expected true")
+		}
 
 		total := 0
 		for idx, info := range files {
@@ -109,7 +110,9 @@ func TestCollectRuntime(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		assert.True(t, len(files) >= 1)
+		if len(files) < 1 {
+			t.Error("expected true")
+		}
 
 		total := 0
 		for idx, info := range files {

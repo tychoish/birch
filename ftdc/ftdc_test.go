@@ -12,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc/testutil"
 )
@@ -122,7 +121,10 @@ func TestReadPathIntegration(t *testing.T) {
 					if metric.startingValue != metric.Values[0] {
 						t.Error("values should be equal")
 					}
-					assert.Len(t, metric.Values, test.expectedMetrics, "%d: %d", len(metric.Values), test.expectedMetrics)
+					if len(metric.Values) != test.expectedMetrics {
+						t.Error("unexpected number of values")
+					}
+
 					if counter == 10 {
 						for _, v := range c.renderMap() {
 							if len(v.Values) != test.expectedMetrics {
@@ -139,10 +141,10 @@ func TestReadPathIntegration(t *testing.T) {
 							doc := samples.Document()
 
 							numSamples++
-							if assert.NotNil(t, doc) {
-								if doc.Len() != test.expectedNum {
-									t.Error("values should be equal")
-								}
+							if doc == nil {
+								t.Error("doc should not be nil")
+							} else if doc.Len() != test.expectedNum {
+								t.Error("values should be equal")
 							}
 						}
 						if test.expectedMetrics != numSamples {
@@ -154,7 +156,9 @@ func TestReadPathIntegration(t *testing.T) {
 							t.Fatal(err)
 						}
 
-						assert.True(t, len(c.Metrics) >= data.Len())
+						if len(c.Metrics) < data.Len() {
+							t.Error("expected true")
+						}
 						docIter := data.Iterator()
 						elems := 0
 						for docIter.Next() {
@@ -166,7 +170,9 @@ func TestReadPathIntegration(t *testing.T) {
 						}
 						// this is inexact
 						// because of timestamps...l
-						assert.True(t, len(c.Metrics) >= elems)
+						if len(c.Metrics) < elems {
+							t.Error("expected true")
+						}
 						if elems != data.Len() {
 							t.Error("values should be equal")
 						}
@@ -291,7 +297,9 @@ func TestReadPathIntegration(t *testing.T) {
 					if err := iter.Err(); err != nil {
 						t.Error(err)
 					}
-					assert.True(t, counter >= expectedSamples/10)
+					if counter < expectedSamples/10 {
+						t.Error("expected true")
+					}
 
 				})
 				t.Run("Flattened", func(t *testing.T) {
@@ -327,7 +335,9 @@ func TestReadPathIntegration(t *testing.T) {
 					if err := iter.Err(); err != nil {
 						t.Error(err)
 					}
-					assert.True(t, counter >= expectedSamples/10)
+					if counter < expectedSamples/10 {
+						t.Error("expected true")
+					}
 				})
 			})
 		})

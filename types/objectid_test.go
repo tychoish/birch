@@ -7,12 +7,11 @@
 package types
 
 import (
+	"strings"
 	"testing"
 
 	"encoding/binary"
 	"time"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestNew(t *testing.T) {
@@ -22,7 +21,9 @@ func TestNew(t *testing.T) {
 
 func TestString(t *testing.T) {
 	id := NewObjectID()
-	require.Contains(t, id.String(), id.Hex())
+	if !strings.Contains(id.String(), id.Hex()) {
+		t.Fatal("string of id should contain hex rep")
+	}
 }
 
 func TestFromHex_RoundTrip(t *testing.T) {

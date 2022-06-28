@@ -14,7 +14,6 @@ import (
 
 	"errors"
 
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/types"
 )
@@ -1031,9 +1030,14 @@ func TestDocumentConstructor(t *testing.T) {
 					return DC.Reader(Reader(bytes)), nil
 				},
 				Check: func(t *testing.T, _ *Document) {
-					require.Panics(t, func() {
+					func() {
+						defer func() {
+							if p := recover(); p == nil {
+								t.Fatal("expected panic")
+							}
+						}()
 						DC.Reader(nil)
-					})
+					}()
 				},
 			},
 			{

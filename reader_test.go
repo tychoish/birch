@@ -14,7 +14,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch/bsonerr"
 )
 
@@ -454,7 +453,9 @@ func TestReader(t *testing.T) {
 					}
 				}
 
-				require.False(t, itr.Next())
+				if itr.Next() {
+					t.Fatal("iterator should be empty")
+				}
 				if tc.finalErr != itr.Err() {
 					t.Fatalf("unqueal %v and %v", tc.finalErr, itr.Err())
 				}

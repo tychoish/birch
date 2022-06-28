@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc/testutil"
 )
@@ -64,8 +63,9 @@ func BenchmarkHashBSON(b *testing.B) {
 						h, num = impl.HashFunc(test.Doc)
 					}
 					b.StopTimer()
-					assert.NotZero(b, num)
-					assert.NotZero(b, h)
+					if num == 0 || h == "" {
+						b.Fatal("values should not be 0 after the test")
+					}
 				})
 			}
 		})

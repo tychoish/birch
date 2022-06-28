@@ -14,8 +14,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch/bsonerr"
 )
 
@@ -630,7 +628,9 @@ func TestDocument(t *testing.T) {
 			requireElementsEqual(t, elem, iter.Element())
 		}
 
-		require.False(t, iter.Next())
+		if iter.Next() {
+			t.Fatal("iterator should be empty")
+		}
 		if err := iter.Err(); err != nil {
 			t.Fatal(err)
 		}
@@ -916,24 +916,32 @@ func TestDocument(t *testing.T) {
 			}
 		})
 		t.Run("Missing", func(t *testing.T) {
-			assert.Nil(t, doc.Lookup("NOT REAL"))
+			if doc.Lookup("NOT REAL") != nil {
+				t.Fatalf("expected nil for 'doc.Lookup(NOT REAL)' but got %v", doc.Lookup("NOT REAL"))
+			}
 		})
 		t.Run("MissingErr", func(t *testing.T) {
 			val, err := doc.LookupErr("NOT REAL")
 			if err == nil {
 				t.Error("error should not be nil")
 			}
-			assert.Nil(t, val)
+			if val != nil {
+				t.Fatalf("expected nil for 'val' but got %v", val)
+			}
 		})
 		t.Run("MissingElement", func(t *testing.T) {
-			assert.Nil(t, doc.LookupElement("NOT REAL"))
+			if doc.LookupElement("NOT REAL") != nil {
+				t.Fatalf("expected nil for 'doc.LookupElement(NOT REAL)' but got %v", doc.LookupElement("NOT REAL"))
+			}
 		})
 		t.Run("MissingElementErr", func(t *testing.T) {
 			elem, err := doc.LookupElementErr("NOT REAL")
 			if err == nil {
 				t.Error("error should not be nil")
 			}
-			assert.Nil(t, elem)
+			if elem != nil {
+				t.Fatalf("expected nil for 'elem' but got %v", elem)
+			}
 		})
 
 	})

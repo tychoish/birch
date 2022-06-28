@@ -6,7 +6,6 @@ import (
 	"io"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch"
 )
 
@@ -81,7 +80,9 @@ func TestReadMessage(t *testing.T) {
 				if err == nil {
 					t.Error("error should not be nil")
 				}
-				assert.Nil(t, message)
+				if message != nil {
+					t.Error("message should be nil", message)
+				}
 			} else {
 				if err != nil {
 					t.Error(err)
@@ -89,7 +90,7 @@ func TestReadMessage(t *testing.T) {
 				if test.expectedMessage.Header() != message.Header() {
 					t.Error("values should be equal")
 				}
-				if test.expectedMessage.Serialize() != message.Serialize() {
+				if !bytes.Equal(test.expectedMessage.Serialize(), message.Serialize()) {
 					t.Error("values should be equal")
 				}
 			}
@@ -105,7 +106,9 @@ func TestSendMessage(t *testing.T) {
 		if err := SendMessage(ctx, createSmallMessage(t), w); err == nil {
 			t.Error("error should be nil")
 		}
-		assert.Empty(t, w.data)
+		if len(w.data) != 0 {
+			t.Fatal("data should be empty")
+		}
 	})
 	t.Run("SmallMessage", func(t *testing.T) {
 		w := &mockWriter{}
@@ -113,7 +116,7 @@ func TestSendMessage(t *testing.T) {
 		if err := SendMessage(context.TODO(), smallMessage, w); err != nil {
 			t.Fatal(err)
 		}
-		if w.data != smallMessage.Serialize() {
+		if !bytes.Equal(w.data, smallMessage.Serialize()) {
 			t.Error("values should be equal")
 		}
 	})
@@ -123,7 +126,7 @@ func TestSendMessage(t *testing.T) {
 		if err := SendMessage(context.TODO(), largeMessage, w); err != nil {
 			t.Fatal(err)
 		}
-		if w.data != largeMessage.Serialize() {
+		if !bytes.Equal(w.data, largeMessage.Serialize()) {
 			t.Error("values should be equal")
 		}
 	})

@@ -9,7 +9,6 @@ import (
 func TestPerformanceType(t *testing.T) {
 	t.Run("MethodsPanicWhenNil", func(t *testing.T) {
 		var perf *Performance
-		assert.Nil(t, perf)
 		assert.Panics(t, func() {
 			_, err := perf.MarshalDocument()
 			if err == nil {
@@ -49,7 +48,9 @@ func TestPerformanceType(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		assert.NotNil(t, out)
+		if out == nil {
+			t.Fatal("'out' should not be nil")
+		}
 	})
 	t.Run("Add", func(t *testing.T) {
 		t.Run("Zero", func(t *testing.T) {

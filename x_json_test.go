@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch/types"
 )
 
@@ -380,9 +379,9 @@ func TestJSON(t *testing.T) {
 						if err != nil {
 							t.Fatal(err)
 						}
-						assert.True(t, elem.Value().Equal(expected), "[%s] %s != %s",
-							test.Expected,
-							expected.Interface(), elem.Value().Interface())
+						if !elem.Value().Equal(expected) {
+							t.Fatalf("[%s] %s != %s", test.Expected, expected.Interface(), elem.Value().Interface())
+						}
 					}
 					if err := iter.Err(); err != nil {
 						t.Fatal(err)
@@ -411,7 +410,9 @@ func TestJSON(t *testing.T) {
 						if err != nil {
 							t.Fatal(err)
 						}
-						assert.True(t, elem.Equal(expected))
+						if !elem.Equal(expected) {
+							t.Fatal("expected true")
+						}
 						idx++
 					}
 					if err := iter.Err(); err != nil {
@@ -433,7 +434,9 @@ func TestJSON(t *testing.T) {
 						t.Fatal(err)
 					}
 
-					assert.True(t, value.Equal(test.Val))
+					if !value.Equal(test.Val) {
+						t.Fatal("expected true value")
+					}
 				})
 			}
 		})

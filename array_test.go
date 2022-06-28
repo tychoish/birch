@@ -12,8 +12,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch/bsonerr"
 )
 
@@ -345,7 +343,9 @@ func TestArray(t *testing.T) {
 			if err == nil {
 				t.Fatal("error should not be nill")
 			}
-			require.Zero(t, ln)
+			if ln != 0 {
+				t.Fatal("should be zero")
+			}
 		})
 		t.Run("Marshal", func(t *testing.T) {
 			_, err := NewArray(&Value{}).MarshalBSON()
@@ -369,7 +369,14 @@ func TestArray(t *testing.T) {
 		t.Run("MissingValue", func(t *testing.T) {
 			ar := NewArray(VC.Int(42), VC.Int(84))
 
-			assert.Panics(t, func() { ar.Lookup(3).Int() })
+			func() {
+				defer func() {
+					if p := recover(); p == nil {
+						t.Fatal("expected panic")
+					}
+				}()
+				ar.Lookup(3).Int()
+			}()
 		})
 		t.Run("FindElement", func(t *testing.T) {
 			ar := NewArray(VC.Int(42), VC.Int(84))
@@ -384,7 +391,14 @@ func TestArray(t *testing.T) {
 		t.Run("MissingElement", func(t *testing.T) {
 			ar := NewArray(VC.Int(42), VC.Int(84))
 
-			assert.Panics(t, func() { ar.LookupElement(3).Value().Int() })
+			func() {
+				defer func() {
+					if p := recover(); p == nil {
+						t.Fatal("expected panic")
+					}
+				}()
+				ar.LookupElement(3).Value().Int()
+			}()
 		})
 		t.Run("ElementKeys", func(t *testing.T) {
 			ar := NewArray(VC.Int(42), VC.Int(84))
@@ -434,11 +448,25 @@ func TestArray(t *testing.T) {
 	t.Run("Set", func(t *testing.T) {
 		t.Run("OutOfBounds", func(t *testing.T) {
 			ar := NewArray()
-			assert.Panics(t, func() { ar.Set(10, VC.String("hi")) })
+			func() {
+				defer func() {
+					if p := recover(); p == nil {
+						t.Fatal("expected panic")
+					}
+				}()
+				ar.Set(10, VC.String("hi"))
+			}()
 		})
 		t.Run("Empty", func(t *testing.T) {
 			ar := NewArray()
-			assert.Panics(t, func() { ar.Set(0, VC.String("hi")) })
+			func() {
+				defer func() {
+					if p := recover(); p == nil {
+						t.Fatal("expected panic")
+					}
+				}()
+				ar.Set(0, VC.String("hi"))
+			}()
 		})
 		t.Run("Replace", func(t *testing.T) {
 			ar := NewArray(VC.Int(42))

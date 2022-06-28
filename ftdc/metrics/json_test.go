@@ -8,11 +8,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/tychoish/birch/ftdc"
 	"github.com/tychoish/birch/ftdc/testutil"
 )
@@ -216,10 +215,12 @@ func TestCollectJSON(t *testing.T) {
 		go func() {
 			time.Sleep(10 * time.Millisecond)
 			if err := writeStream(hundredDocs, f); err != nil {
-				t.Fatal(err)
+				t.Error(err)
+				return
 			}
 			if err := f.Close(); err != nil {
-				t.Fatal(err)
+				t.Error(err)
+				return
 			}
 		}()
 
@@ -239,7 +240,9 @@ func TestCollectJSON(t *testing.T) {
 		if err == nil {
 			t.Error("error should not be nil")
 		}
-		assert.Contains(t, err.Error(), "operation aborted")
+		if !strings.Contains(err.Error(), "operation aborted") {
+			t.Error("unexpected error", err)
+		}
 	})
 	t.Run("RoundTrip", func(t *testing.T) {
 		inputs := []map[string]interface{}{
@@ -294,7 +297,9 @@ func TestCollectJSON(t *testing.T) {
 			t.Error(err)
 		}
 		_, err := os.Stat(filepath.Join(dir, "roundtrip.0"))
-		require.False(t, os.IsNotExist(err))
+		if os.IsNotExist(err) {
+			t.Fatal("file should not exist")
+		}
 
 		fn, err := os.Open(filepath.Join(dir, "roundtrip.0"))
 		if err != nil {

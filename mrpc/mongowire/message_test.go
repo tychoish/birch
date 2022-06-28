@@ -1,6 +1,7 @@
 package mongowire
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/tychoish/birch"
@@ -8,19 +9,19 @@ import (
 )
 
 func TestMessage(t *testing.T) {
-	bytes, err := birch.DC.Elements(birch.EC.String("foo", "bar")).MarshalBSON()
+	bz, err := birch.DC.Elements(birch.EC.String("foo", "bar")).MarshalBSON()
 	if err != nil {
 		t.Fatal(err)
 	}
-	query, err := birch.ReadDocument(bytes)
+	query, err := birch.ReadDocument(bz)
 	if err != nil {
 		t.Fatal(err)
 	}
-	bytes, err = birch.DC.Elements(birch.EC.String("bar", "foo")).MarshalBSON()
+	bz, err = birch.DC.Elements(birch.EC.String("bar", "foo")).MarshalBSON()
 	if err != nil {
 		t.Fatal(err)
 	}
-	project, err := birch.ReadDocument(bytes)
+	project, err := birch.ReadDocument(bz)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -132,7 +133,7 @@ func TestMessage(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if test.message.Serialize() != m.Serialize() {
+			if !bytes.Equal(test.message.Serialize(), m.Serialize()) {
 				t.Error("values should be equal")
 			}
 			if test.message.Header() != m.Header() {

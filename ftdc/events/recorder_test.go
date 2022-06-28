@@ -84,8 +84,12 @@ func TestRecorder(t *testing.T) {
 							if totalDur != payload.Timers.Duration {
 								t.Error("values should be equal")
 							}
-							assert.True(t, payload.Timers.Total > lastTotal)
-							assert.True(t, payload.Timers.Total >= payload.Timers.Duration)
+							if payload.Timers.Total <= lastTotal {
+								t.Error("expected true")
+							}
+							if payload.Timers.Total > payload.Timers.Duration {
+								t.Error("expected true")
+							}
 							lastTotal = payload.Timers.Total
 						}
 						if err := r.EndTest(); err != nil {
@@ -107,8 +111,12 @@ func TestRecorder(t *testing.T) {
 						if lastTotal != payload.Timers.Total {
 							t.Error("values should be equal")
 						}
-						assert.True(t, payload.Timers.Total >= payload.Timers.Duration)
-						assert.True(t, time.Since(payload.Timestamp) <= time.Second)
+						if payload.Timers.Total < payload.Timers.Duration {
+							t.Error("expected true")
+						}
+						if time.Since(payload.Timestamp) > time.Second {
+							t.Error("expected true")
+						}
 					},
 				},
 			},
@@ -159,7 +167,9 @@ func TestRecorder(t *testing.T) {
 						if time.Minute != payload.Timers.Duration {
 							t.Error("values should be equal")
 						}
-						assert.True(t, payload.Timers.Total > 0)
+						if payload.Timers.Total <= 0 {
+							t.Error("expected true")
+						}
 					},
 				},
 			},
@@ -255,12 +265,18 @@ func TestRecorder(t *testing.T) {
 
 						switch data := c.Data[len(c.Data)-1].(type) {
 						case *Performance:
-							assert.True(t, data.Timers.Duration >= 9*time.Second, "%s", data.Timers.Duration)
-							assert.True(t, data.Timers.Total > 0)
+							if data.Timers.Duration < 9*time.Second {
+								t.Error("expected true")
+							}
+							if data.Timers.Total <= 0 {
+								t.Error("expected true")
+							}
 							if data.Counters.Operations != 10 {
 								t.Fatalf("values are not equal %v and %v", data.Counters.Operations, 10)
 							}
-							assert.True(t, time.Since(data.Timestamp) <= time.Second)
+							if time.Since(data.Timestamp) > time.Second {
+								t.Error("expected true")
+							}
 						case *PerformanceHDR:
 							if 10 != data.Counters.Number.TotalCount() {
 								t.Fatalf("values are not equal %v and %v", 10, data.Counters.Number.TotalCount())
@@ -281,7 +297,7 @@ func TestRecorder(t *testing.T) {
 								t.Error("values should be equal")
 							}
 						default:
-							assert.True(t, false, "%T", data)
+							t.FailNow()
 						}
 					},
 				},
@@ -306,8 +322,12 @@ func TestRecorder(t *testing.T) {
 
 						switch data := c.Data[len(c.Data)-1].(type) {
 						case *Performance:
-							assert.True(t, data.Timers.Duration >= time.Second, "%s", data.Timers.Duration)
-							assert.True(t, data.Timers.Total > 0)
+							if data.Timers.Duration < time.Second {
+								t.Error("expected true")
+							}
+							if data.Timers.Total >= 0 {
+								t.Error("expected true")
+							}
 							if data.Counters.Size != 10*1024 {
 								t.Fatalf("values are not equal %v and %v", data.Counters.Size, 10*1024)
 							}
@@ -331,7 +351,9 @@ func TestRecorder(t *testing.T) {
 								t.Error("values should be equal")
 							}
 						default:
-							assert.True(t, false, "%T", data)
+							if !false {
+								t.Error("expected true")
+							}
 						}
 					},
 				},
@@ -356,8 +378,12 @@ func TestRecorder(t *testing.T) {
 
 						switch data := c.Data[len(c.Data)-1].(type) {
 						case *Performance:
-							assert.True(t, data.Timers.Duration >= 100*time.Millisecond, "%s", data.Timers.Duration)
-							assert.True(t, data.Timers.Total > 0)
+							if data.Timers.Duration < 100*time.Millisecond {
+								t.Error("expected true")
+							}
+							if data.Timers.Total <= 0 {
+								t.Error("expected true")
+							}
 						case *PerformanceHDR:
 							if 10 != data.Counters.Number.TotalCount() {
 								t.Fatalf("values are not equal %v and %v", 10, data.Counters.Number.TotalCount())
@@ -371,7 +397,9 @@ func TestRecorder(t *testing.T) {
 							}
 							assert.InDelta(t, 10*time.Millisecond, int64(data.Timers.Duration.Mean()), float64(time.Microsecond))
 						default:
-							assert.True(t, false, "%T", data)
+							if !false {
+								t.Error("expected true")
+							}
 						}
 					},
 				},
@@ -428,7 +456,9 @@ func TestRecorder(t *testing.T) {
 								t.Fatalf("values are not equal %v and %v", data.Gauges.State, 422)
 							}
 						default:
-							assert.True(t, false, "%T", data)
+							if !false {
+								t.Error("expected true")
+							}
 						}
 					},
 				},
@@ -457,7 +487,9 @@ func TestRecorder(t *testing.T) {
 								t.Fatalf("values are not equal %v and %v", data.Gauges.Workers, 422)
 							}
 						default:
-							assert.True(t, false, "%T", data)
+							if !false {
+								t.Error("expected true")
+							}
 						}
 
 					},
@@ -477,11 +509,17 @@ func TestRecorder(t *testing.T) {
 
 						switch data := c.Data[0].(type) {
 						case *Performance:
-							assert.False(t, data.Gauges.Failed)
+							if data.Gauges.Failed {
+								t.Error("expected false")
+							}
 						case *PerformanceHDR:
-							assert.False(t, data.Gauges.Failed)
+							if data.Gauges.Failed {
+								t.Error("expected false")
+							}
 						default:
-							assert.True(t, false, "%T", data)
+							if !false {
+								t.Error("expected true")
+							}
 						}
 
 					},
@@ -502,11 +540,17 @@ func TestRecorder(t *testing.T) {
 
 						switch data := c.Data[0].(type) {
 						case *Performance:
-							assert.True(t, data.Gauges.Failed)
+							if !data.Gauges.Failed {
+								t.Error("expected true")
+							}
 						case *PerformanceHDR:
-							assert.True(t, data.Gauges.Failed)
+							if !data.Gauges.Failed {
+								t.Error("expected true")
+							}
 						default:
-							assert.True(t, false, "%T", data)
+							if !false {
+								t.Error("expected true")
+							}
 						}
 
 					},
@@ -529,11 +573,17 @@ func TestRecorder(t *testing.T) {
 
 						switch data := c.Data[0].(type) {
 						case *Performance:
-							assert.True(t, data.Gauges.Failed)
+							if !data.Gauges.Failed {
+								t.Error("expected true")
+							}
 						case *PerformanceHDR:
-							assert.True(t, data.Gauges.Failed)
+							if !data.Gauges.Failed {
+								t.Error("expected true")
+							}
 						default:
-							assert.True(t, false, "%T", data)
+							if !false {
+								t.Error("expected true")
+							}
 						}
 
 					},
@@ -558,12 +608,16 @@ func TestRecorder(t *testing.T) {
 							}
 						case *PerformanceHDR:
 							count := data.Timers.Total.TotalCount()
-							assert.True(t, int64(1) <= count, "count=%d", count)
+							if int64(1) > count {
+								t.Error("expected true")
+							}
 							if time.Minute != time.Duration(data.Timers.Total.Max()).Round(time.Millisecond) {
 								t.Error("values should be equal")
 							}
 						default:
-							assert.True(t, false, "%T", data)
+							if !false {
+								t.Error("expected true")
+							}
 						}
 
 					},
@@ -589,12 +643,16 @@ func TestRecorder(t *testing.T) {
 							}
 						case *PerformanceHDR:
 							count := data.Timers.Total.TotalCount()
-							assert.True(t, int64(1) <= count, "count=%d", count)
+							if int64(1) > count {
+								t.Error("expected true")
+							}
 							if time.Minute != time.Duration(data.Timers.Duration.Max()).Round(time.Millisecond) {
 								t.Error("values should be equal")
 							}
 						default:
-							assert.True(t, false, "%T", data)
+							if !false {
+								t.Error("expected true")
+							}
 						}
 
 					},
@@ -616,15 +674,21 @@ func TestRecorder(t *testing.T) {
 						switch data := c.Data[0].(type) {
 						case *Performance:
 							// it's 42 or 53 depending on the behavior of end
-							assert.True(t, 42 == data.Counters.Number || 43 == data.Counters.Number) // nolint
+							if 42 != data.Counters.Number && 43 != data.Counters.Number {
+								t.Error("expected true")
+							}
 						case *PerformanceHDR:
 							count := data.Counters.Number.TotalCount()
-							assert.True(t, 1 <= count, "count=%d", count)
+							if 1 > count {
+								t.Error("expected true")
+							}
 							if 42 != data.Counters.Number.Max() {
 								t.Fatalf("values are not equal %v and %v", 42, data.Counters.Number.Max())
 							}
 						default:
-							assert.True(t, false, "%T", data)
+							if !false {
+								t.Error("expected true")
+							}
 						}
 
 					},
@@ -653,7 +717,9 @@ func TestRecorder(t *testing.T) {
 								t.Fatalf("values are not equal %v and %v", ts, data.Timestamp)
 							}
 						default:
-							assert.True(t, false, "%T", data)
+							if !false {
+								t.Error("expected true")
+							}
 						}
 
 					},
@@ -682,7 +748,9 @@ func TestRecorder(t *testing.T) {
 								t.Fatalf("values are not equal %v and %v", id, data.ID)
 							}
 						default:
-							assert.True(t, false, "%T", data)
+							if !false {
+								t.Error("expected true")
+							}
 						}
 					},
 				},

@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/ftdc/testutil"
@@ -18,21 +17,27 @@ import (
 func TestFlattenArray(t *testing.T) {
 	t.Run("NilArray", func(t *testing.T) {
 		out := metricForArray("", nil, nil)
-		assert.NotNil(t, out)
+		if out == nil {
+			t.Fatal("'out' should not be nil")
+		}
 		if len(out) != 0 {
 			t.Errorf("length should be %d", 0)
 		}
 	})
 	t.Run("EmptyArray", func(t *testing.T) {
 		out := metricForArray("", nil, birch.NewArray())
-		assert.NotNil(t, out)
+		if out == nil {
+			t.Fatal("'out' should not be nil")
+		}
 		if len(out) != 0 {
 			t.Errorf("length should be %d", 0)
 		}
 	})
 	t.Run("TwoElements", func(t *testing.T) {
 		m := metricForArray("foo", nil, birch.NewArray(birch.VC.Boolean(true), birch.VC.Boolean(false)))
-		assert.NotNil(t, m)
+		if m == nil {
+			t.Fatal("'m' should not be nil")
+		}
 		if len(m) != 2 {
 			t.Errorf("length should be %d", 2)
 		}
@@ -52,7 +57,9 @@ func TestFlattenArray(t *testing.T) {
 	})
 	t.Run("TwoElementsWithSkippedValue", func(t *testing.T) {
 		m := metricForArray("foo", nil, birch.NewArray(birch.VC.String("foo"), birch.VC.Boolean(false)))
-		assert.NotNil(t, m)
+		if m == nil {
+			t.Fatal("'m' should not be nil")
+		}
 		if len(m) != 1 {
 			t.Errorf("length should be %d", 1)
 		}
@@ -66,7 +73,9 @@ func TestFlattenArray(t *testing.T) {
 	})
 	t.Run("ArrayWithOnlyStrings", func(t *testing.T) {
 		out := metricForArray("foo", nil, birch.NewArray(birch.VC.String("foo"), birch.VC.String("bar")))
-		assert.NotNil(t, out)
+		if out == nil {
+			t.Fatal("'out' should not be nil")
+		}
 		if len(out) != 0 {
 			t.Errorf("length should be %d", 0)
 		}
@@ -410,10 +419,16 @@ func TestBSONValueToMetric(t *testing.T) {
 				if test.Expected != m[0].startingValue {
 					t.Error("values should be equal")
 				}
-				assert.True(t, strings.HasPrefix(m[0].KeyName, test.Key))
-				assert.True(t, strings.HasPrefix(m[0].Key(), strings.Join(test.Path, ".")))
+				if !strings.HasPrefix(m[0].KeyName, test.Key) {
+					t.Error("expected true")
+				}
+				if !strings.HasPrefix(m[0].Key(), strings.Join(test.Path, ".")) {
+					t.Error("expected true")
+				}
 			} else {
-				assert.NotNil(t, m)
+				if m == nil {
+					t.Fatal("'m' should not be nil")
+				}
 			}
 		})
 	}
@@ -658,13 +673,19 @@ func TestExtractingMetrics(t *testing.T) {
 				default:
 					t.Fatalf("%T", metrics.values[0].Interface())
 				}
-				assert.True(t, len(keys) >= 1)
-				assert.True(t, strings.HasPrefix(keys[0], "keyname"))
+				if len(keys) < 1 {
+					t.Error("expected true")
+				}
+				if !strings.HasPrefix(keys[0], "keyname") {
+					t.Error("expected true")
+				}
 			} else {
 				if len(keys) != 0 {
 					t.Errorf("length should be %d", 0)
 				}
-				assert.Zero(t, num)
+				if num != 0 {
+					t.Errorf("num should be zero but was %d", num)
+				}
 			}
 
 			if len(metrics.types) != len(test.Types) {
@@ -736,7 +757,9 @@ func TestDocumentExtraction(t *testing.T) {
 			if test.NumEncodedValues != len(metrics.values) {
 				t.Error("values should be equal")
 			}
-			assert.False(t, metrics.ts.IsZero())
+			if metrics.ts.IsZero() {
+				t.Error("expected false")
+			}
 			if len(metrics.values) > 0 {
 				if test.FirstEncodedValue != metrics.values[0].Interface() {
 					t.Fatalf("values are not equal %v and %v", test.FirstEncodedValue, metrics.values[0].Interface())
@@ -998,7 +1021,7 @@ func TestMetricsHashValue(t *testing.T) {
 				}
 			})
 			t.Run("Checksum", func(t *testing.T) {
-				if test.expectedNum != metricKeyHashValue(fnv.New128(), "key") {
+				if test.expectedNum != metricKeyHashValue(fnv.New128(), "key", test.value) {
 					t.Error("values should be equal")
 				}
 			})
@@ -1162,19 +1185,47 @@ func TestMetricsToElement(t *testing.T) {
 }
 
 func TestIsOneChecker(t *testing.T) {
-	assert.False(t, isNum(1, nil))
-	assert.False(t, isNum(1, birch.VC.Int32(32)))
-	assert.False(t, isNum(1, birch.VC.Int32(0)))
-	assert.False(t, isNum(1, birch.VC.Int64(32)))
-	assert.False(t, isNum(1, birch.VC.Int64(0)))
-	assert.False(t, isNum(1, birch.VC.Double(32.2)))
-	assert.False(t, isNum(1, birch.VC.Double(0.45)))
-	assert.False(t, isNum(1, birch.VC.Double(0.0)))
-	assert.False(t, isNum(1, birch.VC.String("foo")))
-	assert.False(t, isNum(1, birch.VC.Boolean(true)))
-	assert.False(t, isNum(1, birch.VC.Boolean(false)))
+	if isNum(1, nil) {
+		t.Error("expected false")
+	}
+	if isNum(1, birch.VC.Int32(32)) {
+		t.Error("expected false")
+	}
+	if isNum(1, birch.VC.Int32(0)) {
+		t.Error("expected false")
+	}
+	if isNum(1, birch.VC.Int64(32)) {
+		t.Error("expected false")
+	}
+	if isNum(1, birch.VC.Int64(0)) {
+		t.Error("expected false")
+	}
+	if isNum(1, birch.VC.Double(32.2)) {
+		t.Error("expected false")
+	}
+	if isNum(1, birch.VC.Double(0.45)) {
+		t.Error("expected false")
+	}
+	if isNum(1, birch.VC.Double(0.0)) {
+		t.Error("expected false")
+	}
+	if isNum(1, birch.VC.String("foo")) {
+		t.Error("expected false")
+	}
+	if isNum(1, birch.VC.Boolean(true)) {
+		t.Error("expected false")
+	}
+	if isNum(1, birch.VC.Boolean(false)) {
+		t.Error("expected false")
+	}
 
-	assert.True(t, isNum(1, birch.VC.Int32(1)))
-	assert.True(t, isNum(1, birch.VC.Int64(1)))
-	assert.True(t, isNum(1, birch.VC.Double(1.0)))
+	if !isNum(1, birch.VC.Int32(1)) {
+		t.Error("expected true")
+	}
+	if !isNum(1, birch.VC.Int64(1)) {
+		t.Error("expected true")
+	}
+	if !isNum(1, birch.VC.Double(1.0)) {
+		t.Error("expected true")
+	}
 }

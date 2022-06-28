@@ -15,15 +15,17 @@ func TestSampleIterator(t *testing.T) {
 			nPoints: 2,
 		}
 		out := chunk.streamDocuments(ctx)
-		assert.NotNil(t, out)
+		if out == nil {
+			t.Fatal("'out' should not be nil")
+		}
 		for {
 			doc, ok := <-out
 			if ok {
-				continue
+				t.Error("expected false")
 			}
-
-			assert.False(t, ok)
-			assert.Nil(t, doc)
+			if doc != nil {
+				t.Error("expected nil doc")
+			}
 			break
 		}
 
