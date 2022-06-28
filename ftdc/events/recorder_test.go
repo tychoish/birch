@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/tychoish/birch/ftdc"
 )
 
@@ -288,7 +287,12 @@ func TestRecorder(t *testing.T) {
 							if 10 != data.Timers.Duration.TotalCount() {
 								t.Fatalf("values are not equal %v and %v", 10, data.Timers.Duration.TotalCount())
 							}
-							assert.InDelta(t, time.Second, int64(data.Timers.Duration.Mean()), float64(time.Microsecond))
+
+							delta := float64(time.Microsecond)
+							diff := float64(time.Second) - data.Timers.Duration.Mean()
+							if diff < -delta || diff > delta {
+								t.Fatal("unexpected value", data.Timers.Duration.Mean())
+							}
 
 							if 10 != data.Counters.Operations.TotalCount() {
 								t.Fatalf("values are not equal %v and %v", 10, data.Counters.Operations.TotalCount())
@@ -342,7 +346,12 @@ func TestRecorder(t *testing.T) {
 							if 10 != data.Timers.Duration.TotalCount() {
 								t.Fatalf("values are not equal %v and %v", 10, data.Timers.Duration.TotalCount())
 							}
-							assert.InDelta(t, 100*time.Millisecond, int64(data.Timers.Duration.Mean()), float64(time.Microsecond))
+
+							delta := float64(time.Microsecond)
+							diff := float64(100*time.Millisecond) - data.Timers.Duration.Mean()
+							if diff < -delta || diff > delta {
+								t.Fatal("unexpected value", data.Timers.Duration.Mean())
+							}
 
 							if 10 != data.Counters.Size.TotalCount() {
 								t.Fatalf("values are not equal %v and %v", 10, data.Counters.Size.TotalCount())
@@ -395,7 +404,12 @@ func TestRecorder(t *testing.T) {
 							if 10 != data.Timers.Duration.TotalCount() {
 								t.Fatalf("values are not equal %v and %v", 10, data.Timers.Duration.TotalCount())
 							}
-							assert.InDelta(t, 10*time.Millisecond, int64(data.Timers.Duration.Mean()), float64(time.Microsecond))
+
+							delta := float64(time.Microsecond)
+							diff := float64(10*time.Millisecond) - data.Timers.Duration.Mean()
+							if diff < -delta || diff > delta {
+								t.Fatal("unexpected value", data.Timers.Duration.Mean())
+							}
 						default:
 							if !false {
 								t.Error("expected true")

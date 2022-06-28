@@ -3,8 +3,6 @@ package ftdc
 import (
 	"context"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestSampleIterator(t *testing.T) {
@@ -32,14 +30,26 @@ func TestSampleIterator(t *testing.T) {
 	})
 	t.Run("CloserOperations", func(t *testing.T) {
 		iter := &sampleIterator{}
-		assert.Panics(t, func() {
+		func() {
+			defer func() {
+				if p := recover(); p == nil {
+					t.Error("case should panic")
+				}
+			}()
+
 			iter.Close()
-		})
+		}()
 		counter := 0
 		iter.closer = func() { counter++ }
-		assert.NotPanics(t, func() {
+		func() {
+			defer func() {
+				if p := recover(); p != nil {
+					t.Error("case should not panic")
+				}
+			}()
+
 			iter.Close()
-		})
+		}()
 		if 1 != counter {
 			t.Error("values should be equal")
 		}

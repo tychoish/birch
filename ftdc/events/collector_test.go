@@ -115,13 +115,16 @@ func TestCollector(t *testing.T) {
 }
 
 func TestFastMarshaling(t *testing.T) {
-	if _, ok := (&Performance{}).(birch.DocumentMarshaler); !ok {
+	var p interface{} = &Performance{}
+	if _, ok := p.(birch.DocumentMarshaler); !ok {
 		t.Error("should implement document marshaler")
 	}
-	if _, ok := (&PerformanceHDR{}).(birch.DocumentMarshaler); !ok {
+	var ph interface{} = &PerformanceHDR{}
+	if _, ok := ph.(birch.DocumentMarshaler); !ok {
 		t.Error("should implement document marshaler")
 	}
-	if _, ok := (Custom{}).(birch.DocumentMarshaler); !ok {
+	var c interface{} = Custom{}
+	if _, ok := c.(birch.DocumentMarshaler); !ok {
 		t.Error("should implement document marshaler")
 	}
 }

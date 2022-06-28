@@ -2,32 +2,50 @@ package events
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestPerformanceType(t *testing.T) {
 	t.Run("MethodsPanicWhenNil", func(t *testing.T) {
 		var perf *Performance
-		assert.Panics(t, func() {
+		func() {
+			defer func() {
+				if p := recover(); p == nil {
+					t.Error("case should panic")
+				}
+			}()
 			_, err := perf.MarshalDocument()
 			if err == nil {
 				t.Fatal("error should not be nill")
 			}
-		})
-		assert.Panics(t, func() {
+		}()
+		func() {
+			defer func() {
+				if p := recover(); p == nil {
+					t.Error("case should panic")
+				}
+			}()
 			_, err := perf.MarshalBSON()
 			if err == nil {
 				t.Error("error should not be nil")
 			}
-		})
-		assert.Panics(t, func() {
+		}()
+		func() {
+			defer func() {
+				if p := recover(); p == nil {
+					t.Error("case should panic")
+				}
+			}()
 			perf.Add(nil)
-		})
-		assert.Panics(t, func() {
+		}()
+		func() {
+			defer func() {
+				if p := recover(); p == nil {
+					t.Error("case should panic")
+				}
+			}()
 			perf = &Performance{}
 			perf.Add(nil)
-		})
+		}()
 	})
 	t.Run("Document", func(t *testing.T) {
 		perf := &Performance{}
