@@ -296,9 +296,10 @@ func TestCollectJSON(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+
 		_, err := os.Stat(filepath.Join(dir, "roundtrip.0"))
 		if os.IsNotExist(err) {
-			t.Fatal("file should not exist")
+			t.Error("file should exist")
 		}
 
 		fn, err := os.Open(filepath.Join(dir, "roundtrip.0"))

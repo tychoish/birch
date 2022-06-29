@@ -15,7 +15,6 @@ import (
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc"
 	"github.com/tychoish/birch/jsonx"
-	"github.com/tychoish/grip/recovery"
 )
 
 // CollectJSONOptions specifies options for a JSON2FTDC collector. You
@@ -52,7 +51,11 @@ func (opts CollectJSONOptions) getSource(ctx context.Context) (<-chan *birch.Doc
 	switch {
 	case opts.InputSource != nil:
 		go func() {
-			defer recovery.LogStackTraceAndContinue("collect json metrics")
+			defer func() {
+				if p := recover(); p != nil {
+					errs <- fmt.Errorf("json metrics collector: %v", p)
+				}
+			}()
 			defer close(errs)
 
 			stream := bufio.NewScanner(opts.InputSource)
@@ -75,7 +78,11 @@ func (opts CollectJSONOptions) getSource(ctx context.Context) (<-chan *birch.Doc
 		}()
 	case opts.FileName != "" && !opts.Follow:
 		go func() {
-			defer recovery.LogStackTraceAndContinue("collect json metrics")
+			defer func() {
+				if p := recover(); p != nil {
+					errs <- fmt.Errorf("json metrics collector: %v", p)
+				}
+			}()
 			defer close(errs)
 			f, err := os.Open(opts.FileName)
 			if err != nil {
@@ -106,7 +113,11 @@ func (opts CollectJSONOptions) getSource(ctx context.Context) (<-chan *birch.Doc
 		}()
 	case opts.FileName != "" && opts.Follow:
 		go func() {
-			defer recovery.LogStackTraceAndContinue("collect json metrics")
+			defer func() {
+				if p := recover(); p != nil {
+					errs <- fmt.Errorf("json metrics collector: %v", p)
+				}
+			}()
 			defer close(errs)
 
 			tail, err := follower.New(opts.FileName, follower.Config{

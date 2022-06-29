@@ -31,7 +31,10 @@ func TestCollectRuntime(t *testing.T) {
 			SkipProcess: true,
 			SkipSystem:  true,
 		}
-		doc := opts.generate(ctx, 1)
+		doc, err := opts.generate(ctx, 1)
+		if err != nil {
+			t.Fatal(err)
+		}
 		if 4 != doc.Len() {
 			t.Error("values should be equal")
 		}

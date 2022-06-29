@@ -10,9 +10,6 @@ import (
 	"errors"
 
 	"github.com/tychoish/birch/mrpc/mongowire"
-	"github.com/tychoish/grip"
-	"github.com/tychoish/grip/message"
-	"github.com/tychoish/grip/recovery"
 )
 
 type HandlerFunc func(context.Context, io.Writer, mongowire.Message)
@@ -21,11 +18,13 @@ type Service interface {
 	Address() string
 	RegisterOperation(scope *mongowire.OpScope, h HandlerFunc) error
 	Run(context.Context) error
+	RegisterErrorHandler(func(error))
 }
 
 type basicService struct {
-	addr     string
-	registry *OperationRegistry
+	addr          string
+	registry      *OperationRegistry
+	errorHandlers []func(error)
 }
 
 // NewService starts a generic wire protocol service listening on the given host
@@ -41,6 +40,18 @@ func (s *basicService) Address() string { return s.addr }
 
 func (s *basicService) RegisterOperation(scope *mongowire.OpScope, h HandlerFunc) error {
 	return (s.registry.Add(*scope, h))
+}
+func (s *basicService) RegisterErrorHandler(fn func(error)) {
+	s.errorHandlers = append(s.errorHandlers, fn)
+}
+
+func (s *basicService) handleError(err error) {
+	if err == nil {
+		return
+	}
+	for _, fn := range s.errorHandlers {
+		fn(err)
+	}
 }
 
 func (s *basicService) Run(ctx context.Context) error {
@@ -59,7 +70,7 @@ func (s *basicService) Run(ctx context.Context) error {
 		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 			return nil
 		} else if err != nil {
-			grip.Warning(message.WrapError(err, "problem accepting connection"))
+			s.handleError(fmt.Errorf("accepting connection: %w", err))
 			continue
 		}
 
@@ -69,10 +80,12 @@ func (s *basicService) Run(ctx context.Context) error {
 
 func (s *basicService) dispatchRequest(ctx context.Context, conn net.Conn) {
 	defer func() {
-		err := recovery.HandlePanicWithError(recover(), nil, "connection handling")
-		grip.Error(message.WrapError(err, "error during request handling"))
+		if p := recover(); p != nil {
+			s.handleError(fmt.Errorf("panic responding to request: %v", p))
+		}
+
 		if err := conn.Close(); err != nil {
-			grip.Error(message.WrapErrorf(err, "error closing connection from %s", conn.RemoteAddr()))
+			s.handleError(fmt.Errorf("error closing connection from %q: %w", conn.RemoteAddr(), err))
 			return
 		}
 	}()
@@ -80,7 +93,7 @@ func (s *basicService) dispatchRequest(ctx context.Context, conn net.Conn) {
 	if c, ok := conn.(*tls.Conn); ok {
 		// we do this here so that we can get the SNI server name
 		if err := c.Handshake(); err != nil {
-			grip.Warning(message.WrapError(err, "error doing tls handshake"))
+			s.handleError(fmt.Errorf("tls handshake: %w", err))
 			return
 		}
 	}
@@ -95,7 +108,7 @@ func (s *basicService) dispatchRequest(ctx context.Context, conn net.Conn) {
 			if ctx.Err() != nil {
 				return
 			}
-			grip.Error(message.WrapError(err, "problem reading message"))
+			s.handleError(fmt.Errorf("reading message: %w", err))
 			return
 		}
 
@@ -103,7 +116,7 @@ func (s *basicService) dispatchRequest(ctx context.Context, conn net.Conn) {
 
 		handler, ok := s.registry.Get(scope)
 		if !ok {
-			grip.Warningf("undefined command scope: %+v", scope)
+			s.handleError(fmt.Errorf("undefined scope: %+v", scope))
 			return
 		}
 

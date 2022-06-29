@@ -14,7 +14,6 @@ import (
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc"
 	"github.com/tychoish/emt"
-	"github.com/tychoish/grip/recovery"
 	"github.com/tychoish/grip/x/metrics"
 )
 
@@ -53,7 +52,7 @@ type CustomCollector struct {
 	Operation func(context.Context) *birch.Document
 }
 
-func (opts *CollectOptions) generate(ctx context.Context, id int) *birch.Document {
+func (opts *CollectOptions) generate(ctx context.Context, id int) (*birch.Document, error) {
 	pid := os.Getpid()
 	out := &Runtime{
 		ID:        id,
@@ -75,11 +74,11 @@ func (opts *CollectOptions) generate(ctx context.Context, id int) *birch.Documen
 
 	docb, err := out.MarshalDocument()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	if len(opts.Collectors) == 0 {
-		return docb
+		return docb, nil
 	}
 
 	doc := birch.DC.Make(len(opts.Collectors) + 1).Append(birch.EC.SubDocument("runtime", docb))
@@ -89,7 +88,7 @@ func (opts *CollectOptions) generate(ctx context.Context, id int) *birch.Documen
 			doc.Append(birch.EC.SubDocument(ec.Name, ec.Operation(ctx)))
 		}
 
-		return doc
+		return doc, nil
 	}
 
 	collectors := make(chan CustomCollector, len(opts.Collectors))
@@ -105,12 +104,17 @@ func (opts *CollectOptions) generate(ctx context.Context, id int) *birch.Documen
 
 	close(collectors)
 
+	catcher := emt.NewBasicCatcher()
 	wg := &sync.WaitGroup{}
 	for i := 0; i < num; i++ {
 		wg.Add(1)
 
 		go func() {
-			defer recovery.LogStackTraceAndContinue("ftdc metrics collector")
+			defer func() {
+				if p := recover(); p != nil {
+					catcher.Errorf("ftdc metrics collector panic: %v", p)
+				}
+			}()
 			defer wg.Done()
 
 			for collector := range collectors {
@@ -124,7 +128,7 @@ func (opts *CollectOptions) generate(ctx context.Context, id int) *birch.Documen
 		doc.Append(elem)
 	}
 
-	return doc.Sorted()
+	return doc.Sorted(), catcher.Resolve()
 }
 
 // NewCollectOptions creates a valid, populated collection options
@@ -213,8 +217,12 @@ func CollectRuntime(ctx context.Context, opts CollectOptions) error {
 		case <-ctx.Done():
 			return (flusher())
 		case <-collectTimer.C:
-			if err := collector.Add(opts.generate(ctx, collectCount)); err != nil {
+			payload, err := opts.generate(ctx, collectCount)
+			if err != nil {
 				return fmt.Errorf("problem collecting results: %w", err)
+			}
+			if err := collector.Add(payload); err != nil {
+				return fmt.Errorf("problem saving results: %w", err)
 			}
 			collectCount++
 

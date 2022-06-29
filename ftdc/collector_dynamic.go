@@ -2,6 +2,7 @@ package ftdc
 
 import (
 	"bytes"
+	"errors"
 )
 
 type dynamicCollector struct {
@@ -51,6 +52,9 @@ func (c *dynamicCollector) Add(in interface{}) error {
 	doc, err := readDocument(in)
 	if err != nil {
 		return err
+	}
+	if doc == nil {
+		return errors.New("nil document")
 	}
 
 	if c.hash == "" {
