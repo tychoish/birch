@@ -3,15 +3,14 @@ package metrics
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"time"
 
-	"errors"
-
-	"github.com/papertrail/go-tail/follower"
+	"github.com/fsnotify/fsnotify"
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc"
 	"github.com/tychoish/birch/jsonx"
@@ -120,33 +119,26 @@ func (opts CollectJSONOptions) getSource(ctx context.Context) (<-chan *birch.Doc
 			}()
 			defer close(errs)
 
-			tail, err := follower.New(opts.FileName, follower.Config{
-				Reopen: true,
-			})
-			if err != nil {
-				errs <- fmt.Errorf("problem setting up file follower of '%s': %w", opts.FileName, err)
-				return
-			}
-
-			defer func() { tail.Close(); errs <- tail.Err() }()
-
-			for line := range tail.Lines() {
-				jd, err := jsonx.DC.BytesErr([]byte(line.String()))
+			if err := follow(ctx, opts.FileName, func(in string) error {
+				jd, err := jsonx.DC.BytesErr([]byte(in))
 				if err != nil {
-					errs <- err
-					return
+					return err
 				}
 
 				doc, err := birch.DC.JSONXErr(jd)
 				if err != nil {
-					errs <- err
-					return
+					return err
 				}
 
 				select {
 				case out <- doc:
+					return nil
 				case <-ctx.Done():
+					return ctx.Err()
 				}
+			}); err != nil {
+				errs <- err
+				return
 			}
 		}()
 	default:
@@ -223,6 +215,45 @@ func CollectJSONStream(ctx context.Context, opts CollectJSONOptions) error {
 			if err := flusher(); err != nil {
 				return fmt.Errorf("problem flushing results at the end of the file: %w", err)
 			}
+		}
+	}
+}
+
+func follow(ctx context.Context, filename string, handler func(string) error) error {
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+	defer watcher.Close()
+
+	if err := watcher.Add(filename); err != nil {
+		return err
+	}
+
+	stream := bufio.NewScanner(bufio.NewReader(file))
+	for {
+		select {
+		case <-ctx.Done():
+			return errors.New("operation aborted")
+		case event := <-watcher.Events:
+			if event.Op&fsnotify.Write == fsnotify.Write {
+				for stream.Scan() {
+					if err := handler(stream.Text()); err != nil {
+						return err
+					}
+				}
+				if err := stream.Err(); err != nil {
+					return err
+				}
+			}
+		case err := <-watcher.Errors:
+			return err
 		}
 	}
 }

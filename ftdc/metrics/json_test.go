@@ -238,7 +238,7 @@ func TestCollectJSON(t *testing.T) {
 
 		err = CollectJSONStream(ctx, opts)
 		if err == nil {
-			t.Error("error should not be nil")
+			t.Fatal("error should not be nil")
 		}
 		if !strings.Contains(err.Error(), "operation aborted") {
 			t.Error("unexpected error", err)
