@@ -12,9 +12,11 @@ import (
 	"io"
 	"sort"
 	"strconv"
+	"time"
 
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/birch/elements"
+	"github.com/tychoish/birch/jsonx"
 )
 
 // Document is a mutable ordered map that compactly represents a BSON document.
@@ -718,4 +720,242 @@ func (d *Document) String() string {
 	buf.WriteByte('}')
 
 	return buf.String()
+}
+
+// Unmarshal attempts to read the bson document into the interface
+// value provided, with the semantics dependent on the input type. The
+// semantics are loose (particularly for sized integers), work
+// reasonably well for simple map types and will not always round
+// trip. While unmarshal will overwrite values in an existing input
+// structure, it will not delete other values, and will avoid writing
+// fields in the document which cannot be easily converted. While this
+// method does not work with arbitrary types that do not implement
+// DocumentUnmarshaler, it does not use reflection.
+func (d *Document) Unmarshal(into interface{}) error {
+	switch out := into.(type) {
+	case map[string]interface{}:
+		for _, elem := range d.elems {
+			out[elem.Key()] = elem.value.Interface()
+		}
+	case map[string]string:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.StringValueOK(); ok {
+				out[elem.Key()] = val
+			}
+		}
+	case map[string]int:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.IntOK(); ok {
+				out[elem.Key()] = val
+			}
+		}
+	case map[string]int32:
+		for _, elem := range d.elems {
+			// TODO: consider being permissive about small int32s
+			if val, ok := elem.value.Int32OK(); ok {
+				out[elem.Key()] = val
+			}
+		}
+	case map[string]int64:
+		for _, elem := range d.elems {
+			// be permissive about reading bson int32s
+			// into int64s:
+			if val, ok := elem.value.IntOK(); ok {
+				out[elem.Key()] = int64(val)
+			}
+		}
+	// TODO: add support for uints
+	case map[string]time.Time:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.TimeOK(); ok {
+				out[elem.Key()] = val
+			}
+		}
+	case map[string]time.Duration:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.IntOK(); ok {
+				out[elem.Key()] = time.Duration(int64(val))
+			}
+		}
+	case map[string]DocumentUnmarshaler:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.MutableDocumentOK(); ok {
+				out[elem.Key()] = val
+			}
+		}
+	case map[string]*jsonx.Document:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.MutableDocumentOK(); ok {
+				out[elem.Key()] = val.toJSON()
+			}
+		}
+	case map[string]*jsonx.Value:
+		for _, elem := range d.elems {
+			out[elem.Key()] = elem.value.toJSON()
+		}
+	case map[string][]string:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.MutableArrayOK(); ok {
+				value := make([]string, 0, val.Len())
+				for _, e := range val.doc.elems {
+					if str, ok := e.value.StringValueOK(); ok {
+						value = append(value, str)
+					}
+				}
+				out[elem.Key()] = value
+			} else if str, ok := elem.value.StringValueOK(); ok {
+				out[elem.Key()] = []string{str}
+			}
+		}
+	case map[string][]interface{}:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.MutableArrayOK(); ok {
+				value := make([]interface{}, 0, val.Len())
+				for _, e := range val.doc.elems {
+					value = append(value, e.value.Interface())
+				}
+				out[elem.Key()] = value
+			} else {
+				out[elem.Key()] = []interface{}{elem.value.Interface()}
+			}
+		}
+	case map[string][]int:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.MutableArrayOK(); ok {
+				value := make([]int, 0, val.Len())
+				for _, e := range val.doc.elems {
+					if num, ok := e.value.IntOK(); ok {
+						value = append(value, num)
+					}
+				}
+				out[elem.Key()] = value
+			} else if num, ok := elem.value.IntOK(); ok {
+				out[elem.Key()] = []int{num}
+			}
+		}
+	case map[string][]int32:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.MutableArrayOK(); ok {
+				value := make([]int32, 0, val.Len())
+				for _, e := range val.doc.elems {
+					if num, ok := e.value.Int32OK(); ok {
+						value = append(value, num)
+					}
+				}
+				out[elem.Key()] = value
+			} else if num, ok := elem.value.Int32OK(); ok {
+				out[elem.Key()] = []int32{num}
+			}
+		}
+	case map[string][]int64:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.MutableArrayOK(); ok {
+				value := make([]int64, 0, val.Len())
+				for _, e := range val.doc.elems {
+					if num, ok := e.value.IntOK(); ok {
+						value = append(value, int64(num))
+					}
+				}
+				out[elem.Key()] = value
+			} else if num, ok := elem.value.IntOK(); ok {
+				out[elem.Key()] = []int64{int64(num)}
+			}
+		}
+	case map[string][]time.Time:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.MutableArrayOK(); ok {
+				value := make([]time.Time, 0, val.Len())
+				for _, e := range val.doc.elems {
+					if ts, ok := e.value.TimeOK(); ok {
+						value = append(value, ts)
+					}
+				}
+				out[elem.Key()] = value
+			} else if ts, ok := elem.value.TimeOK(); ok {
+				out[elem.Key()] = []time.Time{ts}
+			}
+		}
+	case map[string][]time.Duration:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.MutableArrayOK(); ok {
+				value := make([]time.Duration, 0, val.Len())
+				for _, e := range val.doc.elems {
+					if dur, ok := e.value.IntOK(); ok {
+						value = append(value, time.Duration(dur))
+					}
+				}
+				out[elem.Key()] = value
+			} else if dur, ok := elem.value.IntOK(); ok {
+				out[elem.Key()] = []time.Duration{time.Duration(dur)}
+			}
+		}
+	case map[string][]DocumentUnmarshaler:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.MutableArrayOK(); ok {
+				value := make([]DocumentUnmarshaler, 0, val.Len())
+				for _, e := range val.doc.elems {
+					if doc, ok := e.value.MutableDocumentOK(); ok {
+						value = append(value, doc)
+					}
+				}
+				out[elem.Key()] = value
+			} else if doc, ok := elem.value.MutableDocumentOK(); ok {
+				out[elem.Key()] = []DocumentUnmarshaler{doc}
+			}
+		}
+	case map[string][]*jsonx.Document:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.MutableArrayOK(); ok {
+				value := make([]*jsonx.Document, 0, val.Len())
+				for _, e := range val.doc.elems {
+					if doc, ok := e.value.MutableDocumentOK(); ok {
+						value = append(value, doc.toJSON())
+					}
+				}
+				out[elem.Key()] = value
+			} else if doc, ok := elem.value.MutableDocumentOK(); ok {
+				out[elem.Key()] = []*jsonx.Document{doc.toJSON()}
+			}
+		}
+	case map[string][]*jsonx.Value:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.MutableArrayOK(); ok {
+				value := make([]*jsonx.Value, 0, val.Len())
+				for _, e := range val.doc.elems {
+					value = append(value, e.value.toJSON())
+				}
+				out[elem.Key()] = value
+			} else {
+				out[elem.Key()] = []*jsonx.Value{elem.value.toJSON()}
+			}
+		}
+	case map[interface{}]interface{}:
+		for _, elem := range d.elems {
+			out[elem.Key()] = elem.value.Interface()
+		}
+	case map[interface{}][]interface{}:
+		for _, elem := range d.elems {
+			if val, ok := elem.value.MutableArrayOK(); ok {
+				value := make([]interface{}, 0, val.Len())
+				for _, e := range val.doc.elems {
+					value = append(value, e.value.Interface())
+				}
+				out[elem.Key()] = value
+			} else {
+				out[elem.Key()] = []interface{}{elem.value.Interface()}
+			}
+		}
+	case DocumentUnmarshaler:
+		return out.UnmarshalDocument(d)
+	case Unmarshaler:
+		raw, err := d.MarshalBSON()
+		if err != nil {
+			return err
+		}
+		return out.UnmarshalBSON(raw)
+	default:
+		// TODO consider falling back to reflection
+		return fmt.Errorf("cannot unmarshal into %T", into)
+	}
+	return nil
 }

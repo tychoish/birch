@@ -143,6 +143,8 @@ func (ElementConstructor) Interface(key string, value interface{}) *Element {
 		elem = EC.SubDocument(key, DC.MapSliceJSONX(t))
 	case map[interface{}]interface{}:
 		elem = EC.SubDocument(key, DC.Interface(t))
+	case map[interface{}][]interface{}:
+		elem = EC.SubDocument(key, DC.MapInterfaceSliceInterface(t))
 	case []interface{}:
 		elem = EC.SliceInterface(key, t)
 	case []string:
@@ -231,9 +233,11 @@ func (ElementConstructor) InterfaceErr(key string, value interface{}) (*Element,
 		return EC.Interface(key, value), nil
 	case []string, []int32, []int64, []int, []time.Time, []time.Duration, []float64, []float32:
 		return EC.Interface(key, value), nil
-	case map[string]interface{}, map[interface{}]interface{}, map[string]Marshaler, map[string]DocumentMarshaler:
+	case map[string]interface{}, map[string]Marshaler, map[string]DocumentMarshaler:
 		return EC.InterfaceErr(key, t)
 	case map[string][]interface{}, map[string][]Marshaler, map[string][]DocumentMarshaler:
+		return EC.InterfaceErr(key, value)
+	case map[interface{}][]interface{}, map[interface{}]interface{}:
 		return EC.InterfaceErr(key, value)
 	case []interface{}, []Marshaler, []DocumentMarshaler:
 		return EC.InterfaceErr(key, value)

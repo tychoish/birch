@@ -945,6 +945,22 @@ func TestDocument(t *testing.T) {
 		})
 
 	})
+
+	t.Run("InterfaceOutput", func(t *testing.T) {
+		out := map[string]interface{}{}
+		if err := DC.Elements(EC.String("key", "value"), EC.Int("value", 42)).Unmarshal(out); err != nil {
+			t.Fatal(err)
+		}
+
+		if val, ok := out["key"]; !(ok && val == "value") {
+			t.Error(ok, val)
+		}
+
+		if val, ok := out["value"]; !(ok && val == int32(42)) {
+			t.Error(ok, val)
+		}
+	})
+
 }
 
 var tpag testPrependAppendGenerator
