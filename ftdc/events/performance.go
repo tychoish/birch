@@ -13,6 +13,7 @@
 package events
 
 import (
+	"context"
 	"time"
 
 	"github.com/tychoish/birch"
@@ -87,8 +88,11 @@ func (p *Performance) MarshalDocument() (*birch.Document, error) {
 
 func (p *Performance) UnmarshalDocument(doc *birch.Document) error {
 	iter := doc.Iterator()
-	for iter.Next() {
-		elem := iter.Element()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
+		elem := iter.Value()
 		switch elem.Key() {
 		case "ts":
 			p.Timestamp = elem.Value().Time()
@@ -108,13 +112,17 @@ func (p *Performance) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return (iter.Err())
+	return (iter.Close(ctx))
 }
 
 func (p *PerformanceCounters) UnmarshalDocument(doc *birch.Document) error {
 	iter := doc.Iterator()
-	for iter.Next() {
-		elem := iter.Element()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
+		elem := iter.Value()
 		switch elem.Key() {
 		case "n":
 			p.Number = elem.Value().Int64()
@@ -127,13 +135,16 @@ func (p *PerformanceCounters) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return (iter.Err())
+	return (iter.Close(ctx))
 }
 
 func (p *PerformanceTimers) UnmarshalDocument(doc *birch.Document) error {
 	iter := doc.Iterator()
-	for iter.Next() {
-		elem := iter.Element()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
+		elem := iter.Value()
 		switch elem.Key() {
 		case "dur":
 			p.Duration = time.Duration(elem.Value().Int64())
@@ -142,13 +153,17 @@ func (p *PerformanceTimers) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return (iter.Err())
+	return (iter.Close(ctx))
 }
 
 func (p *PerformanceGauges) UnmarshalDocument(doc *birch.Document) error {
 	iter := doc.Iterator()
-	for iter.Next() {
-		elem := iter.Element()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
+		elem := iter.Value()
 		switch elem.Key() {
 		case "state":
 			p.State = elem.Value().Int64()
@@ -159,7 +174,7 @@ func (p *PerformanceGauges) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return (iter.Err())
+	return (iter.Close(ctx))
 }
 
 // Add combines the values of the input Performance struct into this struct,

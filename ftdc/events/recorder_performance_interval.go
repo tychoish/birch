@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"github.com/tychoish/birch/ftdc"
-	"github.com/tychoish/emt"
+	"github.com/tychoish/fun/erc"
 )
 
 type intervalStream struct {
 	point     *Performance
 	started   time.Time
 	collector ftdc.Collector
-	catcher   emt.Catcher
+	catcher   erc.Collector
 	sync.Mutex
 
 	interval time.Duration
@@ -34,7 +34,6 @@ func NewIntervalRecorder(ctx context.Context, collector ftdc.Collector, interval
 		collector: collector,
 		rootCtx:   ctx,
 		point:     &Performance{Timestamp: time.Time{}},
-		catcher:   emt.NewCatcher(),
 		interval:  interval,
 	}
 }
@@ -130,7 +129,7 @@ func (r *intervalStream) reset() {
 		r.canceler()
 		r.canceler = nil
 	}
-	r.catcher = emt.NewCatcher()
+	r.catcher = erc.Collector{}
 	r.point = &Performance{
 		Gauges: r.point.Gauges,
 	}

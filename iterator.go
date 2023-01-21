@@ -6,15 +6,11 @@
 
 package birch
 
-import "github.com/tychoish/birch/bsonerr"
+import (
+	"context"
 
-// Iterator describes the types used to iterate over a bson Document.
-type Iterator interface {
-	Next() bool
-	Element() *Element
-	Value() *Value
-	Err() error
-}
+	"github.com/tychoish/birch/bsonerr"
+)
 
 // ElementIterator facilitates iterating over a bson.Document.
 type elementIterator struct {
@@ -31,8 +27,8 @@ func newIterator(d *Document) *elementIterator {
 // Next fetches the next element of the document, returning whether or not the next element was able
 // to be fetched. If true is returned, then call Element to get the element. If false is returned,
 // call Err to check if an error occurred.
-func (itr *elementIterator) Next() bool {
-	if itr.index >= len(itr.d.elems) {
+func (itr *elementIterator) Next(ctx context.Context) bool {
+	if itr.index >= len(itr.d.elems) || ctx.Err() != nil {
 		return false
 	}
 
@@ -52,9 +48,8 @@ func (itr *elementIterator) Next() bool {
 
 // Element returns the current element of the Iterator. The pointer that it returns will
 // _always_ be the same for a given Iterator.
-func (itr *elementIterator) Element() *Element { return itr.elem }
-func (itr *elementIterator) Value() *Value     { return itr.elem.value }
-func (itr *elementIterator) Err() error        { return itr.err }
+func (itr *elementIterator) Value() *Element               { return itr.elem }
+func (itr *elementIterator) Close(_ context.Context) error { return itr.err }
 
 // readerIterator facilitates iterating over a bson.Reader.
 type readerIterator struct {
@@ -89,13 +84,16 @@ func newReaderIterator(r Reader) (*readerIterator, error) {
 // Next fetches the next element of the Reader, returning whether or not the next element was able
 // to be fetched. If true is returned, then call Element to get the element. If false is returned,
 // call Err to check if an error occurred.
-func (itr *readerIterator) Next() bool {
+func (itr *readerIterator) Next(ctx context.Context) bool {
 	if itr.pos >= itr.end {
 		itr.err = bsonerr.InvalidReadOnlyDocument
 		return false
 	}
 
 	if itr.r[itr.pos] == '\x00' {
+		return false
+	}
+	if ctx.Err() != nil {
 		return false
 	}
 
@@ -127,9 +125,8 @@ func (itr *readerIterator) Next() bool {
 
 // Element returns the current element of the readerIterator. The pointer that it returns will
 // _always_ be the same for a given readerIterator.
-func (itr *readerIterator) Element() *Element { return itr.elem }
-func (itr *readerIterator) Value() *Value     { return itr.elem.value }
-func (itr *readerIterator) Err() error        { return itr.err }
+func (itr *readerIterator) Value() *Element                 { return itr.elem }
+func (itr *readerIterator) Close(ctx context.Context) error { return itr.err }
 
 // arrayIterator facilitates iterating over a bson.Array.
 type arrayIterator struct {
@@ -145,7 +142,11 @@ func newArrayIterator(a *Array) *arrayIterator {
 
 // Next fetches the next value in the Array, returning whether or not it could be fetched successfully. If true is
 // returned, call Value to get the value. If false is returned, call Err to check if an error occurred.
-func (iter *arrayIterator) Next() bool {
+func (iter *arrayIterator) Next(ctx context.Context) bool {
+	if ctx.Err() != nil {
+		return false
+	}
+
 	elem, err := iter.array.LookupElementErr(iter.pos)
 
 	if err != nil {
@@ -168,6 +169,5 @@ func (iter *arrayIterator) Next() bool {
 
 // Value returns the current value of the arrayIterator. The pointer returned will _always_ be the same for a given
 // arrayIterator. The returned value will be nil if this function is called before the first successful call to Next().
-func (iter *arrayIterator) Value() *Value     { return iter.elem.value }
-func (iter *arrayIterator) Element() *Element { return iter.elem }
-func (iter *arrayIterator) Err() error        { return iter.err }
+func (iter *arrayIterator) Value() *Value                 { return iter.elem.value }
+func (iter *arrayIterator) Close(_ context.Context) error { return iter.err }

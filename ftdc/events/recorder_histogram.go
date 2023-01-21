@@ -4,14 +4,14 @@ import (
 	"time"
 
 	"github.com/tychoish/birch/ftdc"
-	"github.com/tychoish/emt"
+	"github.com/tychoish/fun/erc"
 )
 
 type histogramStream struct {
 	point     *PerformanceHDR
 	started   time.Time
 	collector ftdc.Collector
-	catcher   emt.Catcher
+	catcher   erc.Collector
 }
 
 // NewHistogramRecorder collects data and stores them with a histogram format.
@@ -29,7 +29,6 @@ func NewHistogramRecorder(collector ftdc.Collector) Recorder {
 	return &histogramStream{
 		point:     NewHistogramMillisecond(PerformanceGauges{}),
 		collector: collector,
-		catcher:   emt.NewCatcher(),
 	}
 }
 
@@ -83,7 +82,7 @@ func (r *histogramStream) EndTest() error {
 }
 
 func (r *histogramStream) Reset() {
-	r.catcher = emt.NewCatcher()
+	r.catcher = erc.Collector{}
 	r.point = NewHistogramMillisecond(r.point.Gauges)
 	r.started = time.Time{}
 }

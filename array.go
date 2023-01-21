@@ -14,6 +14,7 @@ import (
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/elements"
+	"github.com/tychoish/fun"
 )
 
 // Array represents an array in BSON. The methods of this type are more
@@ -303,6 +304,6 @@ func (a *Array) MarshalBSON() ([]byte, error) {
 
 // Iterator returns a ArrayIterator that can be used to iterate through the
 // elements of this Array.
-func (a *Array) Iterator() Iterator {
+func (a *Array) Iterator() fun.Iterator[*Value] {
 	return newArrayIterator(a)
 }

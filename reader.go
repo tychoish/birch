@@ -15,6 +15,7 @@ import (
 	"errors"
 
 	"github.com/tychoish/birch/bsonerr"
+	"github.com/tychoish/fun"
 )
 
 var errValidateDone = errors.New("validation loop complete")
@@ -179,7 +180,7 @@ func (r Reader) ElementAt(index uint) (*Element, error) {
 
 // Iterator returns a ReaderIterator that can be used to iterate through the
 // elements of this Reader.
-func (r Reader) Iterator() (Iterator, error) {
+func (r Reader) Iterator() (fun.Iterator[*Element], error) {
 	return newReaderIterator(r)
 }
 

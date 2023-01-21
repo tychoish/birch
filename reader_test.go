@@ -8,6 +8,7 @@ package birch
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -35,6 +36,9 @@ func BenchmarkReaderValidate(b *testing.B) {
 }
 
 func TestReader(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	t.Run("Validate", func(t *testing.T) {
 		t.Run("TooShort", func(t *testing.T) {
 			want := errTooSmall
@@ -442,22 +446,22 @@ func TestReader(t *testing.T) {
 				}
 
 				for _, elem := range tc.elems {
-					if !itr.Next() {
+					if !itr.Next(ctx) {
 						t.Fatal("truth assertion failed")
 					}
-					if err := itr.Err(); err != nil {
+					if err := itr.Close(ctx); err != nil {
 						t.Fatal(err)
 					}
-					if !readerElementComparer(elem, itr.Element()) {
+					if !readerElementComparer(elem, itr.Value()) {
 						t.Fatal("truth assertion failed")
 					}
 				}
 
-				if itr.Next() {
+				if itr.Next(ctx) {
 					t.Fatal("iterator should be empty")
 				}
-				if tc.finalErr != itr.Err() {
-					t.Fatalf("unqueal %v and %v", tc.finalErr, itr.Err())
+				if err := itr.Close(ctx); tc.finalErr != err {
+					t.Fatalf("unqueal %v and %v", tc.finalErr, err)
 				}
 			})
 		}

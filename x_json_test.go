@@ -1,6 +1,7 @@
 package birch
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"testing"
@@ -304,6 +305,9 @@ func makeValueTestCases(depth int) []jsonValueTestCase {
 }
 
 func TestJSON(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	t.Run("Marshal", func(t *testing.T) {
 		t.Run("Document", func(t *testing.T) {
 			for _, test := range makeDocumentTestCases(0) {
@@ -373,8 +377,8 @@ func TestJSON(t *testing.T) {
 						t.Fatal(err)
 					}
 					iter := doc.Iterator()
-					for iter.Next() {
-						elem := iter.Element()
+					for iter.Next(ctx) {
+						elem := iter.Value()
 						expected, err := test.Doc.LookupErr(elem.Key())
 						if err != nil {
 							t.Fatal(err)
@@ -383,7 +387,7 @@ func TestJSON(t *testing.T) {
 							t.Fatalf("[%s] %s != %s", test.Expected, expected.Interface(), elem.Value().Interface())
 						}
 					}
-					if err := iter.Err(); err != nil {
+					if err := iter.Close(ctx); err != nil {
 						t.Fatal(err)
 					}
 				})
@@ -404,7 +408,7 @@ func TestJSON(t *testing.T) {
 
 					iter := array.Iterator()
 					idx := uint(0)
-					for iter.Next() {
+					for iter.Next(ctx) {
 						elem := iter.Value()
 						expected, err := test.Array.LookupErr(idx)
 						if err != nil {
@@ -415,7 +419,7 @@ func TestJSON(t *testing.T) {
 						}
 						idx++
 					}
-					if err := iter.Err(); err != nil {
+					if err := iter.Close(ctx); err != nil {
 						t.Fatal(err)
 					}
 				})

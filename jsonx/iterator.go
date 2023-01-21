@@ -1,11 +1,6 @@
 package jsonx
 
-type Iterator interface {
-	Err() error
-	Next() bool
-	Element() *Element
-	Value() *Value
-}
+import "context"
 
 type documentIterImpl struct {
 	idx     int
@@ -14,8 +9,8 @@ type documentIterImpl struct {
 	err     error
 }
 
-func (iter *documentIterImpl) Next() bool {
-	if iter.idx+1 > iter.doc.Len() {
+func (iter *documentIterImpl) Next(ctx context.Context) bool {
+	if iter.idx+1 > iter.doc.Len() || ctx.Err() != nil {
 		return false
 	}
 
@@ -25,9 +20,8 @@ func (iter *documentIterImpl) Next() bool {
 	return true
 }
 
-func (iter *documentIterImpl) Element() *Element { return iter.current }
-func (iter *documentIterImpl) Value() *Value     { return iter.current.value }
-func (iter *documentIterImpl) Err() error        { return nil }
+func (iter *documentIterImpl) Value() *Element               { return iter.current }
+func (iter *documentIterImpl) Close(_ context.Context) error { return nil }
 
 type arrayIterImpl struct {
 	idx     int
@@ -36,8 +30,8 @@ type arrayIterImpl struct {
 	err     error
 }
 
-func (iter *arrayIterImpl) Next() bool {
-	if iter.idx+1 > iter.array.Len() {
+func (iter *arrayIterImpl) Next(ctx context.Context) bool {
+	if iter.idx+1 > iter.array.Len() || ctx.Err() != nil {
 		return false
 	}
 
@@ -47,6 +41,5 @@ func (iter *arrayIterImpl) Next() bool {
 	return true
 }
 
-func (iter *arrayIterImpl) Element() *Element { return &Element{value: iter.current} }
-func (iter *arrayIterImpl) Value() *Value     { return iter.current }
-func (iter *arrayIterImpl) Err() error        { return nil }
+func (iter *arrayIterImpl) Value() *Value                 { return iter.current }
+func (iter *arrayIterImpl) Close(_ context.Context) error { return nil }

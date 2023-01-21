@@ -309,10 +309,10 @@ func TestCollectJSON(t *testing.T) {
 
 		iter := ftdc.ReadMetrics(ctx, fn)
 		idx := -1
-		for iter.Next() {
+		for iter.Next(ctx) {
 			idx++
 
-			s := iter.Document()
+			s := iter.Value()
 			if 2 != s.Len() {
 				t.Error("values should be equal")
 			}
@@ -323,7 +323,7 @@ func TestCollectJSON(t *testing.T) {
 				}
 			}
 		}
-		if err := iter.Err(); err != nil {
+		if err := iter.Close(ctx); err != nil {
 			t.Fatal(err)
 		}
 		if 2 != idx {

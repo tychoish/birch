@@ -8,6 +8,7 @@ package birch
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"strconv"
 	"testing"
@@ -16,6 +17,9 @@ import (
 )
 
 func TestArray(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	t.Run("Append", func(t *testing.T) {
 		t.Run("Nil Insert", func(t *testing.T) {
 			func() {
@@ -54,7 +58,7 @@ func TestArray(t *testing.T) {
 				}
 
 				// if diff := cmp.Diff(got, want, cmp.AllowUnexported(Document{}, Array{})); diff != "" {
-				// 	t.Errorf("Documents differ: (-got +want)\n%s", diff)
+				//	t.Errorf("Documents differ: (-got +want)\n%s", diff)
 				// }
 			}()
 		})
@@ -246,6 +250,8 @@ func TestArray(t *testing.T) {
 			{"one-one", tapag.oneOne()},
 			{"two-one", tapag.twoOne()},
 		}
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
 
 		for _, tc := range iteratorTests {
 			t.Run(tc.name, func(t *testing.T) {
@@ -257,11 +263,11 @@ func TestArray(t *testing.T) {
 				iter := a.Iterator()
 
 				for _, elem := range tc.values {
-					if !iter.Next() {
+					if !iter.Next(ctx) {
 						t.Errorf("ArrayIterator.Next() returned false")
 					}
 
-					if err := iter.Err(); err != nil {
+					if err := iter.Close(ctx); err != nil {
 						t.Errorf("ArrayIterator.Err() returned non-nil error: %s", err)
 					}
 
@@ -273,11 +279,11 @@ func TestArray(t *testing.T) {
 					}
 				}
 
-				if iter.Next() {
+				if iter.Next(ctx) {
 					t.Errorf("ArrayIterator.Next() returned true. expected false")
 				}
 
-				if err := iter.Err(); err != nil {
+				if err := iter.Close(ctx); err != nil {
 					t.Errorf("ArrayIterator.Err() returned non-nil error: %s", err)
 				}
 			})
@@ -299,7 +305,7 @@ func TestArray(t *testing.T) {
 				t.Fatalf("%T value is nil", iter)
 			}
 			total := 0
-			for iter.Next() {
+			for iter.Next(ctx) {
 				total += iter.Value().Int()
 			}
 			if 126 != total {

@@ -10,7 +10,8 @@ import (
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/ftdc/util"
-	"github.com/tychoish/emt"
+	"github.com/tychoish/fun"
+	"github.com/tychoish/fun/erc"
 )
 
 func (c *Chunk) exportMatrix() map[string]interface{} {
@@ -79,44 +80,47 @@ func (m *Metric) getSeries() interface{} {
 }
 
 type matrixIterator struct {
-	chunks   *ChunkIterator
+	chunks   fun.Iterator[*Chunk]
 	closer   context.CancelFunc
 	metadata *birch.Document
 	document *birch.Document
 	pipe     chan *birch.Document
-	catcher  emt.Catcher
+	catcher  erc.Collector
 	reflect  bool
 }
 
-func (iter *matrixIterator) Close() {
+func (iter *matrixIterator) Close(ctx context.Context) error {
 	if iter.chunks != nil {
-		iter.chunks.Close()
+		iter.chunks.Close(ctx)
 	}
+	return iter.catcher.Resolve()
 }
 
-func (iter *matrixIterator) Err() error                { return iter.catcher.Resolve() }
 func (iter *matrixIterator) Metadata() *birch.Document { return iter.metadata }
-func (iter *matrixIterator) Document() *birch.Document { return iter.document }
-func (iter *matrixIterator) Next() bool {
-	doc, ok := <-iter.pipe
-	if !ok {
+func (iter *matrixIterator) Value() *birch.Document    { return iter.document }
+func (iter *matrixIterator) Next(ctx context.Context) bool {
+	select {
+	case next, ok := <-iter.pipe:
+		if !ok {
+			return false
+		}
+		iter.document = next
+		return true
+	case <-ctx.Done():
 		return false
 	}
-
-	iter.document = doc
-	return true
 }
 
 func (iter *matrixIterator) worker(ctx context.Context) {
-	defer func() { iter.catcher.Add(iter.chunks.Err()) }()
+	defer func() { iter.catcher.Add(iter.chunks.Close(ctx)) }()
 	defer close(iter.pipe)
 
 	var payload []byte
 	var doc *birch.Document
 	var err error
 
-	for iter.chunks.Next() {
-		chunk := iter.chunks.Chunk()
+	for iter.chunks.Next(ctx) {
+		chunk := iter.chunks.Value()
 
 		if iter.reflect {
 			payload, err = util.GlobalMarshaler()(chunk.exportMatrix())

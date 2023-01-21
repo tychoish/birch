@@ -10,6 +10,7 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc/testutil"
+	"github.com/tychoish/fun"
 )
 
 func TestWriteCSVIntegration(t *testing.T) {
@@ -72,7 +73,7 @@ func TestReadCSVIntegration(t *testing.T) {
 
 	for _, test := range []struct {
 		Name   string
-		Iter   *ChunkIterator
+		Iter   fun.Iterator[*Chunk]
 		Rows   int
 		Fields int
 	}{
@@ -116,9 +117,9 @@ func TestReadCSVIntegration(t *testing.T) {
 
 			iter := ReadMetrics(ctx, out)
 			count := 0
-			for iter.Next() {
+			for iter.Next(ctx) {
 				count++
-				doc := iter.Document()
+				doc := iter.Value()
 				if test.Fields != doc.Len() {
 					t.Error("values should be equal")
 				}

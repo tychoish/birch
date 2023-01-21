@@ -88,9 +88,9 @@ func TestCollectRuntime(t *testing.T) {
 				}()
 				iter := ftdc.ReadStructuredMetrics(ctx, f)
 				counter := 0
-				for iter.Next() {
+				for iter.Next(ctx) {
 					counter++
-					doc := iter.Document()
+					doc := iter.Value()
 					if doc == nil {
 						t.Fatalf("%T value is nil", doc)
 					}
@@ -98,7 +98,7 @@ func TestCollectRuntime(t *testing.T) {
 						t.Fatalf("unqueal %v and %v", 4, doc.Len())
 					}
 				}
-				if err := iter.Err(); err != nil {
+				if err := iter.Close(ctx); err != nil {
 					t.Fatal(err)
 				}
 				total += counter
@@ -133,9 +133,9 @@ func TestCollectRuntime(t *testing.T) {
 				}()
 				iter := ftdc.ReadMetrics(ctx, f)
 				counter := 0
-				for iter.Next() {
+				for iter.Next(ctx) {
 					counter++
-					doc := iter.Document()
+					doc := iter.Value()
 					if doc == nil {
 						t.Fatalf("%T value is nil", doc)
 					}
@@ -143,7 +143,7 @@ func TestCollectRuntime(t *testing.T) {
 						t.Fatalf("unqueal %v and %v", 15, doc.Len())
 					}
 				}
-				if err := iter.Err(); err != nil {
+				if err := iter.Close(ctx); err != nil {
 					t.Fatal(err)
 				}
 				total += counter

@@ -135,10 +135,10 @@ func TestCollectorInterface(t *testing.T) {
 
 						iter := ReadStructuredMetrics(ctx, buf)
 						idx := -1
-						for iter.Next() {
+						for iter.Next(ctx) {
 							idx++
 							t.Run(fmt.Sprintf("DocumentNumber_%d", idx), func(t *testing.T) {
-								s := iter.Document()
+								s := iter.Value()
 
 								if fmt.Sprint(s) != fmt.Sprint(docs[idx]) {
 									t.Error("---", idx)
@@ -150,7 +150,7 @@ func TestCollectorInterface(t *testing.T) {
 						if len(docs)-1 != idx {
 							t.Error("values should be equal")
 						} // zero index
-						if err := iter.Err(); err != nil {
+						if err := iter.Close(ctx); err != nil {
 							t.Fatal(err)
 						}
 
@@ -202,8 +202,8 @@ func TestStreamingEncoding(t *testing.T) {
 						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
 						idx := 0
-						for iter.Next() {
-							doc := iter.Document()
+						for iter.Next(ctx) {
+							doc := iter.Value()
 							if doc == nil {
 								t.Fatalf("%T value is nil", doc)
 							}
@@ -214,7 +214,7 @@ func TestStreamingEncoding(t *testing.T) {
 							}
 							idx++
 						}
-						if err := iter.Err(); err != nil {
+						if err := iter.Close(ctx); err != nil {
 							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
@@ -249,8 +249,8 @@ func TestStreamingEncoding(t *testing.T) {
 
 						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
-						for iter.Next() {
-							doc := iter.Document()
+						for iter.Next(ctx) {
+							doc := iter.Value()
 							if doc == nil {
 								t.Fatalf("%T value is nil", doc)
 							}
@@ -263,7 +263,7 @@ func TestStreamingEncoding(t *testing.T) {
 							}
 						}
 
-						if err := iter.Err(); err != nil {
+						if err := iter.Close(ctx); err != nil {
 							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
@@ -308,8 +308,8 @@ func TestStreamingEncoding(t *testing.T) {
 
 						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
-						for iter.Next() {
-							doc := iter.Document()
+						for iter.Next(ctx) {
+							doc := iter.Value()
 							if doc == nil {
 								t.Fatalf("%T value is nil", doc)
 							}
@@ -322,7 +322,7 @@ func TestStreamingEncoding(t *testing.T) {
 							}
 						}
 
-						if err := iter.Err(); err != nil {
+						if err := iter.Close(ctx); err != nil {
 							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
@@ -369,8 +369,8 @@ func TestStreamingEncoding(t *testing.T) {
 
 						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
-						for iter.Next() {
-							doc := iter.Document()
+						for iter.Next(ctx) {
+							doc := iter.Value()
 							if doc == nil {
 								t.Fatalf("%T value is nil", doc)
 							}
@@ -382,7 +382,7 @@ func TestStreamingEncoding(t *testing.T) {
 								t.Error("values should be equal")
 							}
 						}
-						if err := iter.Err(); err != nil {
+						if err := iter.Close(ctx); err != nil {
 							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
@@ -434,8 +434,8 @@ func TestFixedEncoding(t *testing.T) {
 						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
 						idx := 0
-						for iter.Next() {
-							doc := iter.Document()
+						for iter.Next(ctx) {
+							doc := iter.Value()
 							if doc == nil {
 								t.Fatalf("%T value is nil", doc)
 							}
@@ -446,7 +446,7 @@ func TestFixedEncoding(t *testing.T) {
 							}
 							idx++
 						}
-						if err := iter.Err(); err != nil {
+						if err := iter.Close(ctx); err != nil {
 							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
@@ -480,8 +480,8 @@ func TestFixedEncoding(t *testing.T) {
 						}
 						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
-						for iter.Next() {
-							doc := iter.Document()
+						for iter.Next(ctx) {
+							doc := iter.Value()
 							if doc == nil {
 								t.Fatalf("%T value is nil", doc)
 							}
@@ -494,7 +494,7 @@ func TestFixedEncoding(t *testing.T) {
 							}
 						}
 
-						if err := iter.Err(); err != nil {
+						if err := iter.Close(ctx); err != nil {
 							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
@@ -672,8 +672,8 @@ func TestTimestampHandling(t *testing.T) {
 				t.Run("Structured", func(t *testing.T) {
 					iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(out))
 					idx := 0
-					for iter.Next() {
-						doc := iter.Document()
+					for iter.Next(ctx) {
+						doc := iter.Value()
 
 						val, ok := doc.Lookup("ts").TimeOK()
 						if !ok {
@@ -684,15 +684,15 @@ func TestTimestampHandling(t *testing.T) {
 
 						idx++
 					}
-					if err := iter.Err(); err != nil {
+					if err := iter.Close(ctx); err != nil {
 						t.Fatal(err)
 					}
 				})
 				t.Run("Flattened", func(t *testing.T) {
 					iter := ReadMetrics(ctx, bytes.NewBuffer(out))
 					idx := 0
-					for iter.Next() {
-						doc := iter.Document()
+					for iter.Next(ctx) {
+						doc := iter.Value()
 						val, ok := doc.Lookup("ts").TimeOK()
 						if !ok {
 							t.Error("expected true")
@@ -701,15 +701,15 @@ func TestTimestampHandling(t *testing.T) {
 						}
 						idx++
 					}
-					if err := iter.Err(); err != nil {
+					if err := iter.Close(ctx); err != nil {
 						t.Fatal(err)
 					}
 				})
 				t.Run("Chunks", func(t *testing.T) {
 					chunks := ReadChunks(ctx, bytes.NewBuffer(out))
 					idx := 0
-					for chunks.Next() {
-						chunk := chunks.Chunk()
+					for chunks.Next(ctx) {
+						chunk := chunks.Value()
 						if chunk == nil {
 							t.Fatal("'chunk' should not be nil")
 						}
@@ -718,7 +718,7 @@ func TestTimestampHandling(t *testing.T) {
 						}
 						idx++
 					}
-					if err := chunks.Err(); err != nil {
+					if err := chunks.Close(ctx); err != nil {
 						t.Fatal(err)
 					}
 				})
@@ -739,8 +739,8 @@ func TestTimestampHandling(t *testing.T) {
 
 				iter := ReadMetrics(ctx, bytes.NewBuffer(out))
 				idx := 0
-				for iter.Next() {
-					doc := iter.Document()
+				for iter.Next(ctx) {
+					doc := iter.Value()
 
 					val, ok := doc.Lookup("ts").Int64OK()
 					if !ok {
@@ -750,7 +750,7 @@ func TestTimestampHandling(t *testing.T) {
 					}
 					idx++
 				}
-				if err := iter.Err(); err != nil {
+				if err := iter.Close(ctx); err != nil {
 					t.Fatal(err)
 				}
 			})
@@ -769,8 +769,8 @@ func TestTimestampHandling(t *testing.T) {
 
 				iter := ReadMetrics(ctx, bytes.NewBuffer(out))
 				idx := 0
-				for iter.Next() {
-					doc := iter.Document()
+				for iter.Next(ctx) {
+					doc := iter.Value()
 
 					val, ok := doc.Lookup("ts").Int64OK()
 					if !ok {
@@ -781,7 +781,7 @@ func TestTimestampHandling(t *testing.T) {
 
 					idx++
 				}
-				if err := iter.Err(); err != nil {
+				if err := iter.Close(ctx); err != nil {
 					t.Fatal(err)
 				}
 			})

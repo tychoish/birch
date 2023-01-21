@@ -3,13 +3,13 @@ package ftdc
 import (
 	"context"
 
-	"github.com/tychoish/emt"
+	"github.com/tychoish/fun/erc"
 )
 
 type bufferedCollector struct {
 	Collector
 	pipe    chan interface{}
-	catcher emt.Catcher
+	catcher erc.Collector
 	ctx     context.Context
 }
 
@@ -19,7 +19,6 @@ func NewBufferedCollector(ctx context.Context, size int, coll Collector) Collect
 	c := &bufferedCollector{
 		Collector: coll,
 		pipe:      make(chan interface{}, size),
-		catcher:   emt.NewCatcher(),
 		ctx:       ctx,
 	}
 

@@ -16,6 +16,8 @@ github.com/tklauser/numcpus v0.5.0 h1:ooe7gN0fg6myJ0EKoTAf5hebTZrH52px3New/D9iJ+
 github.com/tklauser/numcpus v0.5.0/go.mod h1:OGzpTxpcIMNGYQdit2BYL1pvk/dSOaJWjKoflh+RQjo=
 github.com/tychoish/emt v0.1.0 h1:OMJ/lKO17hxijZW2UdbZY4vOfTwVKZzTb8FB0g8fh74=
 github.com/tychoish/emt v0.1.0/go.mod h1:KMhVWIsL98Q8AoorphjsOQWabcNOoYqMSpODR/rtRb4=
+github.com/tychoish/fun v0.1.0 h1:ZLg0PpvTzcCbsmrkFG8w/Ano41Nia87kB44frnWf/Kk=
+github.com/tychoish/fun v0.1.0/go.mod h1:84A+BwGecz23UotmbB4mtvVS5ZcsZpspecduxpwF/XM=
 github.com/tychoish/grip v0.1.0 h1:9sqCK8j4teuRQBYEf5oivmju4k2SxSJfrMhHaW7EVc0=
 github.com/tychoish/grip v0.1.0/go.mod h1:MQJx1mQV4rUBK2G/UxB+e6zxBI4zNOg2iiB191vwmvk=
 github.com/tychoish/grip/x/metrics v0.0.0-20221015140920-56f88dee6fc5 h1:h+eIhFfHniwkOKaTQWc6hU3JzcMct3QKILXlFeyMzBI=

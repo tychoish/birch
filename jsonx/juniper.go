@@ -1,12 +1,14 @@
 package jsonx
 
+import "github.com/tychoish/fun"
+
 type Document struct {
 	elems []*Element
 }
 
 func (d *Document) Append(elems ...*Element) *Document { d.elems = append(d.elems, elems...); return d }
 func (d *Document) Len() int                           { return len(d.elems) }
-func (d *Document) Iterator() Iterator                 { return &documentIterImpl{doc: d} }
+func (d *Document) Iterator() fun.Iterator[*Element]   { return &documentIterImpl{doc: d} }
 func (d *Document) Copy() *Document {
 	nd := DC.Make(d.Len())
 	for _, elem := range d.elems {
@@ -37,9 +39,9 @@ type Array struct {
 	elems []*Value
 }
 
-func (a *Array) Append(vals ...*Value) *Array { a.elems = append(a.elems, vals...); return a }
-func (a *Array) Len() int                     { return len(a.elems) }
-func (a *Array) Iterator() Iterator           { return &arrayIterImpl{array: a} }
+func (a *Array) Append(vals ...*Value) *Array   { a.elems = append(a.elems, vals...); return a }
+func (a *Array) Len() int                       { return len(a.elems) }
+func (a *Array) Iterator() fun.Iterator[*Value] { return &arrayIterImpl{array: a} }
 
 func (a *Array) Copy() *Array {
 	na := AC.Make(a.Len())

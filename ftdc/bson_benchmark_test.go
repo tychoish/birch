@@ -122,7 +122,7 @@ func BenchmarkDocumentCreation(b *testing.B) {
 		b.Run(test.Name, func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
 				for i := 0; i < test.Samples; i++ {
-					doc, _ = restoreDocument(test.Reference, i, test.Metrics, 0)
+					doc, _ = restoreDocument(ctx, test.Reference, i, test.Metrics, 0)
 					if doc == nil {
 						b.Fatalf("%T value is nil", doc)
 					}

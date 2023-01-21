@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/tychoish/birch/ftdc"
-	"github.com/tychoish/emt"
+	"github.com/tychoish/fun/erc"
 )
 
 type groupStream struct {
@@ -13,7 +13,7 @@ type groupStream struct {
 	interval      time.Duration
 	point         *Performance
 	collector     ftdc.Collector
-	catcher       emt.Catcher
+	catcher       erc.Collector
 }
 
 // NewGroupedRecorder blends the single and the interval recorders, but it
@@ -26,7 +26,6 @@ func NewGroupedRecorder(collector ftdc.Collector, interval time.Duration) Record
 	return &groupStream{
 		collector:     collector,
 		point:         &Performance{Timestamp: time.Time{}},
-		catcher:       emt.NewCatcher(),
 		interval:      interval,
 		lastCollected: time.Now(),
 	}
@@ -70,7 +69,7 @@ func (r *groupStream) EndTest() error {
 }
 
 func (r *groupStream) Reset() {
-	r.catcher = emt.NewCatcher()
+	r.catcher = erc.Collector{}
 	r.point = &Performance{
 		Gauges: r.point.Gauges,
 	}

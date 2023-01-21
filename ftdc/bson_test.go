@@ -1,6 +1,7 @@
 package ftdc
 
 import (
+	"context"
 	"fmt"
 	"hash/fnv"
 	"strings"
@@ -15,8 +16,10 @@ import (
 )
 
 func TestFlattenArray(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	t.Run("NilArray", func(t *testing.T) {
-		out := metricForArray("", nil, nil)
+		out := metricForArray(ctx, "", nil, nil)
 		if out == nil {
 			t.Fatal("'out' should not be nil")
 		}
@@ -25,7 +28,7 @@ func TestFlattenArray(t *testing.T) {
 		}
 	})
 	t.Run("EmptyArray", func(t *testing.T) {
-		out := metricForArray("", nil, birch.NewArray())
+		out := metricForArray(ctx, "", nil, birch.NewArray())
 		if out == nil {
 			t.Fatal("'out' should not be nil")
 		}
@@ -34,7 +37,7 @@ func TestFlattenArray(t *testing.T) {
 		}
 	})
 	t.Run("TwoElements", func(t *testing.T) {
-		m := metricForArray("foo", nil, birch.NewArray(birch.VC.Boolean(true), birch.VC.Boolean(false)))
+		m := metricForArray(ctx, "foo", nil, birch.NewArray(birch.VC.Boolean(true), birch.VC.Boolean(false)))
 		if m == nil {
 			t.Fatal("'m' should not be nil")
 		}
@@ -56,7 +59,7 @@ func TestFlattenArray(t *testing.T) {
 		}
 	})
 	t.Run("TwoElementsWithSkippedValue", func(t *testing.T) {
-		m := metricForArray("foo", nil, birch.NewArray(birch.VC.String("foo"), birch.VC.Boolean(false)))
+		m := metricForArray(ctx, "foo", nil, birch.NewArray(birch.VC.String("foo"), birch.VC.Boolean(false)))
 		if m == nil {
 			t.Fatal("'m' should not be nil")
 		}
@@ -72,7 +75,7 @@ func TestFlattenArray(t *testing.T) {
 		}
 	})
 	t.Run("ArrayWithOnlyStrings", func(t *testing.T) {
-		out := metricForArray("foo", nil, birch.NewArray(birch.VC.String("foo"), birch.VC.String("bar")))
+		out := metricForArray(ctx, "foo", nil, birch.NewArray(birch.VC.String("foo"), birch.VC.String("bar")))
 		if out == nil {
 			t.Fatal("'out' should not be nil")
 		}
@@ -230,6 +233,9 @@ func TestReadDocument(t *testing.T) {
 }
 
 func TestBSONValueToMetric(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	now := time.Now()
 	for _, test := range []struct {
 		Name  string
@@ -410,7 +416,7 @@ func TestBSONValueToMetric(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			m := metricForType(test.Key, test.Path, test.Value)
+			m := metricForType(ctx, test.Key, test.Path, test.Value)
 			if len(m) != test.OutputLen {
 				t.Errorf("length should be %d", test.OutputLen)
 			}
@@ -1028,6 +1034,9 @@ func TestMetricsHashValue(t *testing.T) {
 }
 
 func TestMetricsToElement(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	for _, test := range []struct {
 		name       string
 		ref        *birch.Element
@@ -1164,7 +1173,7 @@ func TestMetricsToElement(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			elem, num := restoreElement(test.ref, 0, test.metrics, 0)
+			elem, num := restoreElement(ctx, test.ref, 0, test.metrics, 0)
 
 			if test.outNum != num {
 				t.Errorf("values should be equal expected=%d, actual=%d", test.outNum, num)

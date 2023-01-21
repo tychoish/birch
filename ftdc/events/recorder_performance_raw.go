@@ -4,14 +4,14 @@ import (
 	"time"
 
 	"github.com/tychoish/birch/ftdc"
-	"github.com/tychoish/emt"
+	"github.com/tychoish/fun/erc"
 )
 
 type rawStream struct {
 	started   time.Time
 	point     *Performance
 	collector ftdc.Collector
-	catcher   emt.Catcher
+	catcher   erc.Collector
 }
 
 // NewRawRecorder records a new event every time that the EndIteration method
@@ -23,7 +23,6 @@ func NewRawRecorder(collector ftdc.Collector) Recorder {
 	return &rawStream{
 		collector: collector,
 		point:     &Performance{Timestamp: time.Time{}},
-		catcher:   emt.NewCatcher(),
 	}
 }
 
@@ -61,7 +60,7 @@ func (r *rawStream) EndTest() error {
 }
 
 func (r *rawStream) Reset() {
-	r.catcher = emt.NewCatcher()
+	r.catcher = erc.Collector{}
 	r.point = &Performance{
 		Gauges: r.point.Gauges,
 	}

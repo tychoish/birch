@@ -1,6 +1,7 @@
 package ftdc
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/tychoish/birch"
@@ -11,20 +12,20 @@ import (
 //
 // Helpers for parsing the timeseries data from a metrics payload
 
-func metricForDocument(path []string, d *birch.Document) []Metric {
+func metricForDocument(ctx context.Context, path []string, d *birch.Document) []Metric {
 	iter := d.Iterator()
 	o := []Metric{}
 
-	for iter.Next() {
-		e := iter.Element()
+	for iter.Next(ctx) {
+		e := iter.Value()
 
-		o = append(o, metricForType(e.Key(), path, e.Value())...)
+		o = append(o, metricForType(ctx, e.Key(), path, e.Value())...)
 	}
 
 	return o
 }
 
-func metricForArray(key string, path []string, a *birch.Array) []Metric {
+func metricForArray(ctx context.Context, key string, path []string, a *birch.Array) []Metric {
 	if a == nil {
 		return []Metric{}
 	}
@@ -32,15 +33,16 @@ func metricForArray(key string, path []string, a *birch.Array) []Metric {
 	iter := a.Iterator() // ignore the error which can never be non-nil
 	o := []Metric{}
 	idx := 0
-	for iter.Next() {
-		o = append(o, metricForType(fmt.Sprintf("%s.%d", key, idx), path, iter.Value())...)
+
+	for iter.Next(ctx) {
+		o = append(o, metricForType(ctx, fmt.Sprintf("%s.%d", key, idx), path, iter.Value())...)
 		idx++
 	}
 
 	return o
 }
 
-func metricForType(key string, path []string, val *birch.Value) []Metric {
+func metricForType(ctx context.Context, key string, path []string, val *birch.Value) []Metric {
 	switch val.Type() {
 	case bsontype.ObjectID:
 		return []Metric{}
@@ -49,12 +51,12 @@ func metricForType(key string, path []string, val *birch.Value) []Metric {
 	case bsontype.Decimal128:
 		return []Metric{}
 	case bsontype.Array:
-		return metricForArray(key, path, val.MutableArray())
+		return metricForArray(ctx, key, path, val.MutableArray())
 	case bsontype.EmbeddedDocument:
 		path = append(path, key)
 
 		o := []Metric{}
-		for _, ne := range metricForDocument(path, val.MutableDocument()) {
+		for _, ne := range metricForDocument(ctx, path, val.MutableDocument()) {
 			o = append(o, Metric{
 				ParentPath:    path,
 				KeyName:       ne.KeyName,

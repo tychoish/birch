@@ -1,6 +1,7 @@
 package birch
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -25,8 +26,11 @@ func (d *Document) UnmarshalJSON(in []byte) error {
 
 	iter := jdoc.Iterator()
 
-	for iter.Next() {
-		elem, err := convertJSONElements(iter.Element())
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
+		elem, err := convertJSONElements(ctx, iter.Value())
 		if err != nil {
 			return err
 		}
@@ -45,8 +49,11 @@ func (a *Array) UnmarshalJSON(in []byte) error {
 
 	iter := ja.Iterator()
 
-	for iter.Next() {
-		elem, err := convertJSONElements(iter.Element())
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
+		elem, err := convertJSONElements(ctx, jsonx.EC.Value("", iter.Value()))
 		if err != nil {
 			return err
 		}
@@ -63,7 +70,10 @@ func (v *Value) UnmarshalJSON(in []byte) error {
 		return err
 	}
 
-	elem, err := convertJSONElements(jsonx.EC.Value("", va))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	elem, err := convertJSONElements(ctx, jsonx.EC.Value("", va))
 
 	if err != nil {
 		return err
@@ -78,8 +88,12 @@ func (DocumentConstructor) JSONXErr(jd *jsonx.Document) (*Document, error) {
 	d := DC.Make(jd.Len())
 
 	iter := jd.Iterator()
-	for iter.Next() {
-		elem, err := convertJSONElements(iter.Element())
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
+		elem, err := convertJSONElements(ctx, iter.Value())
 		if err != nil {
 			return nil, err
 		}
@@ -99,7 +113,7 @@ func (DocumentConstructor) JSONX(jd *jsonx.Document) *Document {
 	return d
 }
 
-func convertJSONElements(in *jsonx.Element) (*Element, error) {
+func convertJSONElements(ctx context.Context, in *jsonx.Element) (*Element, error) {
 	inv := in.Value()
 	switch inv.Type() {
 	case jsonx.String:
@@ -155,11 +169,11 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 			tsDoc := indoc.ElementAtIndex(0).Value().Document()
 			iter := tsDoc.Iterator()
 			count := 0
-			for iter.Next() {
+			for iter.Next(ctx) {
 				if count >= 3 {
 					break
 				}
-				elem := iter.Element()
+				elem := iter.Value()
 
 				switch elem.Key() {
 				case "t":
@@ -190,7 +204,7 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 			if second := indoc.KeyAtIndex(1); second == "" {
 				return EC.JavaScript(in.Key(), js), nil
 			} else if second == "$scope" {
-				scope, err := convertJSONElements(indoc.ElementAtIndex(1))
+				scope, err := convertJSONElements(ctx, indoc.ElementAtIndex(1))
 				if err != nil {
 					return nil, err
 				}
@@ -208,11 +222,11 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 			debref := indoc.ElementAtIndex(0).Value().Document()
 			iter := debref.Iterator()
 			count := 0
-			for iter.Next() {
+			for iter.Next(ctx) {
 				if count >= 2 {
 					break
 				}
-				elem := iter.Element()
+				elem := iter.Value()
 
 				switch elem.Key() {
 				case "$ref":
@@ -247,11 +261,11 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 			rex := indoc.ElementAtIndex(0).Value().Document()
 			iter := rex.Iterator()
 			count := 0
-			for iter.Next() {
+			for iter.Next(ctx) {
 				if count >= 2 {
 					break
 				}
-				elem := iter.Element()
+				elem := iter.Value()
 
 				switch elem.Key() {
 				case "pattern":
@@ -291,8 +305,8 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 
 			doc := DC.Make(indoc.Len())
 
-			for iter.Next() {
-				elem, err := convertJSONElements(iter.Element())
+			for iter.Next(ctx) {
+				elem, err := convertJSONElements(ctx, iter.Value())
 				if err != nil {
 					return nil, err
 				}
@@ -308,8 +322,8 @@ func convertJSONElements(in *jsonx.Element) (*Element, error) {
 
 		array := MakeArray(ina.Len())
 
-		for iter.Next() {
-			elem, err := convertJSONElements(iter.Element())
+		for iter.Next(ctx) {
+			elem, err := convertJSONElements(ctx, jsonx.EC.Value("", iter.Value()))
 			if err != nil {
 				return nil, err
 			}

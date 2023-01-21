@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"context"
 	"fmt"
 
 	"errors"
@@ -43,8 +44,11 @@ func (r ErrorResponse) MarshalDocument() (*birch.Document, error) {
 func (r *ErrorResponse) UnmarshalDocument(in *birch.Document) error {
 	var ok bool
 	iter := in.Iterator()
-	for iter.Next() {
-		elem := iter.Element()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
+		elem := iter.Value()
 
 		switch elem.Key() {
 		case "ok":
@@ -98,8 +102,11 @@ func (imr *isMasterResponse) UnmarshalDocument(in *birch.Document) error {
 
 	var ok bool
 	iter := in.Iterator()
-	for iter.Next() {
-		elem := iter.Element()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
+		elem := iter.Value()
 
 		switch elem.Key() {
 		case "minWireVersion":
@@ -144,8 +151,12 @@ func (resp *whatsMyURIResponse) UnmarshalDocument(in *birch.Document) error {
 
 	var ok bool
 	iter := in.Iterator()
-	for iter.Next() {
-		elem := iter.Element()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
+		elem := iter.Value()
 
 		switch elem.Key() {
 		case "you":
@@ -182,8 +193,12 @@ func (resp *buildInfoResponse) UnmarshalDocument(in *birch.Document) error {
 
 	var ok bool
 	iter := in.Iterator()
-	for iter.Next() {
-		elem := iter.Element()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
+		elem := iter.Value()
 
 		switch elem.Key() {
 		case "version":
@@ -219,8 +234,11 @@ func (resp *getLogResponse) UnmarshalDocument(in *birch.Document) error {
 	}
 
 	iter := in.Iterator()
-	for iter.Next() {
-		elem := iter.Element()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
+		elem := iter.Value()
 
 		switch elem.Key() {
 		case "version":
@@ -232,7 +250,8 @@ func (resp *getLogResponse) UnmarshalDocument(in *birch.Document) error {
 
 			resp.Log = make([]string, 0, array.Len())
 			aiter := array.Iterator()
-			for aiter.Next() {
+
+			for aiter.Next(ctx) {
 				str, ok := aiter.Value().StringValueOK()
 				if !ok {
 					return fmt.Errorf("could not parse value of correct type [%s] in array",

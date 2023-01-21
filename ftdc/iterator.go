@@ -5,15 +5,12 @@ import (
 	"io"
 
 	"github.com/tychoish/birch"
-	"github.com/tychoish/emt"
+	"github.com/tychoish/fun"
 )
 
 type Iterator interface {
-	Next() bool
-	Document() *birch.Document
+	fun.Iterator[*birch.Document]
 	Metadata() *birch.Document
-	Err() error
-	Close()
 }
 
 // ReadMetrics returns a standard document iterator that reads FTDC
@@ -25,7 +22,6 @@ func ReadMetrics(ctx context.Context, r io.Reader) Iterator {
 		chunks:  ReadChunks(iterctx, r),
 		flatten: true,
 		pipe:    make(chan *birch.Document, 100),
-		catcher: emt.NewCatcher(),
 	}
 
 	go iter.worker(iterctx)
@@ -42,7 +38,6 @@ func ReadStructuredMetrics(ctx context.Context, r io.Reader) Iterator {
 		chunks:  ReadChunks(iterctx, r),
 		flatten: false,
 		pipe:    make(chan *birch.Document, 100),
-		catcher: emt.NewCatcher(),
 	}
 
 	go iter.worker(iterctx)
@@ -59,10 +54,9 @@ func ReadStructuredMetrics(ctx context.Context, r io.Reader) Iterator {
 func ReadMatrix(ctx context.Context, r io.Reader) Iterator {
 	iterctx, cancel := context.WithCancel(ctx)
 	iter := &matrixIterator{
-		closer:  cancel,
-		chunks:  ReadChunks(iterctx, r),
-		pipe:    make(chan *birch.Document, 25),
-		catcher: emt.NewCatcher(),
+		closer: cancel,
+		chunks: ReadChunks(iterctx, r),
+		pipe:   make(chan *birch.Document, 25),
 	}
 
 	go iter.worker(iterctx)
@@ -79,18 +73,18 @@ func ReadMatrix(ctx context.Context, r io.Reader) Iterator {
 // to map[string]interface{} and use a case statement, on the values
 // in the map, such as:
 //
-//     switch v.(type) {
-//     case []int32:
-//            // ...
-//     case []int64:
-//            // ...
-//     case []bool:
-//            // ...
-//     case []time.Time:
-//            // ...
-//     case []float64:
-//            // ...
-//     }
+//	switch v.(type) {
+//	case []int32:
+//	       // ...
+//	case []int64:
+//	       // ...
+//	case []bool:
+//	       // ...
+//	case []time.Time:
+//	       // ...
+//	case []float64:
+//	       // ...
+//	}
 //
 // Although the *birch.Document type does support iteration directly.
 func ReadSeries(ctx context.Context, r io.Reader) Iterator {
@@ -99,7 +93,6 @@ func ReadSeries(ctx context.Context, r io.Reader) Iterator {
 		closer:  cancel,
 		chunks:  ReadChunks(iterctx, r),
 		pipe:    make(chan *birch.Document, 25),
-		catcher: emt.NewCatcher(),
 		reflect: true,
 	}
 

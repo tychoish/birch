@@ -1,12 +1,13 @@
 package ftdc
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
-	"github.com/tychoish/emt"
+	"github.com/tychoish/fun/erc"
 )
 
 ////////////////////////////////////////////////////////////////////////
@@ -28,10 +29,12 @@ func extractMetricsFromDocument(doc *birch.Document) (extractedMetrics, error) {
 		data extractedMetrics
 	)
 
-	catcher := emt.NewCatcher()
+	catcher := &erc.Collector{}
 
-	for iter.Next() {
-		data, err = extractMetricsFromValue(iter.Element().Value())
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	for iter.Next(ctx) {
+		data, err = extractMetricsFromValue(iter.Value().Value())
 		catcher.Add(err)
 		metrics.values = append(metrics.values, data.values...)
 		metrics.types = append(metrics.types, data.types...)
@@ -41,7 +44,7 @@ func extractMetricsFromDocument(doc *birch.Document) (extractedMetrics, error) {
 		}
 	}
 
-	catcher.Add(iter.Err())
+	catcher.Add(iter.Close(ctx))
 
 	if metrics.ts.IsZero() {
 		metrics.ts = time.Now()
@@ -58,10 +61,13 @@ func extractMetricsFromArray(array *birch.Array) (extractedMetrics, error) {
 		data extractedMetrics
 	)
 
-	catcher := emt.NewCatcher()
+	catcher := &erc.Collector{}
 	iter := array.Iterator()
 
-	for iter.Next() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
 		data, err = extractMetricsFromValue(iter.Value())
 		catcher.Add(err)
 		metrics.values = append(metrics.values, data.values...)
@@ -72,7 +78,7 @@ func extractMetricsFromArray(array *birch.Array) (extractedMetrics, error) {
 		}
 	}
 
-	catcher.Add(iter.Err())
+	catcher.Add(iter.Close(ctx))
 
 	return metrics, catcher.Resolve()
 }

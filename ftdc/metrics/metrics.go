@@ -4,6 +4,7 @@ package metrics
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
@@ -13,7 +14,7 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc"
-	"github.com/tychoish/emt"
+	"github.com/tychoish/fun/erc"
 	"github.com/tychoish/grip/x/metrics"
 )
 
@@ -104,7 +105,7 @@ func (opts *CollectOptions) generate(ctx context.Context, id int) (*birch.Docume
 
 	close(collectors)
 
-	catcher := emt.NewBasicCatcher()
+	catcher := erc.Collector{}
 	wg := &sync.WaitGroup{}
 	for i := 0; i < num; i++ {
 		wg.Add(1)
@@ -112,7 +113,7 @@ func (opts *CollectOptions) generate(ctx context.Context, id int) (*birch.Docume
 		go func() {
 			defer func() {
 				if p := recover(); p != nil {
-					catcher.Errorf("ftdc metrics collector panic: %v", p)
+					catcher.Add(fmt.Errorf("ftdc metrics collector panic: %v", p))
 				}
 			}()
 			defer wg.Done()
@@ -143,26 +144,34 @@ func NewCollectOptions(prefix string) CollectOptions {
 	}
 }
 
+func validateCondition(ec *erc.Collector, cond bool, str string) {
+	if !cond {
+		return
+	}
+
+	ec.Add(errors.New(str))
+}
+
 // Validate checks the Collect option settings and ensures that all
 // values are reasonable.
 func (opts CollectOptions) Validate() error {
-	catcher := emt.NewCatcher()
+	ec := &erc.Collector{}
 
 	sort.Stable(opts.Collectors)
 
-	catcher.NewWhen(opts.FlushInterval < time.Millisecond,
+	validateCondition(ec, opts.FlushInterval < time.Millisecond,
 		"flush interval must be greater than a millisecond")
-	catcher.NewWhen(opts.CollectionInterval < time.Millisecond,
+	validateCondition(ec, opts.CollectionInterval < time.Millisecond,
 		"collection interval must be greater than a millisecond")
-	catcher.NewWhen(opts.CollectionInterval > opts.FlushInterval,
+	validateCondition(ec, opts.CollectionInterval > opts.FlushInterval,
 		"collection interval must be smaller than flush interval")
-	catcher.NewWhen(opts.SampleCount < 10, "sample count must be at least 10")
-	catcher.NewWhen(opts.SkipGolang && opts.SkipProcess && opts.SkipSystem,
+	validateCondition(ec, opts.SampleCount < 10, "sample count must be at least 10")
+	validateCondition(ec, opts.SkipGolang && opts.SkipProcess && opts.SkipSystem,
 		"cannot skip all metrics collection, must specify golang, process, or system")
-	catcher.NewWhen(opts.RunParallelCollectors && len(opts.Collectors) == 0,
+	validateCondition(ec, opts.RunParallelCollectors && len(opts.Collectors) == 0,
 		"cannot run parallel collectors with no collectors specified")
 
-	return catcher.Resolve()
+	return ec.Resolve()
 }
 
 // CollectRuntime starts a blocking background process that that

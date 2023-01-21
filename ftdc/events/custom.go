@@ -1,7 +1,7 @@
 // Package events contains a number of different data types and
 // formats that you can use to populate ftdc metrics series.
 //
-// Custom and CustomPoint
+// # Custom and CustomPoint
 //
 // The "custom" types allow you to construct arbirary key-value pairs
 // without using maps and have them be well represented in FTDC
@@ -12,6 +12,7 @@
 package events
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"time"
@@ -78,15 +79,19 @@ func (ps *Custom) UnmarshalBSON(in []byte) error {
 	}
 
 	iter := doc.Iterator()
-	for iter.Next() {
-		elem := iter.Element()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for iter.Next(ctx) {
+		elem := iter.Value()
 		*ps = append(*ps, CustomPoint{
 			Name:  elem.Key(),
 			Value: elem.Value().Interface(),
 		})
 	}
 
-	if err = iter.Err(); err != nil {
+	if err = iter.Close(ctx); err != nil {
 		return fmt.Errorf("problem reading document: %w", err)
 	}
 

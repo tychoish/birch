@@ -51,20 +51,20 @@ func BenchmarkIterator(b *testing.B) {
 					iter := ReadChunks(ctx, bytes.NewBuffer(data))
 					b.ResetTimer()
 					for n := 0; n < b.N; n++ {
-						if !iter.Next() {
+						if !iter.Next(ctx) {
 							break
 						}
-						if iter.Chunk() == nil {
-							b.Fatalf("%T value is nil", iter.Chunk())
+						if iter.Value() == nil {
+							b.Fatalf("%T value is nil", iter.Value())
 						}
 					}
 				})
 				b.Run("Iterating", func(b *testing.B) {
 					for n := 0; n < b.N; n++ {
 						iter := ReadChunks(ctx, bytes.NewBuffer(data))
-						for iter.Next() {
-							if iter.Chunk() == nil {
-								b.Fatalf("%T value is nil", iter.Chunk())
+						for iter.Next(ctx) {
+							if iter.Value() == nil {
+								b.Fatalf("%T value is nil", iter.Value())
 							}
 						}
 					}
@@ -75,20 +75,20 @@ func BenchmarkIterator(b *testing.B) {
 					iter := ReadSeries(ctx, bytes.NewBuffer(data))
 					b.ResetTimer()
 					for n := 0; n < b.N; n++ {
-						if !iter.Next() {
+						if !iter.Next(ctx) {
 							break
 						}
-						if iter.Document() == nil {
-							b.Fatalf("%T value is nil", iter.Document())
+						if iter.Value() == nil {
+							b.Fatalf("%T value is nil", iter.Value())
 						}
 					}
 				})
 				b.Run("Iterating", func(b *testing.B) {
 					for n := 0; n < b.N; n++ {
 						iter := ReadSeries(ctx, bytes.NewBuffer(data))
-						for iter.Next() {
-							if iter.Document() == nil {
-								b.Fatalf("%T value is nil", iter.Document())
+						for iter.Next(ctx) {
+							if iter.Value() == nil {
+								b.Fatalf("%T value is nil", iter.Value())
 							}
 						}
 					}
@@ -99,20 +99,20 @@ func BenchmarkIterator(b *testing.B) {
 					iter := ReadMatrix(ctx, bytes.NewBuffer(data))
 					b.ResetTimer()
 					for n := 0; n < b.N; n++ {
-						if !iter.Next() {
+						if !iter.Next(ctx) {
 							break
 						}
-						if iter.Document() == nil {
-							b.Fatalf("%T value is nil", iter.Document())
+						if iter.Value() == nil {
+							b.Fatalf("%T value is nil", iter.Value())
 						}
 					}
 				})
 				b.Run("Iterating", func(b *testing.B) {
 					for n := 0; n < b.N; n++ {
 						iter := ReadMatrix(ctx, bytes.NewBuffer(data))
-						for iter.Next() {
-							if iter.Document() == nil {
-								b.Fatalf("%T value is nil", iter.Document())
+						for iter.Next(ctx) {
+							if iter.Value() == nil {
+								b.Fatalf("%T value is nil", iter.Value())
 							}
 						}
 					}
@@ -123,20 +123,20 @@ func BenchmarkIterator(b *testing.B) {
 					iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
 					b.ResetTimer()
 					for n := 0; n < b.N; n++ {
-						if !iter.Next() {
+						if !iter.Next(ctx) {
 							break
 						}
-						if iter.Document() == nil {
-							b.Fatalf("%T value is nil", iter.Document())
+						if iter.Value() == nil {
+							b.Fatalf("%T value is nil", iter.Value())
 						}
 					}
 				})
 				b.Run("Iterating", func(b *testing.B) {
 					for n := 0; n < b.N; n++ {
 						iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
-						for iter.Next() {
-							if iter.Document() == nil {
-								b.Fatalf("%T value is nil", iter.Document())
+						for iter.Next(ctx) {
+							if iter.Value() == nil {
+								b.Fatalf("%T value is nil", iter.Value())
 							}
 						}
 					}
@@ -147,20 +147,20 @@ func BenchmarkIterator(b *testing.B) {
 					iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
 					b.ResetTimer()
 					for n := 0; n < b.N; n++ {
-						if !iter.Next() {
+						if !iter.Next(ctx) {
 							break
 						}
-						if iter.Document() == nil {
-							b.Fatalf("%T value is nil", iter.Document())
+						if iter.Value() == nil {
+							b.Fatalf("%T value is nil", iter.Value())
 						}
 					}
 				})
 				b.Run("Iterating", func(b *testing.B) {
 					for n := 0; n < b.N; n++ {
 						iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
-						for iter.Next() {
-							if iter.Document() == nil {
-								b.Fatalf("%T value is nil", iter.Document())
+						for iter.Next(ctx) {
+							if iter.Value() == nil {
+								b.Fatalf("%T value is nil", iter.Value())
 							}
 						}
 					}

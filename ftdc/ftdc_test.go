@@ -103,8 +103,8 @@ func TestReadPathIntegration(t *testing.T) {
 				num := 0
 				hasSeries := 0
 
-				for iter.Next() {
-					c := iter.Chunk()
+				for iter.Next(ctx) {
+					c := iter.Value()
 					counter++
 					if num == 0 {
 						num = len(c.Metrics)
@@ -137,8 +137,8 @@ func TestReadPathIntegration(t *testing.T) {
 
 						numSamples := 0
 						samples := c.Iterator(ctx)
-						for samples.Next() {
-							doc := samples.Document()
+						for samples.Next(ctx) {
+							doc := samples.Value()
 
 							numSamples++
 							if doc == nil {
@@ -161,8 +161,8 @@ func TestReadPathIntegration(t *testing.T) {
 						}
 						docIter := data.Iterator()
 						elems := 0
-						for docIter.Next() {
-							array := docIter.Element().Value().MutableArray()
+						for docIter.Next(ctx) {
+							array := docIter.Value().Value().MutableArray()
 							if test.expectedMetrics != array.Len() {
 								t.Fatalf("unqueal %v and %v", test.expectedMetrics, array.Len())
 							}
@@ -179,7 +179,7 @@ func TestReadPathIntegration(t *testing.T) {
 					}
 				}
 
-				if err := iter.Err(); err != nil {
+				if err := iter.Close(ctx); err != nil {
 					t.Error(err)
 				}
 
@@ -200,8 +200,8 @@ func TestReadPathIntegration(t *testing.T) {
 				startAt := time.Now()
 				iter := ReadSeries(ctx, bytes.NewBuffer(data))
 				counter := 0
-				for iter.Next() {
-					doc := iter.Document()
+				for iter.Next(ctx) {
+					doc := iter.Value()
 					if doc == nil {
 						t.Fatalf("%T value is nil", doc)
 					}
@@ -213,7 +213,7 @@ func TestReadPathIntegration(t *testing.T) {
 				if test.expectedChunks != counter {
 					t.Error("values should be equal")
 				}
-				if err := iter.Err(); err != nil {
+				if err := iter.Close(ctx); err != nil {
 					t.Fatal(err)
 				}
 				fmt.Println(testMessage{
@@ -229,14 +229,14 @@ func TestReadPathIntegration(t *testing.T) {
 				startAt := time.Now()
 				iter := ReadMatrix(ctx, bytes.NewBuffer(data))
 				counter := 0
-				for iter.Next() {
+				for iter.Next(ctx) {
 					counter++
 
 					if counter%10 != 0 {
 						continue
 					}
 
-					doc := iter.Document()
+					doc := iter.Value()
 					if doc == nil {
 						t.Fatalf("%T value is nil", doc)
 					}
@@ -244,7 +244,7 @@ func TestReadPathIntegration(t *testing.T) {
 						t.Fatal("truth assertion failed")
 					}
 				}
-				if err := iter.Err(); err != nil {
+				if err := iter.Close(ctx); err != nil {
 					t.Fatal(err)
 				}
 				if test.expectedChunks != counter {
@@ -266,7 +266,7 @@ func TestReadPathIntegration(t *testing.T) {
 					startAt := time.Now()
 					iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
 					counter := 0
-					for iter.Next() {
+					for iter.Next(ctx) {
 						if counter >= expectedSamples/10 {
 							break
 						}
@@ -276,7 +276,7 @@ func TestReadPathIntegration(t *testing.T) {
 							continue
 						}
 
-						doc := iter.Document()
+						doc := iter.Value()
 						if doc == nil {
 							t.Fatalf("%T value is nil", doc)
 						}
@@ -294,7 +294,7 @@ func TestReadPathIntegration(t *testing.T) {
 							t.Fatalf("unqueal %v and %v", test.docLen, doc.Len())
 						}
 					}
-					if err := iter.Err(); err != nil {
+					if err := iter.Close(ctx); err != nil {
 						t.Error(err)
 					}
 					if counter < expectedSamples/10 {
@@ -306,7 +306,7 @@ func TestReadPathIntegration(t *testing.T) {
 					startAt := time.Now()
 					iter := ReadMetrics(ctx, bytes.NewBuffer(data))
 					counter := 0
-					for iter.Next() {
+					for iter.Next(ctx) {
 						if counter >= expectedSamples/10 {
 							break
 						}
@@ -314,7 +314,7 @@ func TestReadPathIntegration(t *testing.T) {
 						if counter%10 != 0 {
 							continue
 						}
-						doc := iter.Document()
+						doc := iter.Value()
 						if doc == nil {
 							t.Fatalf("%T value is nil", doc)
 						}
@@ -332,7 +332,7 @@ func TestReadPathIntegration(t *testing.T) {
 							t.Fatalf("unqueal %v and %v", test.expectedNum, doc.Len())
 						}
 					}
-					if err := iter.Err(); err != nil {
+					if err := iter.Close(ctx); err != nil {
 						t.Error(err)
 					}
 					if counter < expectedSamples/10 {
@@ -380,11 +380,11 @@ func TestRoundTrip(t *testing.T) {
 					iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
 
 					docNum := 0
-					for iter.Next() {
+					for iter.Next(ctx) {
 						if docNum < len(docs) {
 							t.Fatal("truth assertion failed")
 						}
-						roundtripDoc := iter.Document()
+						roundtripDoc := iter.Value()
 
 						if fmt.Sprint(roundtripDoc) != fmt.Sprint(docs[docNum]) {
 							t.Error("values should be equal")

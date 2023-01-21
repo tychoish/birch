@@ -13,6 +13,7 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
+	"github.com/tychoish/fun"
 )
 
 func (c *Chunk) getFieldNames() []string {
@@ -39,14 +40,14 @@ func (c *Chunk) getRecord(i int) []string {
 // WriteCSV exports the contents of a stream of chunks as CSV. Returns
 // an error if the number of metrics changes between points, or if
 // there are any errors writing data.
-func WriteCSV(ctx context.Context, iter *ChunkIterator, writer io.Writer) error {
+func WriteCSV(ctx context.Context, iter fun.Iterator[*Chunk], writer io.Writer) error {
 	var numFields int
 	csvw := csv.NewWriter(writer)
-	for iter.Next() {
+	for iter.Next(ctx) {
 		if ctx.Err() != nil {
 			return errors.New("operation aborted")
 		}
-		chunk := iter.Chunk()
+		chunk := iter.Value()
 		if numFields == 0 {
 			fieldNames := chunk.getFieldNames()
 			if err := csvw.Write(fieldNames); err != nil {
@@ -68,7 +69,7 @@ func WriteCSV(ctx context.Context, iter *ChunkIterator, writer io.Writer) error 
 			return fmt.Errorf("problem flushing csv data: %w", err)
 		}
 	}
-	if err := iter.Err(); err != nil {
+	if err := iter.Close(ctx); err != nil {
 		return fmt.Errorf("problem reading chunks: %w", err)
 	}
 
@@ -90,7 +91,7 @@ func getCSVFile(prefix string, count int) (io.WriteCloser, error) {
 // writes a header row to each file.
 //
 // The file names are constructed as "prefix.<count>.csv".
-func DumpCSV(ctx context.Context, iter *ChunkIterator, prefix string) error {
+func DumpCSV(ctx context.Context, iter fun.Iterator[*Chunk], prefix string) error {
 	var (
 		err       error
 		writer    io.WriteCloser
@@ -98,7 +99,7 @@ func DumpCSV(ctx context.Context, iter *ChunkIterator, prefix string) error {
 		fileCount int
 		csvw      *csv.Writer
 	)
-	for iter.Next() {
+	for iter.Next(ctx) {
 		if ctx.Err() != nil {
 			return errors.New("operation aborted")
 		}
@@ -112,7 +113,7 @@ func DumpCSV(ctx context.Context, iter *ChunkIterator, prefix string) error {
 			fileCount++
 		}
 
-		chunk := iter.Chunk()
+		chunk := iter.Value()
 		if numFields == 0 {
 			fieldNames := chunk.getFieldNames()
 			if err = csvw.Write(fieldNames); err != nil {
@@ -151,7 +152,7 @@ func DumpCSV(ctx context.Context, iter *ChunkIterator, prefix string) error {
 			return fmt.Errorf("problem flushing csv data: %w", err)
 		}
 	}
-	if err := iter.Err(); err != nil {
+	if err := iter.Close(ctx); err != nil {
 		return fmt.Errorf("problem reading chunks: %w", err)
 	}
 

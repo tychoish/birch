@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"github.com/tychoish/birch/ftdc"
-	"github.com/tychoish/emt"
+	"github.com/tychoish/fun/erc"
 )
 
 type intervalHistogramStream struct {
 	point     *PerformanceHDR
 	started   time.Time
 	collector ftdc.Collector
-	catcher   emt.Catcher
+	catcher   erc.Collector
 	sync.Mutex
 
 	interval time.Duration
@@ -33,7 +33,6 @@ func NewIntervalHistogramRecorder(ctx context.Context, collector ftdc.Collector,
 	return &intervalHistogramStream{
 		collector: collector,
 		rootCtx:   ctx,
-		catcher:   emt.NewCatcher(),
 		interval:  interval,
 		point:     NewHistogramMillisecond(PerformanceGauges{}),
 	}
@@ -144,7 +143,7 @@ func (r *intervalHistogramStream) reset() {
 		r.canceler()
 		r.canceler = nil
 	}
-	r.catcher = emt.NewCatcher()
+	r.catcher = erc.Collector{}
 	r.point = NewHistogramMillisecond(r.point.Gauges)
 	r.started = time.Time{}
 }

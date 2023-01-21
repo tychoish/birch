@@ -17,6 +17,7 @@ import (
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/birch/elements"
 	"github.com/tychoish/birch/jsonx"
+	"github.com/tychoish/fun"
 )
 
 // Document is a mutable ordered map that compactly represents a BSON document.
@@ -454,7 +455,7 @@ func (d *Document) ElementAtOK(index uint) (*Element, bool) {
 }
 
 // Iterator creates an Iterator for this document and returns it.
-func (d *Document) Iterator() Iterator {
+func (d *Document) Iterator() fun.Iterator[*Element] {
 	if d == nil {
 		panic(bsonerr.NilDocument)
 	}

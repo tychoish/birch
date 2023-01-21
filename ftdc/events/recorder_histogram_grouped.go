@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/tychoish/birch/ftdc"
-	"github.com/tychoish/emt"
+	"github.com/tychoish/fun/erc"
 )
 
 type histogramGroupedStream struct {
@@ -13,7 +13,7 @@ type histogramGroupedStream struct {
 	started       time.Time
 	interval      time.Duration
 	collector     ftdc.Collector
-	catcher       emt.Catcher
+	catcher       erc.Collector
 }
 
 // NewHistogramGroupedRecorder captures data and stores them with a
@@ -32,7 +32,6 @@ func NewHistogramGroupedRecorder(collector ftdc.Collector, interval time.Duratio
 	return &histogramGroupedStream{
 		point:     NewHistogramMillisecond(PerformanceGauges{}),
 		collector: collector,
-		catcher:   emt.NewCatcher(),
 	}
 }
 
@@ -93,7 +92,7 @@ func (r *histogramGroupedStream) EndTest() error {
 }
 
 func (r *histogramGroupedStream) Reset() {
-	r.catcher = emt.NewCatcher()
+	r.catcher = erc.Collector{}
 	r.point = NewHistogramMillisecond(r.point.Gauges)
 	r.lastCollected = time.Time{}
 	r.started = time.Time{}

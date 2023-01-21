@@ -51,7 +51,7 @@ func (c *Chunk) streamDocuments(ctx context.Context) <-chan *birch.Document {
 		defer close(out)
 
 		for i := 0; i < c.nPoints; i++ {
-			doc, _ := restoreDocument(c.reference, i, c.Metrics, 0)
+			doc, _ := restoreDocument(ctx, c.reference, i, c.Metrics, 0)
 			select {
 			case <-ctx.Done():
 				return
@@ -65,24 +65,26 @@ func (c *Chunk) streamDocuments(ctx context.Context) <-chan *birch.Document {
 }
 
 // Close releases all resources associated with the iterator.
-func (iter *sampleIterator) Close()     { iter.closer() }
-func (iter *sampleIterator) Err() error { return nil }
+func (iter *sampleIterator) Close(ctx context.Context) error { iter.closer(); return nil }
 
 func (iter *sampleIterator) Metadata() *birch.Document { return iter.metadata }
 
 // Document returns the current document in the iterator. It is safe
 // to call this method more than once, and the result will only be nil
 // before the iterator is advanced.
-func (iter *sampleIterator) Document() *birch.Document { return iter.sample }
+func (iter *sampleIterator) Value() *birch.Document { return iter.sample }
 
 // Next advances the iterator one document. Returns true when there is
 // a document, and false otherwise.
-func (iter *sampleIterator) Next() bool {
-	doc, ok := <-iter.stream
-	if !ok {
+func (iter *sampleIterator) Next(ctx context.Context) bool {
+	select {
+	case doc, ok := <-iter.stream:
+		if !ok {
+			return false
+		}
+		iter.sample = doc
+		return true
+	case <-ctx.Done():
 		return false
 	}
-
-	iter.sample = doc
-	return true
 }

@@ -1,6 +1,7 @@
 package ftdc
 
 import (
+	"context"
 	"math"
 
 	"github.com/tychoish/birch"
@@ -12,7 +13,7 @@ import (
 // Processores use to return rich (i.e. non-flat) structures from
 // metrics slices
 
-func restoreDocument(ref *birch.Document, sample int, metrics []Metric, idx int) (*birch.Document, int) {
+func restoreDocument(ctx context.Context, ref *birch.Document, sample int, metrics []Metric, idx int) (*birch.Document, int) {
 	if ref == nil {
 		return nil, 0
 	}
@@ -22,10 +23,10 @@ func restoreDocument(ref *birch.Document, sample int, metrics []Metric, idx int)
 
 	var elem *birch.Element
 
-	for iter.Next() {
-		refElem := iter.Element()
+	for iter.Next(ctx) {
+		refElem := iter.Value()
 
-		elem, idx = restoreElement(refElem, sample, metrics, idx)
+		elem, idx = restoreElement(ctx, refElem, sample, metrics, idx)
 		if elem == nil {
 			continue
 		}
@@ -35,7 +36,7 @@ func restoreDocument(ref *birch.Document, sample int, metrics []Metric, idx int)
 	return doc, idx
 }
 
-func restoreElement(ref *birch.Element, sample int, metrics []Metric, idx int) (*birch.Element, int) {
+func restoreElement(ctx context.Context, ref *birch.Element, sample int, metrics []Metric, idx int) (*birch.Element, int) {
 	switch ref.Value().Type() {
 	case bsontype.ObjectID:
 		return nil, idx
@@ -49,10 +50,10 @@ func restoreElement(ref *birch.Element, sample int, metrics []Metric, idx int) (
 		elems := make([]*birch.Element, 0, array.Len())
 
 		iter := array.Iterator()
-		for iter.Next() {
+		for iter.Next(ctx) {
 			var item *birch.Element
 			// TODO avoid Interface
-			item, idx = restoreElement(birch.EC.Interface("", iter.Value()), sample, metrics, idx)
+			item, idx = restoreElement(ctx, birch.EC.Interface("", iter.Value()), sample, metrics, idx)
 			if item == nil {
 				continue
 			}
@@ -60,7 +61,7 @@ func restoreElement(ref *birch.Element, sample int, metrics []Metric, idx int) (
 			elems = append(elems, item)
 		}
 
-		if iter.Err() != nil {
+		if iter.Close(ctx) != nil {
 			return nil, 0
 		}
 
@@ -74,7 +75,7 @@ func restoreElement(ref *birch.Element, sample int, metrics []Metric, idx int) (
 	case bsontype.EmbeddedDocument:
 		var doc *birch.Document
 
-		doc, idx = restoreDocument(ref.Value().MutableDocument(), sample, metrics, idx)
+		doc, idx = restoreDocument(ctx, ref.Value().MutableDocument(), sample, metrics, idx)
 		return birch.EC.SubDocument(ref.Key(), doc), idx
 	case bsontype.Boolean:
 		value := metrics[idx].Values[sample]

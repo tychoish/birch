@@ -10,6 +10,7 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/ftdc/testutil"
+	"github.com/tychoish/fun"
 )
 
 type customCollector struct {
@@ -72,7 +73,7 @@ func newMixedChunk(num int64) []byte {
 
 }
 
-func produceMockChunkIter(ctx context.Context, samples int, newDoc func() *birch.Document) *ChunkIterator {
+func produceMockChunkIter(ctx context.Context, samples int, newDoc func() *birch.Document) fun.Iterator[*Chunk] {
 	collector := NewBaseCollector(samples)
 	for i := 0; i < samples; i++ {
 		panicIfError(collector.Add(newDoc()))
@@ -87,12 +88,12 @@ func produceMockChunkIter(ctx context.Context, samples int, newDoc func() *birch
 func produceMockMetrics(ctx context.Context, samples int, newDoc func() *birch.Document) []Metric {
 	iter := produceMockChunkIter(ctx, samples, newDoc)
 
-	if !iter.Next() {
+	if !iter.Next(ctx) {
 		panic("could not iterate")
 	}
 
-	metrics := iter.Chunk().Metrics
-	iter.Close()
+	metrics := iter.Value().Metrics
+	_ = iter.Close(ctx)
 	return metrics
 }
 

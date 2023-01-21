@@ -6,6 +6,9 @@ import (
 )
 
 func TestSampleIterator(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	t.Run("CanceledContextCreator", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
@@ -37,7 +40,7 @@ func TestSampleIterator(t *testing.T) {
 				}
 			}()
 
-			iter.Close()
+			_ = iter.Close(ctx)
 		}()
 		counter := 0
 		iter.closer = func() { counter++ }
@@ -48,7 +51,7 @@ func TestSampleIterator(t *testing.T) {
 				}
 			}()
 
-			iter.Close()
+			_ = iter.Close(ctx)
 		}()
 		if 1 != counter {
 			t.Error("values should be equal")

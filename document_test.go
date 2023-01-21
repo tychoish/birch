@@ -8,6 +8,7 @@ package birch
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -18,6 +19,9 @@ import (
 )
 
 func TestDocument(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	t.Run("NewDocument", func(t *testing.T) {
 		t.Run("TooShort", func(t *testing.T) {
 			want := errTooSmall
@@ -619,19 +623,19 @@ func TestDocument(t *testing.T) {
 		iter := d.Iterator()
 
 		for _, elem := range elems {
-			if !iter.Next() {
+			if !iter.Next(ctx) {
 				t.Fatal("truth assertion failed")
 			}
-			if err := iter.Err(); err != nil {
+			if err := iter.Close(ctx); err != nil {
 				t.Fatal(err)
 			}
-			requireElementsEqual(t, elem, iter.Element())
+			requireElementsEqual(t, elem, iter.Value())
 		}
 
-		if iter.Next() {
+		if iter.Next(ctx) {
 			t.Fatal("iterator should be empty")
 		}
-		if err := iter.Err(); err != nil {
+		if err := iter.Close(ctx); err != nil {
 			t.Fatal(err)
 		}
 	})

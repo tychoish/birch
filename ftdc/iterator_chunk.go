@@ -5,7 +5,8 @@ import (
 	"io"
 
 	"github.com/tychoish/birch"
-	"github.com/tychoish/emt"
+	"github.com/tychoish/fun"
+	"github.com/tychoish/fun/erc"
 )
 
 // ChunkIterator is a simple iterator for reading off of an FTDC data
@@ -15,18 +16,18 @@ import (
 //
 // Use the iterator as follows:
 //
-//    iter := ReadChunks(ctx, file)
+//	iter := ReadChunks(ctx, file)
 //
-//    for iter.Next() {
-//        chunk := iter.Chunk()
+//	for iter.Next(ctx) {
+//	    chunk := iter.Chunk()
 //
-//        // <manipulate chunk>
+//	    // <manipulate chunk>
 //
-//    }
+//	}
 //
-//    if err := iter.Err(); err != nil {
-//        return err
-//    }
+//	if err := iter.Close(ctx); err != nil {
+//	    return err
+//	}
 //
 // You MUST call the Chunk() method no more than once per iteration.
 //
@@ -37,16 +38,13 @@ type ChunkIterator struct {
 	next    *Chunk
 	cancel  context.CancelFunc
 	closed  bool
-	catcher emt.Catcher
+	catcher erc.Collector
 }
 
 // ReadChunks creates a ChunkIterator from an underlying FTDC data
 // source.
-func ReadChunks(ctx context.Context, r io.Reader) *ChunkIterator {
-	iter := &ChunkIterator{
-		catcher: emt.NewCatcher(),
-		pipe:    make(chan *Chunk, 2),
-	}
+func ReadChunks(ctx context.Context, r io.Reader) fun.Iterator[*Chunk] {
+	iter := &ChunkIterator{pipe: make(chan *Chunk, 2)}
 
 	ipc := make(chan *birch.Document)
 	ctx, iter.cancel = context.WithCancel(ctx)
@@ -65,29 +63,33 @@ func ReadChunks(ctx context.Context, r io.Reader) *ChunkIterator {
 // Next advances the iterator and returns true if the iterator has a
 // chunk that is unprocessed. Use the Chunk() method to access the
 // iterator.
-func (iter *ChunkIterator) Next() bool {
-	next, ok := <-iter.pipe
-	if !ok {
+func (iter *ChunkIterator) Next(ctx context.Context) bool {
+	select {
+	case next, ok := <-iter.pipe:
+		if !ok {
+			return false
+		}
+		iter.next = next
+		return true
+	case <-ctx.Done():
 		return false
 	}
-
-	iter.next = next
-	return true
 }
 
 // Chunk returns a copy of the chunk processed by the iterator. You
 // must call Chunk no more than once per iteration. Additional
 // accesses to Chunk will panic.
-func (iter *ChunkIterator) Chunk() *Chunk {
+func (iter *ChunkIterator) Value() *Chunk {
 	return iter.next
 }
 
 // Close releases resources of the iterator. Use this method to
 // release those resources if you stop iterating before the iterator
 // is exhausted. Canceling the context that you used to create the
-// iterator has the same effect.
-func (iter *ChunkIterator) Close() { iter.cancel(); iter.closed = true }
-
-// Err returns a non-nil error if the iterator encountered any errors
-// during iteration.
-func (iter *ChunkIterator) Err() error { return iter.catcher.Resolve() }
+// iterator has the same effect. Close returns a non-nil error if the
+// iterator encountered any errors during iteration.
+func (iter *ChunkIterator) Close(_ context.Context) error {
+	iter.cancel()
+	iter.closed = true
+	return iter.catcher.Resolve()
+}

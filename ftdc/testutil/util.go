@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -71,8 +72,10 @@ func IsMetricsDocument(key string, doc *birch.Document) ([]string, int) {
 	keys := []string{}
 	seen := 0
 
-	for iter.Next() {
-		elem := iter.Element()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	for iter.Next(ctx) {
+		elem := iter.Value()
 
 		k, num := IsMetricsValue(fmt.Sprintf("%s/%s", key, elem.Key()), elem.Value())
 
@@ -92,7 +95,9 @@ func IsMetricsArray(key string, array *birch.Array) ([]string, int) {
 	keys := []string{}
 	iter := array.Iterator()
 
-	for iter.Next() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	for iter.Next(ctx) {
 		ks, num := IsMetricsValue(key+strconv.Itoa(idx), iter.Value())
 
 		if num > 0 {
