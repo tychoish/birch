@@ -24,7 +24,6 @@ func (DocumentConstructor) New() *Document { return DC.Make(0) }
 func (DocumentConstructor) Make(n int) *Document {
 	return &Document{
 		elems: make([]*Element, 0, n),
-		index: make([]uint32, 0, n),
 	}
 }
 
@@ -36,7 +35,7 @@ func (DocumentConstructor) Elements(elems ...*Element) *Document {
 
 // ElementsOmitEmpty crates a document with all non-empty values.
 func (DocumentConstructor) ElementsOmitEmpty(elems ...*Element) *Document {
-	return DC.New().AppendOmitEmpty(elems...)
+	return DC.Make(len(elems)).AppendOmitEmpty(elems...)
 }
 
 // Reader constructs a document from a bson reader, which is a wrapper
@@ -110,35 +109,36 @@ func (DocumentConstructor) MarshalerErr(in Marshaler) (*Document, error) {
 }
 
 func (DocumentConstructor) MapString(in map[string]string) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
+
 	for k, v := range in {
-		elems = append(elems, EC.String(k, v))
+		out.Append(EC.String(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapJSONX(in map[string]*jsonx.Document) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 
 	for k, v := range in {
-		elems = append(elems, EC.JSONX(k, v))
+		out.Append(EC.JSONX(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapInterface(in map[string]interface{}) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.Interface(k, v))
+		out.Append(EC.Interface(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapInterfaceErr(in map[string]interface{}) (*Document, error) {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 
 	for k, v := range in {
 		elem, err := EC.InterfaceErr(k, v)
@@ -147,15 +147,15 @@ func (DocumentConstructor) MapInterfaceErr(in map[string]interface{}) (*Document
 		}
 
 		if elem != nil {
-			elems = append(elems, elem)
+			out.Append(elem)
 		}
 	}
 
-	return DC.Elements(elems...), nil
+	return out, nil
 }
 
 func (DocumentConstructor) MapInterfaceInterfaceErr(in map[interface{}]interface{}) (*Document, error) {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
 		elem, err := EC.InterfaceErr(bestStringAttempt(k), v)
 		if err != nil {
@@ -163,95 +163,95 @@ func (DocumentConstructor) MapInterfaceInterfaceErr(in map[interface{}]interface
 		}
 
 		if elem != nil {
-			elems = append(elems, elem)
+			out.Append(elem)
 		}
 	}
 
-	return DC.Elements(elems...), nil
+	return out, nil
 }
 
 func (DocumentConstructor) MapInterfaceInterface(in map[interface{}]interface{}) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.Interface(bestStringAttempt(k), v))
+		out.Append(EC.Interface(bestStringAttempt(k), v))
 	}
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapInt64(in map[string]int64) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.Int64(k, v))
+		out.Append(EC.Int64(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapInt32(in map[string]int32) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.Int32(k, v))
+		out.Append(EC.Int32(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapFloat64(in map[string]float64) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.Double(k, v))
+		out.Append(EC.Double(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapFloat32(in map[string]float32) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.Double(k, float64(v)))
+		out.Append(EC.Double(k, float64(v)))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapInt(in map[string]int) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.Int(k, v))
+		out.Append(EC.Int(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapTime(in map[string]time.Time) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.Time(k, v))
+		out.Append(EC.Time(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapDuration(in map[string]time.Duration) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.Duration(k, v))
+		out.Append(EC.Duration(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapMarshaler(in map[string]Marshaler) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.Marshaler(k, v))
+		out.Append(EC.Marshaler(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapMarshalerErr(in map[string]Marshaler) (*Document, error) {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 
 	for k, v := range in {
 		elem, err := EC.MarshalerErr(k, v)
@@ -260,24 +260,24 @@ func (DocumentConstructor) MapMarshalerErr(in map[string]Marshaler) (*Document, 
 		}
 
 		if elem != nil {
-			elems = append(elems, elem)
+			out.Append(elem)
 		}
 	}
 
-	return DC.Elements(elems...), nil
+	return out, nil
 }
 
 func (DocumentConstructor) MapSliceMarshaler(in map[string][]Marshaler) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.SliceMarshaler(k, v))
+		out.Append(EC.SliceMarshaler(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapSliceMarshalerErr(in map[string][]Marshaler) (*Document, error) {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 
 	for k, v := range in {
 		elem, err := EC.SliceMarshalerErr(k, v)
@@ -286,33 +286,33 @@ func (DocumentConstructor) MapSliceMarshalerErr(in map[string][]Marshaler) (*Doc
 		}
 
 		if elem != nil {
-			elems = append(elems, elem)
+			out.Append(elem)
 		}
 	}
 
-	return DC.Elements(elems...), nil
+	return out, nil
 }
 
 func (DocumentConstructor) MapDocumentMarshaler(in map[string]DocumentMarshaler) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.DocumentMarshaler(k, v))
+		out.Append(EC.DocumentMarshaler(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapSliceJSONX(in map[string][]*jsonx.Document) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.SliceJSONX(k, v))
+		out.Append(EC.SliceJSONX(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapDocumentMarshalerErr(in map[string]DocumentMarshaler) (*Document, error) {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 
 	for k, v := range in {
 		elem, err := EC.DocumentMarshalerErr(k, v)
@@ -321,24 +321,24 @@ func (DocumentConstructor) MapDocumentMarshalerErr(in map[string]DocumentMarshal
 		}
 
 		if elem != nil {
-			elems = append(elems, elem)
+			out.Append(elem)
 		}
 	}
 
-	return DC.Elements(elems...), nil
+	return out, nil
 }
 
 func (DocumentConstructor) MapSliceDocumentMarshaler(in map[string][]DocumentMarshaler) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.SliceDocumentMarshaler(k, v))
+		out.Append(EC.SliceDocumentMarshaler(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapSliceDocumentMarshalerErr(in map[string][]DocumentMarshaler) (*Document, error) {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 
 	for k, v := range in {
 		elem, err := EC.SliceDocumentMarshalerErr(k, v)
@@ -347,33 +347,33 @@ func (DocumentConstructor) MapSliceDocumentMarshalerErr(in map[string][]Document
 		}
 
 		if elem != nil {
-			elems = append(elems, elem)
+			out.Append(elem)
 		}
 	}
 
-	return DC.Elements(elems...), nil
+	return out, nil
 }
 
 func (DocumentConstructor) MapSliceString(in map[string][]string) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.SliceString(k, v))
+		out.Append(EC.SliceString(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapSliceInterface(in map[string][]interface{}) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.SliceInterface(k, v))
+		out.Append(EC.SliceInterface(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapSliceInterfaceErr(in map[string][]interface{}) (*Document, error) {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 
 	for k, v := range in {
 		elem, err := EC.SliceInterfaceErr(k, v)
@@ -382,24 +382,24 @@ func (DocumentConstructor) MapSliceInterfaceErr(in map[string][]interface{}) (*D
 		}
 
 		if elem != nil {
-			elems = append(elems, elem)
+			out.Append(elem)
 		}
 	}
 
-	return DC.Elements(elems...), nil
+	return out, nil
 }
 
 func (DocumentConstructor) MapInterfaceSliceInterface(in map[interface{}][]interface{}) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.SliceInterface(bestStringAttempt(k), v))
+		out.Append(EC.SliceInterface(bestStringAttempt(k), v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapInterfaceSliceInterfaceErr(in map[interface{}][]interface{}) (*Document, error) {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 
 	for k, v := range in {
 		elem, err := EC.SliceInterfaceErr(bestStringAttempt(k), v)
@@ -408,74 +408,74 @@ func (DocumentConstructor) MapInterfaceSliceInterfaceErr(in map[interface{}][]in
 		}
 
 		if elem != nil {
-			elems = append(elems, elem)
+			out.Append(elem)
 		}
 	}
 
-	return DC.Elements(elems...), nil
+	return out, nil
 }
 
 func (DocumentConstructor) MapSliceInt64(in map[string][]int64) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.SliceInt64(k, v))
+		out.Append(EC.SliceInt64(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapSliceInt32(in map[string][]int32) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.SliceInt32(k, v))
+		out.Append(EC.SliceInt32(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapSliceFloat64(in map[string][]float64) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.SliceFloat64(k, v))
+		out.Append(EC.SliceFloat64(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapSliceFloat32(in map[string][]float32) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.SliceFloat32(k, v))
+		out.Append(EC.SliceFloat32(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapSliceInt(in map[string][]int) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.SliceInt(k, v))
+		out.Append(EC.SliceInt(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapSliceDuration(in map[string][]time.Duration) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.SliceDuration(k, v))
+		out.Append(EC.SliceDuration(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) MapSliceTime(in map[string][]time.Time) *Document {
-	elems := make([]*Element, 0, len(in))
+	out := DC.Make(len(in))
 	for k, v := range in {
-		elems = append(elems, EC.SliceTime(k, v))
+		out.Append(EC.SliceTime(k, v))
 	}
 
-	return DC.Elements(elems...)
+	return out
 }
 
 func (DocumentConstructor) Interface(value interface{}) *Document {
@@ -522,12 +522,10 @@ func (DocumentConstructor) Interface(value interface{}) *Document {
 	case map[string][]time.Duration:
 		doc = DC.MapSliceDuration(t)
 	case map[interface{}]interface{}:
-		elems := make([]*Element, 0, len(t))
+		doc = DC.Make(len(t))
 		for k, v := range t {
-			elems = append(elems, EC.Interface(bestStringAttempt(k), v))
+			doc.Append(EC.Interface(bestStringAttempt(k), v))
 		}
-
-		doc = DC.Elements(elems...)
 	case *Element:
 		doc = DC.Elements(t)
 	case *Document:

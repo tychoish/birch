@@ -115,6 +115,36 @@ func (a *Array) LookupElement(index uint) *Element {
 	return v
 }
 
+func (a *Array) findElementForStrKey(key ...string) *Element {
+	if len(key) == 0 || a == nil {
+		return nil
+	}
+
+	idx, err := strconv.Atoi(key[0])
+	if err != nil {
+		return nil
+	}
+	val := a.Lookup(uint(idx))
+	if val == nil {
+		return nil
+	}
+
+	if len(key) == 1 {
+		return EC.Value(key[0], val)
+	}
+
+	if sd, ok := val.MutableDocumentOK(); ok {
+		if el, err := sd.Search(key[1:]...); err == nil {
+			return el
+		}
+	}
+	if sar, ok := val.MutableArrayOK(); ok {
+		return sar.findElementForStrKey(key[1:]...)
+	}
+
+	return nil
+}
+
 func (a *Array) lookupTraverse(index uint, keys ...string) (*Value, error) {
 	value, err := a.LookupErr(index)
 	if err != nil {
@@ -127,7 +157,7 @@ func (a *Array) lookupTraverse(index uint, keys ...string) (*Value, error) {
 
 	switch value.Type() {
 	case bsontype.EmbeddedDocument:
-		element, err := value.MutableDocument().RecursiveLookupElementErr(keys...)
+		element, err := value.MutableDocument().Search(keys...)
 		if err != nil {
 			return nil, err
 		}

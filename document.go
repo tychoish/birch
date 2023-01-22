@@ -8,10 +8,9 @@ package birch
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
-	"sort"
-	"strconv"
 	"time"
 
 	"github.com/tychoish/birch/bsonerr"
@@ -27,7 +26,6 @@ type Document struct {
 	// silently ignore any nil paramet()ers to these methods.
 	IgnoreNilInsert bool
 	elems           []*Element
-	index           []uint32
 }
 
 // NewDocument creates an empty Document. The numberOfElems parameter will
@@ -55,11 +53,9 @@ func (d *Document) Copy() *Document {
 	doc := &Document{
 		IgnoreNilInsert: d.IgnoreNilInsert,
 		elems:           make([]*Element, len(d.elems), cap(d.elems)),
-		index:           make([]uint32, len(d.index), cap(d.index)),
 	}
 
 	copy(doc.elems, d.elems)
-	copy(doc.index, d.index)
 
 	return doc
 }
@@ -149,18 +145,18 @@ func (d *Document) Append(elems ...*Element) *Document {
 		}
 
 		d.elems = append(d.elems, elem)
-		i := sort.Search(len(d.index), func(i int) bool {
-			return bytes.Compare(
-				d.keyFromIndex(i), elem.value.data[elem.value.start+1:elem.value.offset]) >= 0
-		})
+		// i := sort.Search(len(d.index), func(i int) bool {
+		// 	return bytes.Compare(
+		// 		d.keyFromIndex(i), elem.value.data[elem.value.start+1:elem.value.offset]) >= 0
+		// })
 
-		if i < len(d.index) {
-			d.index = append(d.index, 0)
-			copy(d.index[i+1:], d.index[i:])
-			d.index[i] = uint32(len(d.elems) - 1)
-		} else {
-			d.index = append(d.index, uint32(len(d.elems)-1))
-		}
+		// if i < len(d.index) {
+		// 	d.index = append(d.index, 0)
+		// 	copy(d.index[i+1:], d.index[i:])
+		// 	d.index[i] = uint32(len(d.elems) - 1)
+		// } else {
+		// 	d.index = append(d.index, uint32(len(d.elems)-1))
+		// }
 	}
 
 	return d
@@ -218,22 +214,6 @@ func (d *Document) Prepend(elems ...*Element) *Document {
 		remaining--
 
 		d.elems[idx] = elem
-
-		for idx := range d.index {
-			d.index[idx]++
-		}
-
-		i := sort.Search(len(d.index), func(i int) bool {
-			return bytes.Compare(
-				d.keyFromIndex(i), elem.value.data[elem.value.start+1:elem.value.offset]) >= 0
-		})
-		if i < len(d.index) {
-			d.index = append(d.index, 0)
-			copy(d.index[i+1:], d.index[i:])
-			d.index[i] = 0
-		} else {
-			d.index = append(d.index, 0)
-		}
 	}
 
 	return d
@@ -257,175 +237,36 @@ func (d *Document) Set(elem *Element) *Document {
 		panic(bsonerr.NilElement)
 	}
 
-	key := fmt.Sprint(elem.Key(), "\x00")
-	i := sort.Search(len(d.index), func(i int) bool { return bytes.Compare(d.keyFromIndex(i), []byte(key)) >= 0 })
-
-	if i < len(d.index) && bytes.Equal(d.keyFromIndex(i), []byte(key)) {
-		d.elems[d.index[i]] = elem
-		return d
+	for idx, e := range d.elems {
+		if elem.Key() == e.Key() {
+			d.elems[idx] = elem
+			return d
+		}
 	}
 
 	d.elems = append(d.elems, elem)
-	position := uint32(len(d.elems) - 1)
-
-	if i < len(d.index) {
-		d.index = append(d.index, 0)
-		copy(d.index[i+1:], d.index[i:])
-		d.index[i] = position
-	} else {
-		d.index = append(d.index, position)
-	}
 
 	return d
-}
-
-// RecursiveLookup searches the document and potentially subdocuments or arrays for the
-// provided key. Each key provided to this method represents a layer of depth.
-//
-// RecursiveLookup will return nil if it encounters an error.
-func (d *Document) RecursiveLookup(key ...string) *Value {
-	elem, err := d.RecursiveLookupElementErr(key...)
-	if err != nil {
-		return nil
-	}
-
-	return elem.value
-}
-
-// RecursiveLookupErr searches the document and potentially subdocuments or arrays for the
-// provided key. Each key provided to this method represents a layer of depth.
-func (d *Document) RecursiveLookupErr(key ...string) (*Value, error) {
-	elem, err := d.RecursiveLookupElementErr(key...)
-	if err != nil {
-		return nil, err
-	}
-
-	return elem.value, nil
-}
-
-// RecursiveLookupElement searches the document and potentially subdocuments or arrays for the
-// provided key. Each key provided to this method represents a layer of depth.
-//
-// RecursiveLookupElement will return nil if it encounters an error.
-func (d *Document) RecursiveLookupElement(key ...string) *Element {
-	elem, err := d.RecursiveLookupElementErr(key...)
-	if err != nil {
-		return nil
-	}
-
-	return elem
-}
-
-// RecursiveLookupElementErr searches the document and potentially subdocuments or arrays for the
-// provided key. Each key provided to this method represents a layer of depth.
-func (d *Document) RecursiveLookupElementErr(key ...string) (*Element, error) {
-	if d == nil {
-		return nil, bsonerr.NilDocument
-	}
-
-	if len(key) == 0 {
-		return nil, bsonerr.EmptyKey
-	}
-
-	var (
-		elem *Element
-		err  error
-	)
-
-	first := []byte(fmt.Sprint(key[0], "\x00"))
-	i := sort.Search(len(d.index), func(i int) bool { return bytes.Compare(d.keyFromIndex(i), first) >= 0 })
-
-	if i < len(d.index) && bytes.Equal(d.keyFromIndex(i), first) {
-		elem = d.elems[d.index[i]]
-
-		if len(key) == 1 {
-			return elem, nil
-		}
-
-		switch elem.value.Type() {
-		case '\x03':
-			elem, err = elem.value.MutableDocument().RecursiveLookupElementErr(key[1:]...)
-		case '\x04':
-			index, err := strconv.ParseUint(key[1], 10, 0)
-			if err != nil {
-				return nil, bsonerr.InvalidArrayKey
-			}
-
-			val, err := elem.value.MutableArray().lookupTraverse(uint(index), key[2:]...)
-			if err != nil {
-				return nil, err
-			}
-
-			elem = &Element{value: val}
-
-		default:
-			// TODO(skriptble): This error message should be more clear, e.g.
-			// include information about what depth was reached, what the
-			// incorrect type was, etc...
-			err = bsonerr.InvalidDepthTraversal
-		}
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	if elem == nil {
-		// TODO(skriptble): This should also be a clearer error message.
-		// Preferably we should track the depth at which the key was not found.
-		return nil, bsonerr.ElementNotFound
-	}
-
-	return elem, nil
 }
 
 // Delete removes the keys from the Document. The deleted element is
 // returned. If the key does not exist, then nil is returned and the delete is
 // a no-op. The same is true if something along the depth tree does not exist
 // or is not a traversable type.
-func (d *Document) Delete(key ...string) *Element {
+func (d *Document) Delete(key string) *Element {
 	if d == nil {
 		panic(bsonerr.NilDocument)
 	}
 
-	if len(key) == 0 {
-		return nil
-	}
-	// Do a binary search through the index, delete the element from
-	// the index and delete the element from the elems array.
-	var elem *Element
-
-	first := []byte(fmt.Sprint(key[0], "\x00"))
-	i := sort.Search(len(d.index), func(i int) bool { return bytes.Compare(d.keyFromIndex(i), first) >= 0 })
-
-	if i < len(d.index) && bytes.Equal(d.keyFromIndex(i), first) {
-		keyIndex := d.index[i]
-		elem = d.elems[keyIndex]
-
-		if len(key) == 1 {
-			d.index = append(d.index[:i], d.index[i+1:]...)
-			d.elems = append(d.elems[:keyIndex], d.elems[keyIndex+1:]...)
-
-			for j := range d.index {
-				if d.index[j] > keyIndex {
-					d.index[j]--
-				}
-			}
-
+	for idx := range d.elems {
+		if d.elems[idx].Key() == key {
+			elem := d.elems[idx]
+			d.elems = append(d.elems[:idx], d.elems[idx+1:]...)
 			return elem
 		}
-
-		switch elem.value.Type() {
-		case '\x03':
-			elem = elem.value.MutableDocument().Delete(key[1:]...)
-		case '\x04':
-			elem = elem.value.MutableArray().doc.Delete(key[1:]...)
-		default:
-			elem = nil
-		}
 	}
 
-	return elem
+	return nil
 }
 
 // ElementAt retrieves the element at the given index in a Document. It panics if the index is
@@ -491,7 +332,45 @@ func (d *Document) Reset() {
 	}
 
 	d.elems = d.elems[:0]
-	d.index = d.index[:0]
+}
+
+// Lookup iterates through the keys in the document, returning the
+// element with the matching key, and nil othe
+func (d *Document) Search(keys ...string) (*Element, error) {
+	if d == nil || len(keys) == 0 {
+		return nil, bsonerr.ElementNotFound
+	}
+
+	elem := d.findElemForKey(keys[0])
+	if elem == nil {
+		return nil, bsonerr.ElementNotFound
+	}
+
+	if len(keys) == 1 {
+		return elem, nil
+	}
+
+	if sd, ok := elem.Value().MutableDocumentOK(); ok {
+		return sd.Search(keys[1:]...)
+	}
+	if ar, ok := elem.Value().MutableArrayOK(); ok {
+		if em := ar.findElementForStrKey(keys[1:]...); em != nil {
+			return em, nil
+		}
+	}
+
+	return nil, bsonerr.ElementNotFound
+}
+
+func (d *Document) findElemForKey(key string) *Element {
+	for idx := range d.elems {
+		if d.elems[idx].Key() == key {
+			return d.elems[idx]
+
+		}
+
+	}
+	return nil
 }
 
 // Validate validates the document and returns its total size.
@@ -639,23 +518,38 @@ func (d *Document) UnmarshalBSON(b []byte) error {
 	//   - Update the index with the key of the element
 	//   TODO: Maybe do 2 pass and alloc the elems and index once?
 	//		   We should benchmark 2 pass vs multiple allocs for growing the slice
-	_, err := Reader(b).readElements(func(elem *Element) error {
-		d.elems = append(d.elems, elem)
-		i := sort.Search(len(d.index), func(i int) bool {
-			return bytes.Compare(
-				d.keyFromIndex(i), elem.value.data[elem.value.start+1:elem.value.offset]) >= 0
-		})
-		if i < len(d.index) {
-			d.index = append(d.index, 0)
-			copy(d.index[i+1:], d.index[i:])
-			d.index[i] = uint32(len(d.elems) - 1)
-		} else {
-			d.index = append(d.index, uint32(len(d.elems)-1))
-		}
-		return nil
-	})
+	// _, err := Reader(b).readElements(func(elem *Element) error {
+	// 	d.elems = append(d.elems, elem)
+	// 	i := sort.Search(len(d.index), func(i int) bool {
+	// 		return bytes.Compare(
+	// 			d.keyFromIndex(i), elem.value.data[elem.value.start+1:elem.value.offset]) >= 0
+	// 	})
+	// 	if i < len(d.index) {
+	// 		d.index = append(d.index, 0)
+	// 		copy(d.index[i+1:], d.index[i:])
+	// 		d.index[i] = uint32(len(d.elems) - 1)
+	// 	} else {
+	// 		d.index = append(d.index, uint32(len(d.elems)-1))
+	// 	}
+	// 	return nil
+	// })
 
-	return err
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	iter, err := Reader(b).Iterator()
+	if err != nil {
+		return err
+	}
+
+	d.elems = make([]*Element, 0, 256)
+
+	for iter.Next(ctx) {
+		d.elems = append(d.elems, iter.Value())
+		// d.Append(iter.Value())
+	}
+
+	return iter.Close(ctx)
 }
 
 // ReadFrom will read one BSON document from the given io.Reader.
@@ -685,19 +579,6 @@ func (d *Document) ReadFrom(r io.Reader) (int64, error) {
 	}
 
 	return total, d.UnmarshalBSON(b)
-}
-
-// keyFromIndex returns the key for the element. The idx parameter is the
-// position in the index property, not the elems property. This method is
-// mainly used when calling sort.Search.
-func (d *Document) keyFromIndex(idx int) []byte {
-	if d == nil {
-		panic(bsonerr.NilDocument)
-	}
-
-	haystack := d.elems[d.index[idx]]
-
-	return haystack.value.data[haystack.value.start+1 : haystack.value.offset]
 }
 
 // String implements the fmt.Stringer interface.

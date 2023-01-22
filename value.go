@@ -47,7 +47,7 @@ func (v *Value) Copy() *Value {
 		start:  v.start,
 		offset: v.offset,
 		data:   v.data,
-		d:      v.d.Copy(),
+		d:      v.d,
 	}
 }
 

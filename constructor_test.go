@@ -55,14 +55,6 @@ func requireValuesEqual(t *testing.T, expected *Value, actual *Value) {
 			requireElementsEqual(t, expected.d.elems[i], actual.d.elems[i])
 		}
 
-		if len(expected.d.index) != len(actual.d.index) {
-			t.Fatal("index values were not equal")
-		}
-		for i := range expected.d.index {
-			if expected.d.index[i] != actual.d.index[i] {
-				t.Fatal("values at index were not equal")
-			}
-		}
 	}
 }
 

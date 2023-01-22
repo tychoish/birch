@@ -107,12 +107,20 @@ func (itr *readerIterator) Next(ctx context.Context) bool {
 		return false
 	}
 
-	itr.elem.value.start = elemStart
-	itr.elem.value.offset = itr.pos
-	itr.elem.value.data = itr.r
-	itr.elem.value.d = nil
+	itr.elem = &Element{
+		value: &Value{
+			start:  elemStart,
+			offset: itr.pos,
+			data:   itr.r,
+		},
+	}
 
-	n, err = itr.elem.value.validate(false)
+	// itr.elem.value.start = elemStart
+	// itr.elem.value.offset = itr.pos
+	// itr.elem.value.data = itr.r
+	// itr.elem.value.d = nil
+
+	n, err = itr.elem.value.validate(true)
 	itr.pos += n
 
 	if err != nil {

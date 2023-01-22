@@ -113,7 +113,7 @@ func TestArray(t *testing.T) {
 					&Array{
 						&Document{
 							IgnoreNilInsert: true,
-							elems:           make([]*Element, 0), index: make([]uint32, 0),
+							elems:           make([]*Element, 0),
 						},
 					},
 				},
@@ -208,7 +208,7 @@ func TestArray(t *testing.T) {
 		t.Run("empty key", func(t *testing.T) {
 			d := NewDocument()
 			var want *Element
-			got := d.Delete()
+			got := d.Delete("")
 			if got != want {
 				t.Errorf("Delete should return nil element when deleting with empty key. got %#v, want %#v", got, want)
 			}

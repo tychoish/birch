@@ -28,13 +28,13 @@ type Element struct {
 }
 
 func newElement(start uint32, offset uint32) *Element {
-	return &Element{&Value{start: start, offset: offset}}
+	return &Element{value: &Value{start: start, offset: offset}}
 }
 
 // Copy creates a new Element which has a copy of the content from
 // original value, but is otherwise entirely independent.
 func (e *Element) Copy() *Element {
-	return &Element{e.value.Copy()}
+	return &Element{value: e.value.Copy()}
 }
 
 // Value returns the value associated with the BSON element.
