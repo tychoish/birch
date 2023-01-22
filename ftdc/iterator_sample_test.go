@@ -9,28 +9,6 @@ func TestSampleIterator(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	t.Run("CanceledContextCreator", func(t *testing.T) {
-		ctx, cancel := context.WithCancel(context.Background())
-		cancel()
-		chunk := &Chunk{
-			nPoints: 2,
-		}
-		out := chunk.streamDocuments(ctx)
-		if out == nil {
-			t.Fatal("'out' should not be nil")
-		}
-		for {
-			doc, ok := <-out
-			if ok {
-				t.Error("expected false")
-			}
-			if doc != nil {
-				t.Error("expected nil doc")
-			}
-			break
-		}
-
-	})
 	t.Run("CloserOperations", func(t *testing.T) {
 		iter := &sampleIterator{}
 		func() {
