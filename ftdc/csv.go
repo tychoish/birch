@@ -226,7 +226,7 @@ func ConvertFromCSV(ctx context.Context, bucketSize int, input io.Reader, output
 			elems = append(elems, birch.EC.Int64(header[idx], int64(val)))
 		}
 
-		if err = collector.Add(birch.NewDocument(elems...)); err != nil {
+		if err = collector.Add(birch.DC.Elements(elems...)); err != nil {
 			return err
 		}
 	}

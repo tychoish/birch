@@ -14,7 +14,7 @@ import (
 )
 
 func CreateEventRecord(count, duration, size, workers int64) *birch.Document {
-	return birch.NewDocument(
+	return birch.DC.Elements(
 		birch.EC.Int64("count", count),
 		birch.EC.Int64("duration", duration),
 		birch.EC.Int64("size", size),
@@ -23,7 +23,7 @@ func CreateEventRecord(count, duration, size, workers int64) *birch.Document {
 }
 
 func RandFlatDocument(numKeys int) *birch.Document {
-	doc := birch.NewDocument()
+	doc := birch.DC.Elements()
 	for i := 0; i < numKeys; i++ {
 		doc.Append(birch.EC.Int64(fmt.Sprint(i), rand.Int63n(int64(numKeys)*1)))
 	}
@@ -32,7 +32,7 @@ func RandFlatDocument(numKeys int) *birch.Document {
 }
 
 func RandFlatDocumentWithFloats(numKeys int) *birch.Document {
-	doc := birch.NewDocument()
+	doc := birch.DC.Elements()
 	for i := 0; i < numKeys; i++ {
 		doc.Append(birch.EC.Double(fmt.Sprintf("%d_float", i), rand.Float64()))
 		doc.Append(birch.EC.Int64(fmt.Sprintf("%d_long", i), rand.Int63()))
@@ -41,7 +41,7 @@ func RandFlatDocumentWithFloats(numKeys int) *birch.Document {
 }
 
 func RandComplexDocument(numKeys, otherNum int) *birch.Document {
-	doc := birch.NewDocument()
+	doc := birch.DC.Elements()
 
 	for i := 0; i < numKeys; i++ {
 		doc.Append(birch.EC.Int64(fmt.Sprint(numKeys, otherNum), rand.Int63n(int64(numKeys)*1)))

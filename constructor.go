@@ -328,7 +328,7 @@ func (ElementConstructor) SubDocumentFromReader(key string, r Reader) *Element {
 // SubDocumentFromElements creates a subdocument element with the given key. The elements passed as
 // arguments will be used to create a new document as the value.
 func (ElementConstructor) SubDocumentFromElements(key string, elems ...*Element) *Element {
-	return EC.SubDocument(key, NewDocument(elems...))
+	return EC.SubDocument(key, DC.Elements(elems...))
 }
 
 // Array creates an array element with the given key and value.

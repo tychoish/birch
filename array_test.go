@@ -206,7 +206,7 @@ func TestArray(t *testing.T) {
 	})
 	t.Run("Delete", func(t *testing.T) {
 		t.Run("empty key", func(t *testing.T) {
-			d := NewDocument()
+			d := DC.Elements()
 			var want *Element
 			got := d.Delete("")
 			if got != want {
@@ -291,7 +291,7 @@ func TestArray(t *testing.T) {
 	})
 	t.Run("Constructors", func(t *testing.T) {
 		t.Run("FromDocument", func(t *testing.T) {
-			doc := NewDocument(EC.Int("foo", 42), EC.Int("bar", 84))
+			doc := DC.Elements(EC.Int("foo", 42), EC.Int("bar", 84))
 			if 2 != doc.Len() {
 				t.Fatalf("unqueal %v and %v", 2, doc.Len())
 			}

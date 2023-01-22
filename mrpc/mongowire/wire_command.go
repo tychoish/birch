@@ -49,13 +49,13 @@ func (m *CommandMessage) Serialize() []byte {
 	loc += int64(writeCString(m.DB, buf, int(loc)))
 	loc += int64(writeCString(m.CmdName, buf, int(loc)))
 
-	offset, _ := m.CommandArgs.WriteDocument(uint(loc), buf)
+	offset, _ := m.CommandArgs.WriteToSlice(uint(loc), buf)
 	loc += offset
-	offset, _ = m.Metadata.WriteDocument(uint(loc), buf)
+	offset, _ = m.Metadata.WriteToSlice(uint(loc), buf)
 	loc += offset
 
 	for _, d := range m.InputDocs {
-		offset, _ = d.WriteDocument(uint(loc), buf)
+		offset, _ = d.WriteToSlice(uint(loc), buf)
 		loc += offset
 	}
 

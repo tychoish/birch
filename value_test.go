@@ -99,9 +99,9 @@ func TestValue(t *testing.T) {
 	})
 	t.Run("Equal", func(t *testing.T) {
 		codewithscopeval := func() *Value {
-			b, err := NewDocument(
+			b, err := DC.Elements(
 				EC.CodeWithScope("cws", "var hello = 'world';",
-					NewDocument(EC.Boolean("foo", true)),
+					DC.Elements(EC.Boolean("foo", true)),
 				)).MarshalBSON()
 			noerr(t, err)
 			elem, err := Reader(b).RecursiveLookup("cws")
@@ -165,7 +165,7 @@ func TestValue(t *testing.T) {
 			},
 			{
 				"equal code with scope",
-				VC.CodeWithScope("var hello = 'world';", NewDocument(EC.Boolean("foo", true))),
+				VC.CodeWithScope("var hello = 'world';", DC.Elements(EC.Boolean("foo", true))),
 				codewithscopeval(),
 				true,
 			},
@@ -184,14 +184,14 @@ func TestValue(t *testing.T) {
 			{
 				"unused d field",
 				VC.Boolean(true),
-				&Value{start: 0, offset: 2, data: []byte{0x08, 0x00, 0x01}, d: NewDocument(EC.Undefined("val"))},
+				&Value{start: 0, offset: 2, data: []byte{0x08, 0x00, 0x01}, d: DC.Elements(EC.Undefined("val"))},
 				true,
 			},
 			{
 				"read JavaScript error",
 				&Value{
 					start: 0, offset: 2,
-					data: []byte{0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00}, d: NewDocument(),
+					data: []byte{0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00}, d: DC.Elements(),
 				},
 				codewithscopeval(),
 				false,

@@ -1,7 +1,6 @@
 package birch
 
 import (
-	"context"
 	"time"
 
 	"github.com/tychoish/birch/bsontype"
@@ -18,14 +17,12 @@ func (d *Document) toJSON() *jsonx.Document {
 	iter := d.Iterator()
 	out := jsonx.DC.Make(d.Len())
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	for iter.Next(ctx) {
+	for iter.Next(iterCtx) {
 		elem := iter.Value()
 		out.Append(jsonx.EC.Value(elem.Key(), elem.Value().toJSON()))
 	}
 
-	if iter.Close(ctx) != nil {
+	if iter.Close(iterCtx) != nil {
 		return nil
 	}
 
@@ -40,12 +37,11 @@ func (a *Array) MarshalJSON() ([]byte, error) { return a.toJSON().MarshalJSON() 
 func (a *Array) toJSON() *jsonx.Array {
 	iter := a.Iterator()
 	out := jsonx.AC.Make(a.Len())
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	for iter.Next(ctx) {
+
+	for iter.Next(iterCtx) {
 		out.Append(iter.Value().toJSON())
 	}
-	if err := iter.Close(ctx); err != nil {
+	if err := iter.Close(iterCtx); err != nil {
 		panic(err)
 	}
 

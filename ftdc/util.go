@@ -39,7 +39,7 @@ func readDocument(in interface{}) (*birch.Document, error) {
 	case nil:
 		return nil, errors.New("cannot read nil document")
 	case struct{}:
-		return birch.NewDocument(), nil
+		return birch.DC.Elements(), nil
 	case map[string]struct{}:
 		return nil, errors.New("cannot read empty struct")
 	default:

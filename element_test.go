@@ -256,7 +256,7 @@ func TestElement(t *testing.T) {
 		})
 
 		t.Run("Embedded Document", func(t *testing.T) {
-			subdoc := NewDocument(EC.String("bar", "baz"))
+			subdoc := DC.Elements(EC.String("bar", "baz"))
 
 			testCases := []struct {
 				name          string
@@ -666,7 +666,7 @@ func TestElement(t *testing.T) {
 							0x11, 0x00, 0x00, 0x00,
 							0x04, 0x00, 0x00, 0x00, 'f', 'o', 'o', 0x00,
 						},
-						d: NewDocument(),
+						d: DC.Elements(),
 					}},
 					[]byte{
 						0x0F, 0x00,
@@ -2593,7 +2593,7 @@ func testValidateValue(t *testing.T) {
 	t.Run("fmt.Stringer", func(t *testing.T) {
 		var rdr Reader
 		var err error
-		rdr, err = NewDocument(EC.String("foo", "bar"),
+		rdr, err = DC.Elements(EC.String("foo", "bar"),
 			EC.SubDocumentFromElements("fooer",
 				EC.SubDocumentFromElements("barer", EC.Int32("ok", 1)),
 			),
@@ -2608,7 +2608,7 @@ func testValidateValue(t *testing.T) {
 		}{
 			{
 				name: "nested document",
-				doc: NewDocument(
+				doc: DC.Elements(
 					EC.String("foo", "bar"),
 					EC.SubDocumentFromElements("fooer",
 						EC.SubDocumentFromElements("barer", EC.Int32("ok", 1)),

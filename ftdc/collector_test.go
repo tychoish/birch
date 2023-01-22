@@ -106,10 +106,10 @@ func TestCollectorInterface(t *testing.T) {
 						testutil.RandFlatDocument(5),
 					},
 					"DecendingHandIntegers": {
-						birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5)),
-						birch.NewDocument(birch.EC.Int64("one", 89), birch.EC.Int64("two", 4)),
-						birch.NewDocument(birch.EC.Int64("one", 99), birch.EC.Int64("two", 3)),
-						birch.NewDocument(birch.EC.Int64("one", 101), birch.EC.Int64("two", 2)),
+						birch.DC.Elements(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5)),
+						birch.DC.Elements(birch.EC.Int64("one", 89), birch.EC.Int64("two", 4)),
+						birch.DC.Elements(birch.EC.Int64("one", 99), birch.EC.Int64("two", 3)),
+						birch.DC.Elements(birch.EC.Int64("one", 101), birch.EC.Int64("two", 2)),
 					},
 				} {
 					t.Run(name, func(t *testing.T) {
@@ -190,7 +190,7 @@ func TestStreamingEncoding(t *testing.T) {
 					t.Run("SingleValues", func(t *testing.T) {
 						collector, buf := impl.factory()
 						for _, val := range test.dataset {
-							if err := collector.Add(birch.NewDocument(birch.EC.Int64("foo", val))); err != nil {
+							if err := collector.Add(birch.DC.Elements(birch.EC.Int64("foo", val))); err != nil {
 								t.Error(err)
 							}
 						}
@@ -229,7 +229,7 @@ func TestStreamingEncoding(t *testing.T) {
 						docs := []*birch.Document{}
 
 						for _, val := range test.dataset {
-							doc := birch.NewDocument(
+							doc := birch.DC.Elements(
 								birch.EC.Int64("foo", val),
 								birch.EC.Int64("dub", 2*val),
 								birch.EC.Int64("dup", val),
@@ -281,13 +281,13 @@ func TestStreamingEncoding(t *testing.T) {
 						for idx, val := range test.dataset {
 							var doc *birch.Document
 							if len(test.dataset) >= 3 && (idx == 2 || idx == 3) {
-								doc = birch.NewDocument(
+								doc = birch.DC.Elements(
 									birch.EC.Int64("foo", val),
 									birch.EC.Int64("mag", 10*val),
 									birch.EC.Int64("neg", -1*val),
 								)
 							} else {
-								doc = birch.NewDocument(
+								doc = birch.DC.Elements(
 									birch.EC.Int64("foo", val),
 									birch.EC.Int64("dub", 2*val),
 									birch.EC.Int64("dup", val),
@@ -339,7 +339,7 @@ func TestStreamingEncoding(t *testing.T) {
 						for idx, val := range test.dataset {
 							var doc *birch.Document
 							if len(test.dataset) >= 5 && (idx == 2 || idx == 3) {
-								doc = birch.NewDocument(
+								doc = birch.DC.Elements(
 									birch.EC.Int64("foo", val),
 									birch.EC.Int64("dub", 2*val),
 									birch.EC.Int64("dup", val),
@@ -347,7 +347,7 @@ func TestStreamingEncoding(t *testing.T) {
 									birch.EC.Int64("mag", 10*val),
 								)
 							} else {
-								doc = birch.NewDocument(
+								doc = birch.DC.Elements(
 									birch.EC.Int64("foo", val),
 									birch.EC.Int64("mag", 10*val),
 									birch.EC.Int64("neg", -1*val),
@@ -422,7 +422,7 @@ func TestFixedEncoding(t *testing.T) {
 					t.Run("SingleValues", func(t *testing.T) {
 						collector := impl.factory()
 						for _, val := range test.dataset {
-							if err := collector.Add(birch.NewDocument(birch.EC.Int64("foo", val))); err != nil {
+							if err := collector.Add(birch.DC.Elements(birch.EC.Int64("foo", val))); err != nil {
 								t.Error(err)
 							}
 						}
@@ -461,7 +461,7 @@ func TestFixedEncoding(t *testing.T) {
 						docs := []*birch.Document{}
 
 						for _, val := range test.dataset {
-							doc := birch.NewDocument(
+							doc := birch.DC.Elements(
 								birch.EC.Int64("foo", val),
 								birch.EC.Int64("dub", 2*val),
 								birch.EC.Int64("dup", val),
@@ -508,19 +508,19 @@ func TestFixedEncoding(t *testing.T) {
 			}
 			t.Run("SizeMismatch", func(t *testing.T) {
 				collector := impl.factory()
-				if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err != nil {
+				if err := collector.Add(birch.DC.Elements(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err != nil {
 					t.Error(err)
 				}
-				if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err != nil {
+				if err := collector.Add(birch.DC.Elements(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err != nil {
 					t.Error(err)
 				}
 
 				if strings.Contains(impl.name, "Dynamic") {
-					if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43))); err != nil {
+					if err := collector.Add(birch.DC.Elements(birch.EC.Int64("one", 43))); err != nil {
 						t.Error(err)
 					}
 				} else {
-					if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43))); err == nil {
+					if err := collector.Add(birch.DC.Elements(birch.EC.Int64("one", 43))); err == nil {
 						t.Error("error should be nil")
 					}
 				}
@@ -541,13 +541,13 @@ func TestCollectorSizeCap(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			collector := test.factory()
-			if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err != nil {
+			if err := collector.Add(birch.DC.Elements(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err != nil {
 				t.Error(err)
 			}
-			if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err != nil {
+			if err := collector.Add(birch.DC.Elements(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err != nil {
 				t.Error(err)
 			}
-			if err := collector.Add(birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err == nil {
+			if err := collector.Add(birch.DC.Elements(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5))); err == nil {
 				t.Error("error should be nil")
 			}
 		})
@@ -567,7 +567,7 @@ func TestWriter(t *testing.T) {
 	})
 	t.Run("RealDocument", func(t *testing.T) {
 		collector := NewWriterCollector(2, &noopWriter{})
-		doc, err := birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5)).MarshalBSON()
+		doc, err := birch.DC.Elements(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5)).MarshalBSON()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -587,7 +587,7 @@ func TestWriter(t *testing.T) {
 	})
 	t.Run("CloseError", func(t *testing.T) {
 		collector := NewWriterCollector(2, &errWriter{})
-		doc, err := birch.NewDocument(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5)).MarshalBSON()
+		doc, err := birch.DC.Elements(birch.EC.Int64("one", 43), birch.EC.Int64("two", 5)).MarshalBSON()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -660,7 +660,7 @@ func TestTimestampHandling(t *testing.T) {
 			t.Run("TimeValue", func(t *testing.T) {
 				collector := NewBaseCollector(100)
 				for _, ts := range test.Values {
-					if err := collector.Add(birch.NewDocument(birch.EC.Time("ts", ts))); err != nil {
+					if err := collector.Add(birch.DC.Elements(birch.EC.Time("ts", ts))); err != nil {
 						t.Fatal(err)
 					}
 				}
@@ -727,7 +727,7 @@ func TestTimestampHandling(t *testing.T) {
 			t.Run("UnixSecond", func(t *testing.T) {
 				collector := NewBaseCollector(100)
 				for _, ts := range test.Values {
-					if err := collector.Add(birch.NewDocument(birch.EC.Int64("ts", ts.Unix()))); err != nil {
+					if err := collector.Add(birch.DC.Elements(birch.EC.Int64("ts", ts.Unix()))); err != nil {
 						t.Fatal(err)
 					}
 				}
@@ -757,7 +757,7 @@ func TestTimestampHandling(t *testing.T) {
 			t.Run("UnixNano", func(t *testing.T) {
 				collector := NewBaseCollector(100)
 				for _, ts := range test.Values {
-					if err := collector.Add(birch.NewDocument(birch.EC.Int64("ts", ts.UnixNano()))); err != nil {
+					if err := collector.Add(birch.DC.Elements(birch.EC.Int64("ts", ts.UnixNano()))); err != nil {
 						t.Fatal(err)
 					}
 				}

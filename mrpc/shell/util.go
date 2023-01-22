@@ -65,7 +65,7 @@ func RequestToMessage(t mongowire.OpType, doc *birch.Document) (mongowire.Messag
 	// <namespace.$cmd  format is required to indicate that the OP_QUERY should
 	// be interpreted as an OP_COMMAND.
 	const namespace = "mrpc.$cmd"
-	return mongowire.NewQuery(namespace, 0, 0, 1, doc, birch.NewDocument()), nil
+	return mongowire.NewQuery(namespace, 0, 0, 1, doc, birch.DC.Make(0)), nil
 }
 
 // RequestMessageToDocument converts a wire protocol request message into a

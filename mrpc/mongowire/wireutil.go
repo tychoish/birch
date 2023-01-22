@@ -66,6 +66,6 @@ func getDocSize(doc *birch.Document) int {
 }
 
 func writeDocAt(doc *birch.Document, buf []byte, loc int) int {
-	size, _ := doc.WriteDocument(uint(loc), buf)
+	size, _ := doc.WriteToSlice(uint(loc), buf)
 	return int(size)
 }

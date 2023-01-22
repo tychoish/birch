@@ -31,7 +31,7 @@ func NewArray(values ...*Value) *Array {
 		elems = append(elems, &Element{value: v})
 	}
 
-	return &Array{doc: NewDocument(elems...)}
+	return &Array{doc: DC.Elements(elems...)}
 }
 
 // ArrayFromDocument creates an array from a *Document. The returned array

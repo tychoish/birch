@@ -102,7 +102,7 @@ func TestConstructor(t *testing.T) {
 				// key
 				0x66, 0x6f, 0x6f, 0x0,
 			}
-			d := NewDocument(EC.String("bar", "baz"))
+			d := DC.Elements(EC.String("bar", "baz"))
 
 			expected := &Element{&Value{start: 0, offset: 5, data: buf, d: d}}
 			actual := EC.SubDocument("foo", d)
@@ -118,7 +118,7 @@ func TestConstructor(t *testing.T) {
 				0x66, 0x6f, 0x6f, 0x0,
 			}
 			e := EC.String("bar", "baz")
-			d := NewDocument(e)
+			d := DC.Elements(e)
 
 			expected := &Element{&Value{start: 0, offset: 5, data: buf, d: d}}
 			actual := EC.SubDocumentFromElements("foo", e)
@@ -411,7 +411,7 @@ func TestConstructor(t *testing.T) {
 				// value - code
 				0x76, 0x61, 0x72, 0x20, 0x62, 0x61, 0x72, 0x20, 0x3d, 0x20, 0x78, 0x3b, 0x0,
 			}
-			scope := NewDocument(EC.Null("x"))
+			scope := DC.Elements(EC.Null("x"))
 
 			expected := &Element{&Value{start: 0, offset: 5, data: buf, d: scope}}
 			actual := EC.CodeWithScope("foo", "var bar = x;", scope)
@@ -557,7 +557,7 @@ func TestConstructor(t *testing.T) {
 				// key
 				0x0,
 			}
-			d := NewDocument(EC.String("bar", "baz"))
+			d := DC.Elements(EC.String("bar", "baz"))
 
 			expected := &Value{start: 0, offset: 2, data: buf, d: d}
 			actual := VC.Document(d)
@@ -573,7 +573,7 @@ func TestConstructor(t *testing.T) {
 				0x0,
 			}
 			e := EC.String("bar", "baz")
-			d := NewDocument(e)
+			d := DC.Elements(e)
 
 			expected := &Value{start: 0, offset: 2, data: buf, d: d}
 			actual := VC.DocumentFromElements(e)
@@ -850,7 +850,7 @@ func TestConstructor(t *testing.T) {
 				// value - code
 				0x76, 0x61, 0x72, 0x20, 0x62, 0x61, 0x72, 0x20, 0x3d, 0x20, 0x78, 0x3b, 0x0,
 			}
-			scope := NewDocument(EC.Null("x"))
+			scope := DC.Elements(EC.Null("x"))
 
 			expected := &Value{start: 0, offset: 2, data: buf, d: scope}
 			actual := VC.CodeWithScope("var bar = x;", scope)
@@ -1220,7 +1220,7 @@ func TestDocumentConstructor(t *testing.T) {
 				Size: 2,
 				Type: bsontype.EmbeddedDocument,
 				Input: map[string]Marshaler{
-					"one": NewDocument(),
+					"one": DC.Elements(),
 					"two": NewArray(),
 				},
 			},
@@ -1229,7 +1229,7 @@ func TestDocumentConstructor(t *testing.T) {
 				Size: 2,
 				Type: bsontype.EmbeddedDocument,
 				Input: map[string][]Marshaler{
-					"one": {NewDocument(), NewDocument()},
+					"one": {DC.Elements(), DC.Elements()},
 					"two": {NewArray()},
 				},
 			},

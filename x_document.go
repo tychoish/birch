@@ -1,7 +1,6 @@
 package birch
 
 import (
-	"context"
 	"sort"
 
 	"github.com/tychoish/birch/bsonerr"
@@ -18,14 +17,12 @@ func (d *Document) MarshalDocument() (*Document, error) { return d, nil }
 // document that has multiple identical keys.
 func (d *Document) UnmarshalDocument(in *Document) error {
 	iter := in.Iterator()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
-	for iter.Next(ctx) {
+	for iter.Next(iterCtx) {
 		d.Append(iter.Value())
 	}
 
-	return nil
+	return iter.Close(iterCtx)
 }
 
 // ExportMap converts the values of the document to a map of strings
@@ -35,10 +32,7 @@ func (d *Document) ExportMap() map[string]interface{} {
 
 	iter := d.Iterator()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
+	for iter.Next(iterCtx) {
 		elem := iter.Value()
 		out[elem.Key()] = elem.Value().Interface()
 	}
@@ -119,10 +113,8 @@ func (d *Document) Sorted() *Document {
 // is nil.
 func (d *Document) LookupElement(key string) *Element {
 	iter := d.Iterator()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
-	for iter.Next(ctx) {
+	for iter.Next(iterCtx) {
 		elem := iter.Value()
 		elemKey, ok := elem.KeyOK()
 

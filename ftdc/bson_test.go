@@ -106,8 +106,8 @@ func TestReadDocument(t *testing.T) {
 			len:         0,
 		},
 		{
-			name: "NewDocument",
-			in:   birch.NewDocument(),
+			name: "DC.Elements",
+			in:   birch.DC.Elements(),
 			len:  0,
 		},
 		{
@@ -123,7 +123,7 @@ func TestReadDocument(t *testing.T) {
 		},
 		{
 			name: "DocumentOneValue",
-			in:   birch.NewDocument(birch.EC.ObjectID("_id", types.NewObjectID())),
+			in:   birch.DC.Elements(birch.EC.ObjectID("_id", types.NewObjectID())),
 			len:  1,
 		},
 		{
@@ -157,7 +157,7 @@ func TestReadDocument(t *testing.T) {
 		{
 			name: "Reader",
 			in: func() birch.Reader {
-				out, err := birch.NewDocument(
+				out, err := birch.DC.Elements(
 					birch.EC.String("foo", "bar"),
 					birch.EC.Int64("baz", 33)).MarshalBSON()
 				if err != nil {
@@ -175,13 +175,13 @@ func TestReadDocument(t *testing.T) {
 		{
 			name: "MarshalerEmtpy",
 			in: &marshaler{
-				birch.NewDocument(),
+				birch.DC.Elements(),
 			},
 		},
 		{
 			name: "MarshalerValue",
 			in: &marshaler{
-				birch.NewDocument(birch.EC.String("foo", "bat")),
+				birch.DC.Elements(birch.EC.String("foo", "bat")),
 			},
 			len: 1,
 		},
@@ -715,7 +715,7 @@ func TestDocumentExtraction(t *testing.T) {
 	}{
 		{
 			Name:              "EmptyDocument",
-			Document:          birch.NewDocument(),
+			Document:          birch.DC.Elements(),
 			NumEncodedValues:  0,
 			FirstEncodedValue: 0,
 		},
@@ -727,27 +727,27 @@ func TestDocumentExtraction(t *testing.T) {
 		},
 		{
 			Name:              "SingleMetricValue",
-			Document:          birch.NewDocument(birch.EC.Int64("foo", 42)),
+			Document:          birch.DC.Elements(birch.EC.Int64("foo", 42)),
 			NumEncodedValues:  1,
 			FirstEncodedValue: 42,
 			Types:             []bsontype.Type{bsontype.Int64},
 		},
 		{
 			Name:              "MultiMetricValue",
-			Document:          birch.NewDocument(birch.EC.Int64("foo", 7), birch.EC.Int32("foo", 72)),
+			Document:          birch.DC.Elements(birch.EC.Int64("foo", 7), birch.EC.Int32("foo", 72)),
 			NumEncodedValues:  2,
 			FirstEncodedValue: 7,
 			Types:             []bsontype.Type{bsontype.Int64, bsontype.Int32},
 		},
 		{
 			Name:              "MultiNonMetricValue",
-			Document:          birch.NewDocument(birch.EC.String("foo", "var"), birch.EC.String("bar", "bar")),
+			Document:          birch.DC.Elements(birch.EC.String("foo", "var"), birch.EC.String("bar", "bar")),
 			NumEncodedValues:  0,
 			FirstEncodedValue: 0,
 		},
 		{
 			Name:              "MixedArrayFirstMetrics",
-			Document:          birch.NewDocument(birch.EC.Boolean("zp", true), birch.EC.String("foo", "var"), birch.EC.Int64("bar", 7)),
+			Document:          birch.DC.Elements(birch.EC.Boolean("zp", true), birch.EC.String("foo", "var"), birch.EC.Int64("bar", 7)),
 			NumEncodedValues:  2,
 			FirstEncodedValue: 1,
 			Types:             []bsontype.Type{bsontype.Boolean, bsontype.Int64},
@@ -1112,8 +1112,8 @@ func TestMetricsToElement(t *testing.T) {
 		{
 
 			name:       "EmptyDocument",
-			ref:        birch.EC.SubDocument("foo", birch.NewDocument()),
-			expected:   birch.EC.SubDocument("foo", birch.NewDocument()),
+			ref:        birch.EC.SubDocument("foo", birch.DC.Elements()),
+			expected:   birch.EC.SubDocument("foo", birch.DC.Elements()),
 			isDocument: true,
 		},
 		{

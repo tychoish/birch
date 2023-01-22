@@ -19,6 +19,8 @@ import (
 	"github.com/tychoish/fun"
 )
 
+var iterCtx = context.Background()
+
 // Document is a mutable ordered map that compactly represents a BSON document.
 type Document struct {
 	// The default behavior or Append, Prepend, and Replace is to panic on the
@@ -27,10 +29,6 @@ type Document struct {
 	IgnoreNilInsert bool
 	elems           []*Element
 }
-
-// NewDocument creates an empty Document. The numberOfElems parameter will
-// preallocate the underlying storage which can prevent extra allocations.
-func NewDocument(elems ...*Element) *Document { return DC.Elements(elems...) }
 
 // ReadDocument will create a Document using the provided slice of bytes. If the
 // slice of bytes is not a valid BSON document, this method will return an error.
@@ -69,60 +67,6 @@ func (d *Document) Len() int {
 	return len(d.elems)
 }
 
-// Keys returns all of the element keys for this document. If recursive is true,
-// this method will also return the keys of any subdocuments or arrays.
-func (d *Document) Keys(recursive bool) (Keys, error) {
-	if d == nil {
-		return nil, bsonerr.NilDocument
-	}
-
-	return d.recursiveKeys(recursive)
-}
-
-// recursiveKeys handles the recursion case for retrieving all of a Document's
-// keys.
-func (d *Document) recursiveKeys(recursive bool, prefix ...string) (Keys, error) {
-	if d == nil {
-		return nil, bsonerr.NilDocument
-	}
-
-	ks := make(Keys, 0, len(d.elems))
-
-	for _, elem := range d.elems {
-		key := elem.Key()
-
-		ks = append(ks, Key{Prefix: prefix, Name: key})
-
-		if !recursive {
-			continue
-		}
-		// TODO(skriptble): Should we support getting the keys of a code with
-		// scope document?
-		switch elem.value.Type() {
-		case '\x03':
-			subprefix := append(prefix, key)
-			subkeys, err := elem.value.MutableDocument().recursiveKeys(recursive, subprefix...)
-
-			if err != nil {
-				return nil, err
-			}
-
-			ks = append(ks, subkeys...)
-		case '\x04':
-			subprefix := append(prefix, key)
-			subkeys, err := elem.value.MutableArray().doc.recursiveKeys(recursive, subprefix...)
-
-			if err != nil {
-				return nil, err
-			}
-
-			ks = append(ks, subkeys...)
-		}
-	}
-
-	return ks, nil
-}
-
 // Append adds each element to the end of the document, in order. If a nil element is passed
 // as a parameter this method will panic. To change this behavior to silently
 // ignore a nil element, set IgnoreNilInsert to true on the Document.
@@ -145,18 +89,6 @@ func (d *Document) Append(elems ...*Element) *Document {
 		}
 
 		d.elems = append(d.elems, elem)
-		// i := sort.Search(len(d.index), func(i int) bool {
-		// 	return bytes.Compare(
-		// 		d.keyFromIndex(i), elem.value.data[elem.value.start+1:elem.value.offset]) >= 0
-		// })
-
-		// if i < len(d.index) {
-		// 	d.index = append(d.index, 0)
-		// 	copy(d.index[i+1:], d.index[i:])
-		// 	d.index[i] = uint32(len(d.elems) - 1)
-		// } else {
-		// 	d.index = append(d.index, uint32(len(d.elems)-1))
-		// }
 	}
 
 	return d
@@ -308,18 +240,6 @@ func (d *Document) Iterator() fun.Iterator[*Element] {
 // document with duplicate keys.
 func (d *Document) Extend(d2 *Document) *Document { d.Append(d2.elems...); return d }
 
-// ExtendReader merges the contents of a document in the form of a
-// reader (byte slice) into the document. May result in a document
-// with duplicate keys.
-func (d *Document) ExtendReader(r Reader) *Document { d.Append(DC.Reader(r).elems...); return d }
-
-// ExtendInterface constructs a document using the interface
-// constructor method
-func (d *Document) ExtendInterface(in interface{}) *Document {
-	d.Append(DC.Interface(in).elems...)
-	return d
-}
-
 // Reset clears a document so it can be reused. This method clears references
 // to the underlying pointers to elements so they can be garbage collected.
 func (d *Document) Reset() {
@@ -334,7 +254,7 @@ func (d *Document) Reset() {
 	d.elems = d.elems[:0]
 }
 
-// Lookup iterates through the keys in the document, returning the
+// Search iterates through the keys in the document, returning the
 // element with the matching key, and nil othe
 func (d *Document) Search(keys ...string) (*Element, error) {
 	if d == nil || len(keys) == 0 {
@@ -366,9 +286,7 @@ func (d *Document) findElemForKey(key string) *Element {
 	for idx := range d.elems {
 		if d.elems[idx].Key() == key {
 			return d.elems[idx]
-
 		}
-
 	}
 	return nil
 }
@@ -413,9 +331,9 @@ func (d *Document) WriteTo(w io.Writer) (int64, error) {
 	return int64(n), err
 }
 
-// WriteDocument will serialize this document to the provided writer beginning
-// at the provided start position.
-func (d *Document) WriteDocument(start uint, writer interface{}) (int64, error) {
+// WriteToSlice will serialize this document to the byte slice,
+// starting at the specified index of the buffer.
+func (d *Document) WriteToSlice(start uint, output []byte) (int64, error) {
 	if d == nil {
 		return 0, bsonerr.NilDocument
 	}
@@ -427,16 +345,11 @@ func (d *Document) WriteDocument(start uint, writer interface{}) (int64, error) 
 		return total, err
 	}
 
-	switch w := writer.(type) {
-	case []byte:
-		n, err := d.writeByteSlice(start, size, w)
-		total += n
+	n, err := d.writeByteSlice(start, size, output)
+	total += n
 
-		if err != nil {
-			return total, err
-		}
-	default:
-		return 0, bsonerr.InvalidWriter
+	if err != nil {
+		return total, err
 	}
 
 	return total, nil
@@ -513,30 +426,6 @@ func (d *Document) UnmarshalBSON(b []byte) error {
 		return bsonerr.NilDocument
 	}
 
-	// Read byte array
-	//   - Create an Element for each element found
-	//   - Update the index with the key of the element
-	//   TODO: Maybe do 2 pass and alloc the elems and index once?
-	//		   We should benchmark 2 pass vs multiple allocs for growing the slice
-	// _, err := Reader(b).readElements(func(elem *Element) error {
-	// 	d.elems = append(d.elems, elem)
-	// 	i := sort.Search(len(d.index), func(i int) bool {
-	// 		return bytes.Compare(
-	// 			d.keyFromIndex(i), elem.value.data[elem.value.start+1:elem.value.offset]) >= 0
-	// 	})
-	// 	if i < len(d.index) {
-	// 		d.index = append(d.index, 0)
-	// 		copy(d.index[i+1:], d.index[i:])
-	// 		d.index[i] = uint32(len(d.elems) - 1)
-	// 	} else {
-	// 		d.index = append(d.index, uint32(len(d.elems)-1))
-	// 	}
-	// 	return nil
-	// })
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	iter, err := Reader(b).Iterator()
 	if err != nil {
 		return err
@@ -544,12 +433,11 @@ func (d *Document) UnmarshalBSON(b []byte) error {
 
 	d.elems = make([]*Element, 0, 256)
 
-	for iter.Next(ctx) {
+	for iter.Next(iterCtx) {
 		d.elems = append(d.elems, iter.Value())
-		// d.Append(iter.Value())
 	}
 
-	return iter.Close(ctx)
+	return iter.Close(iterCtx)
 }
 
 // ReadFrom will read one BSON document from the given io.Reader.

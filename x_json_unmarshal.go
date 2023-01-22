@@ -26,11 +26,8 @@ func (d *Document) UnmarshalJSON(in []byte) error {
 
 	iter := jdoc.Iterator()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
-		elem, err := convertJSONElements(ctx, iter.Value())
+	for iter.Next(iterCtx) {
+		elem, err := convertJSONElements(iterCtx, iter.Value())
 		if err != nil {
 			return err
 		}
@@ -49,11 +46,8 @@ func (a *Array) UnmarshalJSON(in []byte) error {
 
 	iter := ja.Iterator()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
-		elem, err := convertJSONElements(ctx, jsonx.EC.Value("", iter.Value()))
+	for iter.Next(iterCtx) {
+		elem, err := convertJSONElements(iterCtx, jsonx.EC.Value("", iter.Value()))
 		if err != nil {
 			return err
 		}
@@ -70,10 +64,7 @@ func (v *Value) UnmarshalJSON(in []byte) error {
 		return err
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	elem, err := convertJSONElements(ctx, jsonx.EC.Value("", va))
+	elem, err := convertJSONElements(iterCtx, jsonx.EC.Value("", va))
 
 	if err != nil {
 		return err
@@ -89,11 +80,8 @@ func (DocumentConstructor) JSONXErr(jd *jsonx.Document) (*Document, error) {
 
 	iter := jd.Iterator()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
-		elem, err := convertJSONElements(ctx, iter.Value())
+	for iter.Next(iterCtx) {
+		elem, err := convertJSONElements(iterCtx, iter.Value())
 		if err != nil {
 			return nil, err
 		}
