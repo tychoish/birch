@@ -10,7 +10,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"strings"
 
 	"errors"
 
@@ -184,14 +183,6 @@ func (r Reader) Iterator() (fun.Iterator[*Element], error) {
 	return newReaderIterator(r)
 }
 
-// Keys returns the keys for this document. If recursive is true then this
-// method will also return the keys for subdocuments and arrays.
-//
-// The keys will be return in order.
-func (r Reader) Keys(recursive bool) (Keys, error) {
-	return r.recursiveKeys(recursive)
-}
-
 // String implements the fmt.Stringer interface.
 func (r Reader) String() string {
 	var buf bytes.Buffer
@@ -223,41 +214,6 @@ func (r Reader) MarshalBSON() ([]byte, error) {
 	}
 
 	return r, nil
-}
-
-// recursiveKeys implements the logic for the Keys method. This is a separate
-// function to facilitate recursive calls.
-func (r Reader) recursiveKeys(recursive bool, prefix ...string) (Keys, error) {
-	ks := make(Keys, 0)
-	_, err := r.readElements(func(elem *Element) error {
-		key := elem.Key()
-		ks = append(ks, Key{Prefix: prefix, Name: key})
-		if recursive {
-			switch elem.value.Type() {
-			case '\x03':
-				recursivePrefix := append(prefix, key)
-				recurKeys, err := elem.value.ReaderDocument().recursiveKeys(recursive, recursivePrefix...)
-				if err != nil {
-					return err
-				}
-				ks = append(ks, recurKeys...)
-			case '\x04':
-				recursivePrefix := append(prefix, key)
-				recurKeys, err := elem.value.ReaderArray().recursiveKeys(recursive, recursivePrefix...)
-				if err != nil {
-					return err
-				}
-				ks = append(ks, recurKeys...)
-			}
-		}
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return ks, nil
 }
 
 // readElements is an internal method used to traverse the document. It will
@@ -332,26 +288,6 @@ func (r Reader) readElements(f func(e *Element) error) (uint32, error) {
 	// The size is always 1 larger than the position, since position is 0
 	// indexed.
 	return pos + 1, nil
-}
-
-// Keys represents the keys of a BSON document.
-type Keys []Key
-
-// Key represents an individual key of a BSON document. The Prefix property is
-// used to represent the depth of this key.
-type Key struct {
-	Prefix []string
-	Name   string
-}
-
-// String implements the fmt.Stringer interface.
-func (k Key) String() string {
-	str := strings.Join(k.Prefix, ".")
-	if str != "" {
-		return fmt.Sprint(str, ".", k.Name)
-	}
-
-	return k.Name
 }
 
 // readi32 is a helper function for reading an int32 from slice of bytes.

@@ -77,14 +77,9 @@ func (a *Array) Validate() (uint32, error) {
 	return size, nil
 }
 
-// Lookup returns the value in the array at the given index or an error if it cannot be found.
-func (a *Array) Lookup(index uint) *Value {
-	return a.doc.ElementAt(index).value
-}
-
 // LookupErr returns the value at the specified index, returning an
 // OutOfBounds error if that element doesn't exist.
-func (a *Array) LookupErr(index uint) (*Value, error) {
+func (a *Array) Lookup(index uint) (*Value, error) {
 	v, ok := a.doc.ElementAtOK(index)
 	if !ok {
 		return nil, bsonerr.OutOfBounds
@@ -93,26 +88,15 @@ func (a *Array) LookupErr(index uint) (*Value, error) {
 	return v.value, nil
 }
 
-// LookupElementErr returns the element at the specified index,
+// LookupElement returns the element at the specified index,
 // returning an OutOfBounds error if that element doesn't exist.
-func (a *Array) LookupElementErr(index uint) (*Element, error) {
+func (a *Array) LookupElemdent(index uint) (*Element, error) {
 	v, ok := a.doc.ElementAtOK(index)
 	if !ok {
 		return nil, bsonerr.OutOfBounds
 	}
 
 	return v, nil
-}
-
-// LookupElement returns the element at the specified index, panicing
-// if that index does not exist
-func (a *Array) LookupElement(index uint) *Element {
-	v, ok := a.doc.ElementAtOK(index)
-	if !ok {
-		panic(bsonerr.OutOfBounds)
-	}
-
-	return v
 }
 
 func (a *Array) findElementForStrKey(key ...string) *Element {
@@ -124,8 +108,8 @@ func (a *Array) findElementForStrKey(key ...string) *Element {
 	if err != nil {
 		return nil
 	}
-	val := a.Lookup(uint(idx))
-	if val == nil {
+	val, err := a.Lookup(uint(idx))
+	if err != nil || val == nil {
 		return nil
 	}
 
@@ -146,7 +130,7 @@ func (a *Array) findElementForStrKey(key ...string) *Element {
 }
 
 func (a *Array) lookupTraverse(index uint, keys ...string) (*Value, error) {
-	value, err := a.LookupErr(index)
+	value, err := a.Lookup(index)
 	if err != nil {
 		return nil, err
 	}
@@ -184,28 +168,6 @@ func (a *Array) lookupTraverse(index uint, keys ...string) (*Value, error) {
 func (a *Array) Append(values ...*Value) *Array {
 	a.doc.Append(elemsFromValues(values)...)
 
-	return a
-}
-
-// AppendInterfaceErr uses the ElementConstructor's InterfaceErr to
-// convert an arbitrary type to a BSON value (typically via
-// typecasting, but is compatible with the Marshaler interface).
-func (a *Array) AppendInterfaceErr(elem interface{}) error {
-	e, err := EC.InterfaceErr("", elem)
-	if err != nil {
-		return err
-	}
-
-	a.doc.Append(e)
-
-	return nil
-}
-
-// AppendInterface uses the ElementConstructor's Interface to
-// convert an arbitrary type to a BSON value (typically via
-// typecasting, but is compatible with the Marshaler interface).
-func (a *Array) AppendInterface(elem interface{}) *Array {
-	a.doc.Append(EC.Interface("", elem))
 	return a
 }
 

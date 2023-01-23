@@ -140,7 +140,7 @@ func (itr *readerIterator) Close(ctx context.Context) error { return itr.err }
 type arrayIterator struct {
 	array *Array
 	pos   uint
-	elem  *Element
+	elem  *Value
 	err   error
 }
 
@@ -155,7 +155,7 @@ func (iter *arrayIterator) Next(ctx context.Context) bool {
 		return false
 	}
 
-	elem, err := iter.array.LookupElementErr(iter.pos)
+	val, err := iter.array.Lookup(iter.pos)
 
 	if err != nil {
 		// error if out of bounds
@@ -163,13 +163,13 @@ func (iter *arrayIterator) Next(ctx context.Context) bool {
 		return false
 	}
 
-	_, err = elem.value.validate(false)
+	_, err = val.validate(false)
 	if err != nil {
 		iter.err = err
 		return false
 	}
 
-	iter.elem = elem
+	iter.elem = val
 	iter.pos++
 
 	return true
@@ -177,5 +177,5 @@ func (iter *arrayIterator) Next(ctx context.Context) bool {
 
 // Value returns the current value of the arrayIterator. The pointer returned will _always_ be the same for a given
 // arrayIterator. The returned value will be nil if this function is called before the first successful call to Next().
-func (iter *arrayIterator) Value() *Value                 { return iter.elem.value }
+func (iter *arrayIterator) Value() *Value                 { return iter.elem }
 func (iter *arrayIterator) Close(_ context.Context) error { return iter.err }

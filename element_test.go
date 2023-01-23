@@ -1650,13 +1650,6 @@ func TestElement(t *testing.T) {
 			key   string
 			fault error
 		}{
-			{"Nil Value", &Element{nil}, "", bsonerr.UninitializedElement},
-			{"Empty Element value",
-				&Element{&Value{start: 0, offset: 0, data: nil}}, "", bsonerr.UninitializedElement,
-			},
-			{"Empty Element data",
-				&Element{&Value{start: 0, offset: 2, data: nil}}, "", bsonerr.UninitializedElement,
-			},
 			{"Success",
 				&Element{&Value{
 					start: 0, offset: 5,

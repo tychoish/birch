@@ -60,13 +60,12 @@ func (opts CollectJSONOptions) getSource(ctx context.Context) (<-chan *birch.Doc
 			stream := bufio.NewScanner(opts.InputSource)
 
 			for stream.Scan() {
-				jd, err := jsonx.DC.BytesErr(stream.Bytes())
+				jd, err := jsonx.DCE.Bytes(stream.Bytes())
 				if err != nil {
 					errs <- err
 					return
 				}
-
-				doc, err := birch.DC.JSONXErr(jd)
+				doc, err := birch.DCE.JSONX(jd)
 				if err != nil {
 					errs <- err
 					return
@@ -92,13 +91,13 @@ func (opts CollectJSONOptions) getSource(ctx context.Context) (<-chan *birch.Doc
 
 			stream := bufio.NewScanner(f)
 			for stream.Scan() {
-				jd, err := jsonx.DC.BytesErr(stream.Bytes())
+				jd, err := jsonx.DCE.Bytes(stream.Bytes())
 				if err != nil {
 					errs <- err
 					return
 				}
 
-				doc, err := birch.DC.JSONXErr(jd)
+				doc, err := birch.DCE.JSONX(jd)
 				if err != nil {
 					errs <- err
 					return
@@ -120,12 +119,12 @@ func (opts CollectJSONOptions) getSource(ctx context.Context) (<-chan *birch.Doc
 			defer close(errs)
 
 			if err := follow(ctx, opts.FileName, func(in string) error {
-				jd, err := jsonx.DC.BytesErr([]byte(in))
+				jd, err := jsonx.DCE.Bytes([]byte(in))
 				if err != nil {
 					return err
 				}
 
-				doc, err := birch.DC.JSONXErr(jd)
+				doc, err := birch.DCE.JSONX(jd)
 				if err != nil {
 					return err
 				}

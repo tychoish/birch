@@ -174,7 +174,7 @@ func (ElementConstructor) Interface(key string, value interface{}) *Element {
 	case *Element:
 		elem = t
 	case *Value:
-		elem, err = EC.ValueErr(key, t)
+		elem = EC.Value(key, t)
 	case *jsonx.Document:
 		elem = EC.SubDocument(key, DC.JSONX(t))
 	case *Document:
@@ -184,7 +184,7 @@ func (ElementConstructor) Interface(key string, value interface{}) *Element {
 	case Reader:
 		var doc *Document
 
-		doc, err = DC.ReaderErr(t)
+		doc, err = DCE.Reader(t)
 		if err == nil {
 			elem = EC.SubDocument(key, doc)
 		}
@@ -244,7 +244,7 @@ func (ElementConstructor) InterfaceErr(key string, value interface{}) (*Element,
 	case *jsonx.Document, []*jsonx.Document, map[string]*jsonx.Document, map[string][]*jsonx.Document:
 		return EC.Interface(key, value), nil
 	case *Value:
-		return EC.ValueErr(key, t)
+		return EC.Value(key, t), nil
 	case DocumentMarshaler:
 		return EC.DocumentMarshalerErr(key, t)
 	case Marshaler:
@@ -649,17 +649,6 @@ func (ElementConstructor) MaxKey(key string) *Element {
 // Value constructs an element using the underlying value.
 func (ElementConstructor) Value(key string, value *Value) *Element {
 	return convertValueToElem(key, value)
-}
-
-// ValueErr constructs an element using the specified value, but
-// returns an error if the value is nil or otherwise invalid.
-func (ElementConstructor) ValueErr(key string, value *Value) (*Element, error) {
-	elem := EC.Value(key, value)
-	if elem == nil {
-		return nil, fmt.Errorf("could not convert '%s' value to an element", key)
-	}
-
-	return elem, nil
 }
 
 // Double creates a double element with the given value.

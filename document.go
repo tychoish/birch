@@ -44,10 +44,6 @@ func ReadDocument(b []byte) (*Document, error) {
 
 // Copy makes a shallow copy of this document.
 func (d *Document) Copy() *Document {
-	if d == nil {
-		return nil
-	}
-
 	doc := &Document{
 		IgnoreNilInsert: d.IgnoreNilInsert,
 		elems:           make([]*Element, len(d.elems), cap(d.elems)),
@@ -59,13 +55,7 @@ func (d *Document) Copy() *Document {
 }
 
 // Len returns the number of elements in the document.
-func (d *Document) Len() int {
-	if d == nil {
-		panic(bsonerr.NilDocument)
-	}
-
-	return len(d.elems)
-}
+func (d *Document) Len() int { return len(d.elems) }
 
 // Append adds each element to the end of the document, in order. If a nil element is passed
 // as a parameter this method will panic. To change this behavior to silently
@@ -74,17 +64,11 @@ func (d *Document) Len() int {
 // If a nil element is inserted and this method panics, it does not remove the
 // previously added elements.
 func (d *Document) Append(elems ...*Element) *Document {
-	if d == nil {
-		panic(bsonerr.NilDocument)
-	}
-
 	for _, elem := range elems {
 		if elem == nil {
 			if d.IgnoreNilInsert {
 				continue
 			}
-			// TODO(skriptble): Maybe Append and Prepend should return an error
-			// instead of panicking here.
 			panic(bsonerr.NilElement)
 		}
 
@@ -107,16 +91,13 @@ func (d *Document) AppendOmitEmpty(elems ...*Element) *Document {
 	return d
 }
 
-// Prepend adds each element to the beginning of the document, in order. If a nil element is passed
-// as a parameter this method will panic. To change this behavior to silently
-// ignore a nil element, set IgnoreNilInsert to true on the Document.
+// Prepend adds each element to the beginning of the document, in
+// order. If a nil element is passed as a parameter this method will
+// panic.
 //
 // If a nil element is inserted and this method panics, it does not remove the
 // previously added elements.
 func (d *Document) Prepend(elems ...*Element) *Document {
-	if d == nil {
-		panic(bsonerr.NilDocument)
-	}
 
 	// In order to insert the prepended elements in order we need to make space
 	// at the front of the elements slice.
@@ -186,10 +167,6 @@ func (d *Document) Set(elem *Element) *Document {
 // a no-op. The same is true if something along the depth tree does not exist
 // or is not a traversable type.
 func (d *Document) Delete(key string) *Element {
-	if d == nil {
-		panic(bsonerr.NilDocument)
-	}
-
 	for idx := range d.elems {
 		if d.elems[idx].Key() == key {
 			elem := d.elems[idx]
@@ -207,19 +184,11 @@ func (d *Document) Delete(key string) *Element {
 // TODO(skriptble): This method could be variadic and return the element at the
 // provided depth.
 func (d *Document) ElementAt(index uint) *Element {
-	if d == nil {
-		panic(bsonerr.NilDocument)
-	}
-
 	return d.elems[index]
 }
 
 // ElementAtOK is the same as ElementAt, but returns a boolean instead of panicking.
 func (d *Document) ElementAtOK(index uint) (*Element, bool) {
-	if d == nil {
-		return nil, false
-	}
-
 	if index >= uint(len(d.elems)) {
 		return nil, false
 	}
@@ -229,9 +198,6 @@ func (d *Document) ElementAtOK(index uint) (*Element, bool) {
 
 // Iterator creates an Iterator for this document and returns it.
 func (d *Document) Iterator() fun.Iterator[*Element] {
-	if d == nil {
-		panic(bsonerr.NilDocument)
-	}
 
 	return newIterator(d)
 }
@@ -243,10 +209,6 @@ func (d *Document) Extend(d2 *Document) *Document { d.Append(d2.elems...); retur
 // Reset clears a document so it can be reused. This method clears references
 // to the underlying pointers to elements so they can be garbage collected.
 func (d *Document) Reset() {
-	if d == nil {
-		panic(bsonerr.NilDocument)
-	}
-
 	for idx := range d.elems {
 		d.elems[idx] = nil
 	}
@@ -317,10 +279,6 @@ func (d *Document) Validate() (uint32, error) {
 // TODO(skriptble): We can optimize this by having creating implementations of
 // writeByteSlice that write directly to an io.Writer instead.
 func (d *Document) WriteTo(w io.Writer) (int64, error) {
-	if d == nil {
-		return 0, bsonerr.NilDocument
-	}
-
 	b, err := d.MarshalBSON()
 	if err != nil {
 		return 0, err
@@ -334,10 +292,6 @@ func (d *Document) WriteTo(w io.Writer) (int64, error) {
 // WriteToSlice will serialize this document to the byte slice,
 // starting at the specified index of the buffer.
 func (d *Document) WriteToSlice(start uint, output []byte) (int64, error) {
-	if d == nil {
-		return 0, bsonerr.NilDocument
-	}
-
 	var total int64
 
 	size, err := d.Validate()
@@ -358,10 +312,6 @@ func (d *Document) WriteToSlice(start uint, output []byte) (int64, error) {
 // writeByteSlice handles serializing this document to a slice of bytes starting
 // at the given start position.
 func (d *Document) writeByteSlice(start uint, size uint32, b []byte) (int64, error) {
-	if d == nil {
-		return 0, bsonerr.NilDocument
-	}
-
 	var total int64
 
 	pos := start
@@ -400,9 +350,6 @@ func (d *Document) writeByteSlice(start uint, size uint32, b []byte) (int64, err
 
 // MarshalBSON implements the Marshaler interface.
 func (d *Document) MarshalBSON() ([]byte, error) {
-	if d == nil {
-		return nil, bsonerr.NilDocument
-	}
 
 	size, err := d.Validate()
 
@@ -422,10 +369,6 @@ func (d *Document) MarshalBSON() ([]byte, error) {
 
 // UnmarshalBSON implements the Unmarshaler interface.
 func (d *Document) UnmarshalBSON(b []byte) error {
-	if d == nil {
-		return bsonerr.NilDocument
-	}
-
 	iter, err := Reader(b).Iterator()
 	if err != nil {
 		return err
@@ -442,9 +385,6 @@ func (d *Document) UnmarshalBSON(b []byte) error {
 
 // ReadFrom will read one BSON document from the given io.Reader.
 func (d *Document) ReadFrom(r io.Reader) (int64, error) {
-	if d == nil {
-		return 0, bsonerr.NilDocument
-	}
 
 	var total int64
 
@@ -471,9 +411,6 @@ func (d *Document) ReadFrom(r io.Reader) (int64, error) {
 
 // String implements the fmt.Stringer interface.
 func (d *Document) String() string {
-	if d == nil {
-		return "<nil>"
-	}
 
 	var buf bytes.Buffer
 

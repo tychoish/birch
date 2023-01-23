@@ -116,13 +116,8 @@ func (d *Document) LookupElement(key string) *Element {
 
 	for iter.Next(iterCtx) {
 		elem := iter.Value()
-		elemKey, ok := elem.KeyOK()
 
-		if !ok {
-			continue
-		}
-
-		if elemKey == key {
+		if elem.Key() == key {
 			return elem
 		}
 	}
@@ -132,8 +127,7 @@ func (d *Document) LookupElement(key string) *Element {
 
 // Lookup iterates through the elements in a document looking
 // for one with the correct key and returns the value for that key. It
-// is NOT recursive. When the element is not defined, the return value
-// is nil.
+// is NOT recursive. When the element is not present.
 func (d *Document) Lookup(key string) *Value {
 	elem := d.LookupElement(key)
 	if elem == nil {

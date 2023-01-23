@@ -6,22 +6,24 @@ import (
 )
 
 type DocumentConstructor struct{}
+type DocumentConstructorError struct{}
 
 var DC = DocumentConstructor{}
+var DCE = DocumentConstructorError{}
 
 func (DocumentConstructor) New() *Document            { return DC.Make(0) }
 func (DocumentConstructor) Make(n int) *Document      { return &Document{elems: make([]*Element, 0, n)} }
-func (DocumentConstructor) Bytes(in []byte) *Document { return docConstructorOrPanic(DC.BytesErr(in)) }
+func (DocumentConstructor) Bytes(in []byte) *Document { return docConstructorOrPanic(DCE.Bytes(in)) }
 
 func (DocumentConstructor) Reader(in io.Reader) *Document {
-	return docConstructorOrPanic(DC.ReaderErr(in))
+	return docConstructorOrPanic(DCE.Reader(in))
 }
 
 func (DocumentConstructor) Elements(elems ...*Element) *Document {
 	return DC.Make(len(elems)).Append(elems...)
 }
 
-func (DocumentConstructor) BytesErr(in []byte) (*Document, error) {
+func (DocumentConstructorError) Bytes(in []byte) (*Document, error) {
 	d := DC.New()
 
 	if err := d.UnmarshalJSON(in); err != nil {
@@ -31,13 +33,13 @@ func (DocumentConstructor) BytesErr(in []byte) (*Document, error) {
 	return d, nil
 }
 
-func (DocumentConstructor) ReaderErr(in io.Reader) (*Document, error) {
+func (DocumentConstructorError) Reader(in io.Reader) (*Document, error) {
 	buf, err := ioutil.ReadAll(in)
 	if err != nil {
 		return nil, err
 	}
 
-	return DC.BytesErr(buf)
+	return DCE.Bytes(buf)
 }
 
 type ArrayConstructor struct{}

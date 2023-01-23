@@ -9,6 +9,7 @@ import (
 
 	"github.com/tychoish/birch/jsonx"
 	"github.com/tychoish/birch/types"
+	"github.com/tychoish/fun"
 )
 
 // UnmarshalJSON converts the contents of a document to JSON
@@ -19,7 +20,7 @@ import (
 // The underlying document is not emptied before this operation, which
 // for non-empty documents could result in duplicate keys.
 func (d *Document) UnmarshalJSON(in []byte) error {
-	jdoc, err := jsonx.DC.BytesErr(in)
+	jdoc, err := jsonx.DCE.Bytes(in)
 	if err != nil {
 		return err
 	}
@@ -75,7 +76,7 @@ func (v *Value) UnmarshalJSON(in []byte) error {
 	return nil
 }
 
-func (DocumentConstructor) JSONXErr(jd *jsonx.Document) (*Document, error) {
+func (DocumentConstructorError) JSONX(jd *jsonx.Document) (*Document, error) {
 	d := DC.Make(jd.Len())
 
 	iter := jd.Iterator()
@@ -92,14 +93,7 @@ func (DocumentConstructor) JSONXErr(jd *jsonx.Document) (*Document, error) {
 	return d, nil
 }
 
-func (DocumentConstructor) JSONX(jd *jsonx.Document) *Document {
-	d, err := DC.JSONXErr(jd)
-	if err != nil {
-		panic(err)
-	}
-
-	return d
-}
+func (DocumentConstructor) JSONX(jd *jsonx.Document) *Document { return fun.Must(DCE.JSONX(jd)) }
 
 func convertJSONElements(ctx context.Context, in *jsonx.Element) (*Element, error) {
 	inv := in.Value()

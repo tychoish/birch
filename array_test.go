@@ -194,7 +194,7 @@ func TestArray(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
-				got, err := tc.a.LookupErr(tc.key)
+				got, err := tc.a.Lookup(tc.key)
 				if err != tc.err {
 					t.Errorf("Returned error does not match. got %#v; want %#v", err, tc.err)
 				}
@@ -365,54 +365,19 @@ func TestArray(t *testing.T) {
 		t.Run("FindValue", func(t *testing.T) {
 			ar := NewArray(VC.Int(42), VC.Int(84))
 
-			if 42 != ar.Lookup(0).Int() {
+			if val, err := ar.Lookup(0); err != nil || val.Int() != 42 {
 				t.Error("values should be equal")
 			}
-			if 84 != ar.Lookup(1).Int() {
+			if val, err := ar.Lookup(1); err != nil || val.Int() != 84 {
 				t.Error("values should be equal")
 			}
 		})
 		t.Run("MissingValue", func(t *testing.T) {
 			ar := NewArray(VC.Int(42), VC.Int(84))
 
-			func() {
-				defer func() {
-					if p := recover(); p == nil {
-						t.Fatal("expected panic")
-					}
-				}()
-				ar.Lookup(3).Int()
-			}()
-		})
-		t.Run("FindElement", func(t *testing.T) {
-			ar := NewArray(VC.Int(42), VC.Int(84))
-
-			if 42 != ar.LookupElement(0).Value().Int() {
-				t.Error("values should be equal")
-			}
-			if 84 != ar.LookupElement(1).Value().Int() {
-				t.Error("values should be equal")
-			}
-		})
-		t.Run("MissingElement", func(t *testing.T) {
-			ar := NewArray(VC.Int(42), VC.Int(84))
-
-			func() {
-				defer func() {
-					if p := recover(); p == nil {
-						t.Fatal("expected panic")
-					}
-				}()
-				ar.LookupElement(3).Value().Int()
-			}()
-		})
-		t.Run("ElementKeys", func(t *testing.T) {
-			ar := NewArray(VC.Int(42), VC.Int(84))
-			if "" != ar.LookupElement(0).Key() {
-				t.Error("values should be equal")
-			}
-			if "" != ar.LookupElement(1).Key() {
-				t.Error("values should be equal")
+			_, err := ar.Lookup(3)
+			if err == nil {
+				t.Error("expected error")
 			}
 		})
 	})
@@ -476,15 +441,14 @@ func TestArray(t *testing.T) {
 		})
 		t.Run("Replace", func(t *testing.T) {
 			ar := NewArray(VC.Int(42))
-			if 42 != ar.Lookup(0).Interface().(int32) {
-				t.Fatalf("values are not equal %v and %v", 42, ar.Lookup(0).Interface())
+			if val, err := ar.Lookup(0); err != nil || 42 != val.Interface().(int32) {
+				t.Fatalf("values are not equal %v and %v", 42, val.Interface())
 			}
 			ar.Set(0, VC.Int(84))
-			if 84 != ar.Lookup(0).Interface().(int32) {
-				t.Fatalf("values are not equal %v and %v", 84, ar.Lookup(0).Interface())
+			if val, err := ar.Lookup(0); err != nil || 84 != val.Interface().(int32) {
+				t.Fatalf("values are not equal %v and %v", 42, val.Interface())
 			}
 		})
-
 	})
 }
 

@@ -12,8 +12,18 @@ import (
 // DC is a convenience variable provided for access to the DocumentConstructor methods.
 var DC DocumentConstructor
 
-// DocumentConstructor is used as a namespace for document constructor functions.
+// DCE is a convenience variable provided for access to the DocumentConstructorError methods.
+var DCE DocumentConstructorError
+
+// DocumentConstructor is used as a namespace for document constructor
+// functions. Constructor methods may panic in cases when invalid
+// input would cause them to error when using the DocumentConstructorError
 type DocumentConstructor struct{}
+
+// DocumentConstructor is used as a namespace for document constructor
+// functions. These methods return errors rather than panicing in the
+// case of invalid input
+type DocumentConstructorError struct{}
 
 // New returns an empty document.
 func (DocumentConstructor) New() *Document { return DC.Make(0) }
@@ -42,7 +52,7 @@ func (DocumentConstructor) ElementsOmitEmpty(elems ...*Element) *Document {
 // around a byte slice representation of a bson document. Reader
 // panics if there is a problem reading the document.
 func (DocumentConstructor) Reader(r Reader) *Document {
-	doc, err := DC.ReaderErr(r)
+	doc, err := DCE.Reader(r)
 	if err != nil {
 		panic(err)
 	}
@@ -53,14 +63,14 @@ func (DocumentConstructor) Reader(r Reader) *Document {
 // ReaderErr constructs a document from a bson reader, which is a wrapper
 // around a byte slice representation of a bson document. Reader
 // returns an error if there is a problem reading the document.
-func (DocumentConstructor) ReaderErr(r Reader) (*Document, error) {
+func (DocumentConstructorError) Reader(r Reader) (*Document, error) {
 	return ReadDocument(r)
 }
 
 // ReadFrom builds a document reading a bytes sequence from an
 // io.Reader, panicing if there's a problem reading from the reader.
 func (DocumentConstructor) ReadFrom(in io.Reader) *Document {
-	doc, err := DC.ReadFromErr(in)
+	doc, err := DCE.ReadFrom(in)
 	if err == io.EOF {
 		return nil
 	}
@@ -75,7 +85,7 @@ func (DocumentConstructor) ReadFrom(in io.Reader) *Document {
 // ReadFromErr builds a document reading a bytes sequence from an
 // io.Reader, returning an error if there's a problem reading from the
 // reader.
-func (DocumentConstructor) ReadFromErr(in io.Reader) (*Document, error) {
+func (DocumentConstructorError) ReadFrom(in io.Reader) (*Document, error) {
 	doc := DC.New()
 
 	_, err := doc.ReadFrom(in)
@@ -91,7 +101,7 @@ func (DocumentConstructor) ReadFromErr(in io.Reader) (*Document, error) {
 }
 
 func (DocumentConstructor) Marshaler(in Marshaler) *Document {
-	doc, err := DC.MarshalerErr(in)
+	doc, err := DCE.Marshaler(in)
 	if err != nil {
 		panic(err)
 	}
@@ -99,13 +109,13 @@ func (DocumentConstructor) Marshaler(in Marshaler) *Document {
 	return doc
 }
 
-func (DocumentConstructor) MarshalerErr(in Marshaler) (*Document, error) {
+func (DocumentConstructorError) Marshaler(in Marshaler) (*Document, error) {
 	data, err := in.MarshalBSON()
 	if err != nil {
 		return nil, err
 	}
 
-	return DC.ReaderErr(data)
+	return DCE.Reader(data)
 }
 
 func (DocumentConstructor) MapString(in map[string]string) *Document {
@@ -137,7 +147,7 @@ func (DocumentConstructor) MapInterface(in map[string]interface{}) *Document {
 	return out
 }
 
-func (DocumentConstructor) MapInterfaceErr(in map[string]interface{}) (*Document, error) {
+func (DocumentConstructorError) MapInterface(in map[string]interface{}) (*Document, error) {
 	out := DC.Make(len(in))
 
 	for k, v := range in {
@@ -154,7 +164,7 @@ func (DocumentConstructor) MapInterfaceErr(in map[string]interface{}) (*Document
 	return out, nil
 }
 
-func (DocumentConstructor) MapInterfaceInterfaceErr(in map[interface{}]interface{}) (*Document, error) {
+func (DocumentConstructorError) MapInterfaceInterface(in map[interface{}]interface{}) (*Document, error) {
 	out := DC.Make(len(in))
 	for k, v := range in {
 		elem, err := EC.InterfaceErr(bestStringAttempt(k), v)
@@ -250,7 +260,7 @@ func (DocumentConstructor) MapMarshaler(in map[string]Marshaler) *Document {
 	return out
 }
 
-func (DocumentConstructor) MapMarshalerErr(in map[string]Marshaler) (*Document, error) {
+func (DocumentConstructorError) MapMarshaler(in map[string]Marshaler) (*Document, error) {
 	out := DC.Make(len(in))
 
 	for k, v := range in {
@@ -276,7 +286,7 @@ func (DocumentConstructor) MapSliceMarshaler(in map[string][]Marshaler) *Documen
 	return out
 }
 
-func (DocumentConstructor) MapSliceMarshalerErr(in map[string][]Marshaler) (*Document, error) {
+func (DocumentConstructorError) MapSliceMarshaler(in map[string][]Marshaler) (*Document, error) {
 	out := DC.Make(len(in))
 
 	for k, v := range in {
@@ -311,7 +321,7 @@ func (DocumentConstructor) MapSliceJSONX(in map[string][]*jsonx.Document) *Docum
 	return out
 }
 
-func (DocumentConstructor) MapDocumentMarshalerErr(in map[string]DocumentMarshaler) (*Document, error) {
+func (DocumentConstructorError) MapDocumentMarshaler(in map[string]DocumentMarshaler) (*Document, error) {
 	out := DC.Make(len(in))
 
 	for k, v := range in {
@@ -337,7 +347,7 @@ func (DocumentConstructor) MapSliceDocumentMarshaler(in map[string][]DocumentMar
 	return out
 }
 
-func (DocumentConstructor) MapSliceDocumentMarshalerErr(in map[string][]DocumentMarshaler) (*Document, error) {
+func (DocumentConstructorError) MapSliceDocumentMarshaler(in map[string][]DocumentMarshaler) (*Document, error) {
 	out := DC.Make(len(in))
 
 	for k, v := range in {
@@ -372,7 +382,7 @@ func (DocumentConstructor) MapSliceInterface(in map[string][]interface{}) *Docum
 	return out
 }
 
-func (DocumentConstructor) MapSliceInterfaceErr(in map[string][]interface{}) (*Document, error) {
+func (DocumentConstructorError) MapSliceInterface(in map[string][]interface{}) (*Document, error) {
 	out := DC.Make(len(in))
 
 	for k, v := range in {
@@ -398,7 +408,7 @@ func (DocumentConstructor) MapInterfaceSliceInterface(in map[interface{}][]inter
 	return out
 }
 
-func (DocumentConstructor) MapInterfaceSliceInterfaceErr(in map[interface{}][]interface{}) (*Document, error) {
+func (DocumentConstructorError) MapInterfaceSliceInterface(in map[interface{}][]interface{}) (*Document, error) {
 	out := DC.Make(len(in))
 
 	for k, v := range in {
@@ -494,13 +504,13 @@ func (DocumentConstructor) Interface(value interface{}) *Document {
 	case map[string][]interface{}:
 		doc = DC.MapSliceInterface(t)
 	case map[string]DocumentMarshaler:
-		doc, err = DC.MapDocumentMarshalerErr(t)
+		doc, err = DCE.MapDocumentMarshaler(t)
 	case map[string][]DocumentMarshaler:
-		doc, err = DC.MapSliceDocumentMarshalerErr(t)
+		doc, err = DCE.MapSliceDocumentMarshaler(t)
 	case map[string]Marshaler:
-		doc, err = DC.MapMarshalerErr(t)
+		doc, err = DCE.MapMarshaler(t)
 	case map[string][]Marshaler:
-		doc, err = DC.MapSliceMarshalerErr(t)
+		doc, err = DCE.MapSliceMarshaler(t)
 	case map[string]int64:
 		doc = DC.MapInt64(t)
 	case map[string][]int64:
@@ -531,11 +541,11 @@ func (DocumentConstructor) Interface(value interface{}) *Document {
 	case *Document:
 		doc = t
 	case Reader:
-		doc, err = DC.ReaderErr(t)
+		doc, err = DCE.Reader(t)
 	case DocumentMarshaler:
 		doc, err = t.MarshalDocument()
 	case Marshaler:
-		doc, err = DC.MarshalerErr(t)
+		doc, err = DCE.Marshaler(t)
 	case []*Element:
 		doc = DC.Elements(t...)
 	}
@@ -547,28 +557,28 @@ func (DocumentConstructor) Interface(value interface{}) *Document {
 	return doc
 }
 
-func (DocumentConstructor) InterfaceErr(value interface{}) (*Document, error) {
+func (DocumentConstructorError) Interface(value interface{}) (*Document, error) {
 	switch t := value.(type) {
 	case map[string]string, map[string][]string, map[string]int64, map[string][]int64, map[string]int32, map[string][]int32, map[string]int, map[string][]int, map[string]time.Time, map[string][]time.Time, map[string]time.Duration, map[string][]time.Duration:
 		return DC.Interface(t), nil
 	case map[string]Marshaler:
-		return DC.MapMarshalerErr(t)
+		return DCE.MapMarshaler(t)
 	case map[string][]Marshaler:
-		return DC.MapSliceMarshalerErr(t)
+		return DCE.MapSliceMarshaler(t)
 	case map[string]DocumentMarshaler:
-		return DC.MapDocumentMarshalerErr(t)
+		return DCE.MapDocumentMarshaler(t)
 	case map[string][]DocumentMarshaler:
-		return DC.MapSliceDocumentMarshalerErr(t)
+		return DCE.MapSliceDocumentMarshaler(t)
 	case map[string]interface{}:
-		return DC.MapInterfaceErr(t)
+		return DCE.MapInterface(t)
 	case map[string][]interface{}:
-		return DC.MapSliceInterfaceErr(t)
+		return DCE.MapSliceInterface(t)
 	case map[interface{}]interface{}:
-		return DC.MapInterfaceInterfaceErr(t)
+		return DCE.MapInterfaceInterface(t)
 	case map[interface{}][]interface{}:
-		return DC.MapInterfaceSliceInterfaceErr(t)
+		return DCE.MapInterfaceSliceInterface(t)
 	case Reader:
-		return DC.ReaderErr(t)
+		return DCE.Reader(t)
 	case *Element:
 		return DC.Elements(t), nil
 	case []*Element:
@@ -578,7 +588,7 @@ func (DocumentConstructor) InterfaceErr(value interface{}) (*Document, error) {
 	case DocumentMarshaler:
 		return t.MarshalDocument()
 	case Marshaler:
-		return DC.MarshalerErr(t)
+		return DCE.Marshaler(t)
 	default:
 		return nil, fmt.Errorf("value '%s' is of type '%T' which is not convertable to a document.", t, t)
 	}
@@ -621,7 +631,7 @@ func (ElementConstructor) DocumentMarshalerErr(key string, val DocumentMarshaler
 }
 
 func (ElementConstructor) JSONXErr(key string, val *jsonx.Document) (*Element, error) {
-	doc, err := DC.JSONXErr(val)
+	doc, err := DCE.JSONX(val)
 	if err != nil {
 		return nil, err
 	}
@@ -965,7 +975,7 @@ func (ValueConstructor) MapSliceDuration(in map[string][]time.Duration) *Value {
 }
 
 func (ValueConstructor) MapInterfaceErr(in map[string]interface{}) (*Value, error) {
-	doc, err := DC.MapInterfaceErr(in)
+	doc, err := DCE.MapInterface(in)
 	if err != nil {
 		return nil, err
 	}
@@ -974,7 +984,7 @@ func (ValueConstructor) MapInterfaceErr(in map[string]interface{}) (*Value, erro
 }
 
 func (ValueConstructor) MapSliceInterfaceErr(in map[string][]interface{}) (*Value, error) {
-	doc, err := DC.MapSliceInterfaceErr(in)
+	doc, err := DCE.MapSliceInterface(in)
 	if err != nil {
 		return nil, err
 	}
@@ -983,7 +993,7 @@ func (ValueConstructor) MapSliceInterfaceErr(in map[string][]interface{}) (*Valu
 }
 
 func (ValueConstructor) MapMarshalerErr(in map[string]Marshaler) (*Value, error) {
-	doc, err := DC.MapMarshalerErr(in)
+	doc, err := DCE.MapMarshaler(in)
 	if err != nil {
 		return nil, err
 	}
@@ -992,7 +1002,7 @@ func (ValueConstructor) MapMarshalerErr(in map[string]Marshaler) (*Value, error)
 }
 
 func (ValueConstructor) MapSliceMarshalerErr(in map[string][]Marshaler) (*Value, error) {
-	doc, err := DC.MapSliceMarshalerErr(in)
+	doc, err := DCE.MapSliceMarshaler(in)
 	if err != nil {
 		return nil, err
 	}

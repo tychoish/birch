@@ -98,24 +98,13 @@ func (e *Element) validateKey() (uint32, error) {
 }
 
 // Key returns the key for this element.
-// It panics if e is uninitialized.
+// It returns the empty string if the element is not initialized.
 func (e *Element) Key() string {
-	key, ok := e.KeyOK()
-	if !ok {
-		panic(bsonerr.UninitializedElement)
-	}
-
-	return key
-}
-
-// KeyOK returns the key of the document, return a false OK value if
-// the element is uninitialized.
-func (e *Element) KeyOK() (string, bool) {
 	if e == nil || e.value == nil || e.value.offset == 0 || e.value.data == nil {
-		return "", false
+		return ""
 	}
 
-	return string(e.value.data[e.value.start+1 : e.value.offset-1]), true
+	return string(e.value.data[e.value.start+1 : e.value.offset-1])
 }
 
 // WriteTo implements the io.WriterTo interface.

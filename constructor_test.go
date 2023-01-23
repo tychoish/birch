@@ -988,7 +988,7 @@ func TestDocumentConstructor(t *testing.T) {
 				Name: "ReaderNil",
 				Size: 0,
 				Constructor: func() (*Document, error) {
-					_, err := DC.ReaderErr(nil)
+					_, err := DCE.Reader(nil)
 					if err == nil {
 						return nil, errors.New("new reader")
 					}
@@ -1000,7 +1000,7 @@ func TestDocumentConstructor(t *testing.T) {
 				Name: "ReaderEmpty",
 				Size: 0,
 				Constructor: func() (*Document, error) {
-					_, err := DC.ReaderErr(Reader{})
+					_, err := DCE.Reader(Reader{})
 					if err == nil {
 						return nil, errors.New("new reader")
 					}
@@ -1078,7 +1078,7 @@ func TestDocumentConstructor(t *testing.T) {
 				Name: "MarshalerErr",
 				Size: 3,
 				Constructor: func() (*Document, error) {
-					return DC.MarshalerErr(DC.Elements(EC.Int("hi", 100), EC.String("there", "this"), EC.Time("now", time.Now())))
+					return DCE.Marshaler(DC.Elements(EC.Int("hi", 100), EC.String("there", "this"), EC.Time("now", time.Now())))
 				},
 			},
 			{
@@ -1086,7 +1086,7 @@ func TestDocumentConstructor(t *testing.T) {
 				Size:  0,
 				IsNil: true,
 				Constructor: func() (*Document, error) {
-					doc, err := DC.MarshalerErr(Reader(nil))
+					doc, err := DCE.Marshaler(Reader(nil))
 					if err == nil {
 						return nil, errors.New("missed error")
 					}
@@ -1295,7 +1295,7 @@ func TestDocumentConstructor(t *testing.T) {
 					}
 				})
 				t.Run("Errors", func(t *testing.T) {
-					edoc, err := DC.InterfaceErr(test.Input)
+					edoc, err := DCE.Interface(test.Input)
 					if test.HasErrors {
 						if err == nil {
 							t.Fatal(err)

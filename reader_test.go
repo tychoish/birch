@@ -12,7 +12,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"reflect"
 	"testing"
 
 	"github.com/tychoish/birch/bsonerr"
@@ -123,89 +122,6 @@ func TestReader(t *testing.T) {
 				}
 				if got != tc.want {
 					t.Errorf("Returned size does not match expected size. got %v; want %v", got, tc.want)
-				}
-			})
-		}
-	})
-	t.Run("Keys", func(t *testing.T) {
-		testCases := []struct {
-			name      string
-			r         Reader
-			want      Keys
-			err       error
-			recursive bool
-		}{
-			{"one",
-				Reader{
-					'\x08', '\x00', '\x00', '\x00', '\x0A', 'x', '\x00', '\x00',
-				},
-				Keys{{Name: "x"}}, nil, false,
-			},
-			{"two",
-				Reader{
-					'\x0B', '\x00', '\x00', '\x00', '\x0A', 'x', '\x00',
-					'\x0A', 'y', '\x00', '\x00',
-				},
-				Keys{{Name: "x"}, {Name: "y"}}, nil, false,
-			},
-			{"one-flat",
-				Reader{
-					'\x15', '\x00', '\x00', '\x00',
-					'\x03',
-					'f', 'o', 'o', '\x00',
-					'\x0B', '\x00', '\x00', '\x00', '\x0A', 'a', '\x00',
-					'\x0A', 'b', '\x00', '\x00', '\x00',
-				},
-				Keys{{Name: "foo"}}, nil, false,
-			},
-			{"one-recursive",
-				Reader{
-					'\x15', '\x00', '\x00', '\x00',
-					'\x03',
-					'f', 'o', 'o', '\x00',
-					'\x0B', '\x00', '\x00', '\x00', '\x0A', 'a', '\x00',
-					'\x0A', 'b', '\x00', '\x00', '\x00',
-				},
-				Keys{{Name: "foo"}, {Prefix: []string{"foo"}, Name: "a"}, {Prefix: []string{"foo"}, Name: "b"}}, nil, true,
-			},
-			{"one-array-recursive",
-				Reader{
-					'\x15', '\x00', '\x00', '\x00',
-					'\x04',
-					'f', 'o', 'o', '\x00',
-					'\x0B', '\x00', '\x00', '\x00', '\x0A', '1', '\x00',
-					'\x0A', '2', '\x00', '\x00', '\x00',
-				},
-				Keys{{Name: "foo"}, {Prefix: []string{"foo"}, Name: "1"}, {Prefix: []string{"foo"}, Name: "2"}}, nil, true,
-			},
-			{"invalid-subdocument",
-				Reader{
-					'\x15', '\x00', '\x00', '\x00',
-					'\x03',
-					'f', 'o', 'o', '\x00',
-					'\x0B', '\x00', '\x00', '\x00', '\x01', '1', '\x00',
-					'\x0A', '2', '\x00', '\x00', '\x00',
-				},
-				nil, errTooSmall, true,
-			},
-			{"invalid-array",
-				Reader{
-					'\x15', '\x00', '\x00', '\x00',
-					'\x04',
-					'f', 'o', 'o', '\x00',
-					'\x0B', '\x00', '\x00', '\x00', '\x01', '1', '\x00',
-					'\x0A', '2', '\x00', '\x00', '\x00',
-				},
-				nil, errTooSmall, true,
-			},
-		}
-
-		for _, tc := range testCases {
-			t.Run(tc.name, func(t *testing.T) {
-				got, err := tc.r.Keys(tc.recursive)
-				requireErrEqual(t, tc.err, err)
-				if !reflect.DeepEqual(got, tc.want) {
-					t.Errorf("Returned keys do not match expected keys. got %v; want %v", got, tc.want)
 				}
 			})
 		}

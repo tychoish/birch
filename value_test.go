@@ -11,30 +11,27 @@ import (
 
 func TestValue(t *testing.T) {
 	t.Run("panic", func(t *testing.T) {
-		handle := func() {
+		handle := func(t *testing.T) {
+			t.Helper()
 			if got := recover(); got != bsonerr.UninitializedElement {
 				want := bsonerr.UninitializedElement
 				t.Errorf("Incorrect value for panic. got %s; want %s", got, want)
 			}
 		}
-		t.Run("key", func(t *testing.T) {
-			defer handle()
-			(*Element)(nil).Key()
-		})
 		t.Run("type", func(t *testing.T) {
-			defer handle()
+			defer handle(t)
 			(*Value)(nil).Type()
 		})
 		t.Run("double", func(t *testing.T) {
-			defer handle()
+			defer handle(t)
 			(*Value)(nil).Double()
 		})
 		t.Run("string", func(t *testing.T) {
-			defer handle()
+			defer handle(t)
 			(*Value)(nil).StringValue()
 		})
 		t.Run("document", func(t *testing.T) {
-			defer handle()
+			defer handle(t)
 			(*Value)(nil).ReaderDocument()
 		})
 	})

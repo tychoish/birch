@@ -410,7 +410,7 @@ func TestJSON(t *testing.T) {
 					idx := uint(0)
 					for iter.Next(ctx) {
 						elem := iter.Value()
-						expected, err := test.Array.LookupErr(idx)
+						expected, err := test.Array.Lookup(idx)
 						if err != nil {
 							t.Fatal(err)
 						}

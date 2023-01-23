@@ -7,7 +7,6 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
-	"github.com/tychoish/birch/types"
 )
 
 func rehydrateMatrix(metrics []Metric, sample int) (*birch.Element, int, error) {
@@ -23,27 +22,27 @@ func rehydrateMatrix(metrics []Metric, sample int) (*birch.Element, int, error) 
 	switch metrics[sample].originalType {
 	case bsontype.Boolean:
 		for _, p := range metrics[sample].Values {
-			array.AppendInterface(p != 0)
+			array.Append(birch.VC.Boolean(p != 0))
 		}
 	case bsontype.Double:
 		for _, p := range metrics[sample].Values {
-			array.AppendInterface(restoreFloat(p))
+			array.Append(birch.VC.Double(restoreFloat(p)))
 		}
 	case bsontype.Int64:
 		for _, p := range metrics[sample].Values {
-			array.AppendInterface(p)
+			array.Append(birch.VC.Int64(p))
 		}
 	case bsontype.Int32:
 		for _, p := range metrics[sample].Values {
-			array.AppendInterface(int32(p))
+			array.Append(birch.VC.Int32(int32(p)))
 		}
 	case bsontype.DateTime:
 		for _, p := range metrics[sample].Values {
-			array.AppendInterface(timeEpocMs(p))
+			array.Append(birch.VC.Time(timeEpocMs(p)))
 		}
 	case bsontype.Timestamp:
 		for idx, p := range metrics[sample].Values {
-			array.AppendInterface(types.Timestamp{T: uint32(p), I: uint32(metrics[sample+1].Values[idx])})
+			array.Append(birch.VC.Timestamp(uint32(p), uint32(metrics[sample+1].Values[idx])))
 		}
 		sample++
 	default:

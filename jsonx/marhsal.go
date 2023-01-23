@@ -8,10 +8,6 @@ import (
 )
 
 func (d *Document) MarshalJSON() ([]byte, error) {
-	if d == nil {
-		return nil, errors.New("cannot marshal nil document")
-	}
-
 	out := []byte{'{'}
 
 	first := true
