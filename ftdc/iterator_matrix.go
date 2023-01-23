@@ -3,6 +3,7 @@ package ftdc
 import (
 	"context"
 	"io"
+	"sync"
 	"time"
 
 	"errors"
@@ -80,40 +81,29 @@ func (m *Metric) getSeries() interface{} {
 }
 
 type matrixIterator struct {
+	fun.Iterator[*birch.Document]
 	chunks   fun.Iterator[*Chunk]
 	closer   context.CancelFunc
 	metadata *birch.Document
 	document *birch.Document
-	pipe     chan *birch.Document
 	catcher  erc.Collector
 	reflect  bool
+	wg       sync.WaitGroup
 }
 
 func (iter *matrixIterator) Close(ctx context.Context) error {
 	if iter.chunks != nil {
-		iter.chunks.Close(ctx)
+		iter.catcher.Add(iter.chunks.Close(ctx))
 	}
+	iter.catcher.Add(iter.Iterator.Close(ctx))
+	fun.Wait(ctx, &iter.wg)
 	return iter.catcher.Resolve()
 }
 
 func (iter *matrixIterator) Metadata() *birch.Document { return iter.metadata }
-func (iter *matrixIterator) Value() *birch.Document    { return iter.document }
-func (iter *matrixIterator) Next(ctx context.Context) bool {
-	select {
-	case next, ok := <-iter.pipe:
-		if !ok {
-			return false
-		}
-		iter.document = next
-		return true
-	case <-ctx.Done():
-		return false
-	}
-}
-
-func (iter *matrixIterator) worker(ctx context.Context) {
-	defer func() { iter.catcher.Add(iter.chunks.Close(ctx)) }()
-	defer close(iter.pipe)
+func (iter *matrixIterator) worker(ctx context.Context, pipe chan *birch.Document) {
+	defer iter.wg.Done()
+	defer close(pipe)
 
 	var payload []byte
 	var doc *birch.Document
@@ -142,7 +132,7 @@ func (iter *matrixIterator) worker(ctx context.Context) {
 		}
 
 		select {
-		case iter.pipe <- doc:
+		case pipe <- doc:
 			continue
 		case <-ctx.Done():
 			iter.catcher.Add(errors.New("operation aborted"))

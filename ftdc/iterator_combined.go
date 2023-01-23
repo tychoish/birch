@@ -3,6 +3,7 @@ package ftdc
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/fun"
@@ -10,67 +11,49 @@ import (
 )
 
 type combinedIterator struct {
+	fun.Iterator[*birch.Document]
 	closer   context.CancelFunc
-	chunks   fun.Iterator[*Chunk]
-	sample   *sampleIterator
 	metadata *birch.Document
 	document *birch.Document
-	pipe     chan *birch.Document
+	wg       sync.WaitGroup
 	catcher  erc.Collector
 	flatten  bool
 }
 
 func (iter *combinedIterator) Close(ctx context.Context) error {
 	iter.closer()
-	if iter.sample != nil {
-		iter.sample.Close(ctx)
-	}
-
-	if iter.chunks != nil {
-		iter.chunks.Close(ctx)
-	}
+	iter.catcher.Add(iter.Iterator.Close(ctx))
+	fun.Wait(ctx, &iter.wg)
 	return iter.catcher.Resolve()
 }
 
 func (iter *combinedIterator) Metadata() *birch.Document { return iter.metadata }
-func (iter *combinedIterator) Value() *birch.Document    { return iter.document }
 
-func (iter *combinedIterator) Next(ctx context.Context) bool {
-	select {
-	case next, ok := <-iter.pipe:
-		if !ok {
-			return false
-		}
-		iter.document = next
-		return true
-	case <-ctx.Done():
-		return false
-	}
-}
+func (iter *combinedIterator) worker(
+	ctx context.Context,
+	chunks fun.Iterator[*Chunk],
+	pipe chan *birch.Document,
+) {
+	defer iter.wg.Done()
+	defer close(pipe)
 
-func (iter *combinedIterator) worker(ctx context.Context) {
-	defer close(iter.pipe)
-	var ok bool
+	for chunks.Next(ctx) {
+		chunk := chunks.Value()
 
-	for iter.chunks.Next(ctx) {
-		chunk := iter.chunks.Value()
-
+		var sample Iterator
 		if iter.flatten {
-			iter.sample, ok = chunk.Iterator(ctx).(*sampleIterator)
+			sample = chunk.Iterator(ctx)
 		} else {
-			iter.sample, ok = chunk.StructuredIterator(ctx).(*sampleIterator)
+			sample = chunk.StructuredIterator(ctx)
 		}
-		if !ok {
-			iter.catcher.Add(errors.New("programmer error"))
-			return
-		}
+
 		if iter.metadata != nil {
 			iter.metadata = chunk.GetMetadata()
 		}
 
-		for iter.sample.Next(ctx) {
+		for sample.Next(ctx) {
 			select {
-			case iter.pipe <- iter.sample.Value():
+			case pipe <- sample.Value():
 				continue
 			case <-ctx.Done():
 				iter.catcher.Add(errors.New("operation aborted"))
@@ -78,7 +61,7 @@ func (iter *combinedIterator) worker(ctx context.Context) {
 			}
 
 		}
-		iter.catcher.Add(iter.sample.Close(ctx))
+		iter.catcher.Add(sample.Close(ctx))
 	}
-	iter.catcher.Add(iter.chunks.Close(ctx))
+	iter.catcher.Add(chunks.Close(ctx))
 }

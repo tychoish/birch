@@ -7,6 +7,7 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
+	"github.com/tychoish/fun/itertool"
 )
 
 // Chunk represents a 'metric chunk' of data in the FTDC.
@@ -30,11 +31,19 @@ func (c *Chunk) Len() int                     { return len(c.Metrics) }
 // The documents are constructed from the metrics data lazily.
 func (c *Chunk) Iterator(ctx context.Context) Iterator {
 	sctx, cancel := context.WithCancel(ctx)
-	return &sampleIterator{
+	pipe := make(chan *birch.Document)
+	iter := &sampleIterator{
+		Iterator: itertool.Channel(pipe),
 		closer:   cancel,
-		stream:   c.streamFlattenedDocuments(sctx),
 		metadata: c.GetMetadata(),
 	}
+	iter.wg.Add(1)
+	go func() {
+		defer iter.wg.Done()
+		defer close(pipe)
+		c.streamFlattenedDocuments(sctx, pipe)
+	}()
+	return iter
 }
 
 // StructuredIterator returns the contents of the chunk as a sequence
@@ -43,11 +52,19 @@ func (c *Chunk) Iterator(ctx context.Context) Iterator {
 // the structure of the input documents.
 func (c *Chunk) StructuredIterator(ctx context.Context) Iterator {
 	sctx, cancel := context.WithCancel(ctx)
-	return &sampleIterator{
+	pipe := make(chan *birch.Document)
+	iter := &sampleIterator{
+		Iterator: itertool.Channel(pipe),
 		closer:   cancel,
-		stream:   c.streamDocuments(sctx),
 		metadata: c.GetMetadata(),
 	}
+	iter.wg.Add(1)
+	go func() {
+		defer iter.wg.Done()
+		defer close(pipe)
+		c.streamDocuments(sctx, pipe)
+	}()
+	return iter
 }
 
 // Metric represents an item in a chunk.

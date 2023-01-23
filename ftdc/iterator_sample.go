@@ -2,89 +2,61 @@ package ftdc
 
 import (
 	"context"
+	"sync"
 
 	"github.com/tychoish/birch"
+	"github.com/tychoish/fun"
 )
 
 // sampleIterator provides an iterator for iterating through the
 // results of a FTDC data chunk as BSON documents.
 type sampleIterator struct {
+	fun.Iterator[*birch.Document]
 	closer   context.CancelFunc
-	stream   <-chan *birch.Document
-	sample   *birch.Document
 	metadata *birch.Document
+	wg       sync.WaitGroup
 }
 
-func (c *Chunk) streamFlattenedDocuments(ctx context.Context) <-chan *birch.Document {
-	out := make(chan *birch.Document, 100)
+func (c *Chunk) streamFlattenedDocuments(ctx context.Context, out chan *birch.Document) {
+	for i := 0; i < c.nPoints; i++ {
 
-	go func() {
-		defer close(out)
-		for i := 0; i < c.nPoints; i++ {
-
-			doc := birch.DC.Make(len(c.Metrics))
-			for _, m := range c.Metrics {
-				elem, ok := restoreFlat(m.originalType, m.Key(), m.Values[i])
-				if !ok {
-					continue
-				}
-
-				doc.Append(elem)
-			}
-
-			select {
-			case out <- doc:
+		doc := birch.DC.Make(len(c.Metrics))
+		for _, m := range c.Metrics {
+			elem, ok := restoreFlat(m.originalType, m.Key(), m.Values[i])
+			if !ok {
 				continue
-			case <-ctx.Done():
-				return
 			}
-		}
-	}()
 
-	return out
+			doc.Append(elem)
+		}
+
+		select {
+		case out <- doc:
+			continue
+		case <-ctx.Done():
+			return
+		}
+	}
 }
 
-func (c *Chunk) streamDocuments(ctx context.Context) <-chan *birch.Document {
-	out := make(chan *birch.Document, 100)
-
-	go func() {
-		defer close(out)
-
-		for i := 0; i < c.nPoints; i++ {
-			doc, _ := restoreDocument(ctx, c.reference, i, c.Metrics, 0)
-			select {
-			case <-ctx.Done():
-				return
-			case out <- doc:
-				continue
-			}
+func (c *Chunk) streamDocuments(ctx context.Context, out chan *birch.Document) {
+	for i := 0; i < c.nPoints; i++ {
+		doc, _ := restoreDocument(ctx, c.reference, i, c.Metrics, 0)
+		select {
+		case <-ctx.Done():
+			return
+		case out <- doc:
+			continue
 		}
-	}()
-
-	return out
+	}
 }
 
 // Close releases all resources associated with the iterator.
-func (iter *sampleIterator) Close(ctx context.Context) error { iter.closer(); return nil }
+func (iter *sampleIterator) Close(ctx context.Context) error {
+	iter.closer()
+	fun.Wait(ctx, &iter.wg)
+
+	return iter.Iterator.Close(ctx)
+}
 
 func (iter *sampleIterator) Metadata() *birch.Document { return iter.metadata }
-
-// Document returns the current document in the iterator. It is safe
-// to call this method more than once, and the result will only be nil
-// before the iterator is advanced.
-func (iter *sampleIterator) Value() *birch.Document { return iter.sample }
-
-// Next advances the iterator one document. Returns true when there is
-// a document, and false otherwise.
-func (iter *sampleIterator) Next(ctx context.Context) bool {
-	select {
-	case doc, ok := <-iter.stream:
-		if !ok {
-			return false
-		}
-		iter.sample = doc
-		return true
-	case <-ctx.Done():
-		return false
-	}
-}

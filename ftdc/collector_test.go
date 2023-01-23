@@ -148,10 +148,10 @@ func TestCollectorInterface(t *testing.T) {
 							})
 						}
 						if len(docs)-1 != idx {
-							t.Error("values should be equal")
+							t.Error("values should be equal", len(docs)-1, idx)
 						} // zero index
 						if err := iter.Close(ctx); err != nil {
-							t.Fatal(err)
+							t.Fatal("close err", err)
 						}
 
 					})

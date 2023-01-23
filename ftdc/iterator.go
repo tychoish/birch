@@ -6,6 +6,7 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/fun"
+	"github.com/tychoish/fun/itertool"
 )
 
 type Iterator interface {
@@ -16,15 +17,16 @@ type Iterator interface {
 // ReadMetrics returns a standard document iterator that reads FTDC
 // chunks. The Documents returned by the iterator are flattened.
 func ReadMetrics(ctx context.Context, r io.Reader) Iterator {
+	pipe := make(chan *birch.Document)
 	iterctx, cancel := context.WithCancel(ctx)
 	iter := &combinedIterator{
-		closer:  cancel,
-		chunks:  ReadChunks(iterctx, r),
-		flatten: true,
-		pipe:    make(chan *birch.Document, 100),
+		Iterator: itertool.Channel(pipe),
+		closer:   cancel,
+		flatten:  true,
 	}
 
-	go iter.worker(iterctx)
+	iter.wg.Add(1)
+	go iter.worker(iterctx, ReadChunks(iterctx, r), pipe)
 	return iter
 }
 
@@ -32,15 +34,16 @@ func ReadMetrics(ctx context.Context, r io.Reader) Iterator {
 // chunks. The Documents returned by the iterator retain the structure
 // of the input documents.
 func ReadStructuredMetrics(ctx context.Context, r io.Reader) Iterator {
+	pipe := make(chan *birch.Document)
 	iterctx, cancel := context.WithCancel(ctx)
 	iter := &combinedIterator{
-		closer:  cancel,
-		chunks:  ReadChunks(iterctx, r),
-		flatten: false,
-		pipe:    make(chan *birch.Document, 100),
+		Iterator: itertool.Channel(pipe),
+		closer:   cancel,
+		flatten:  false,
 	}
 
-	go iter.worker(iterctx)
+	iter.wg.Add(1)
+	go iter.worker(iterctx, ReadChunks(iterctx, r), pipe)
 	return iter
 }
 
@@ -52,14 +55,15 @@ func ReadStructuredMetrics(ctx context.Context, r io.Reader) Iterator {
 // The matrix documents have full type fidelity, but are not
 // substantially less expensive to produce than full iteration.
 func ReadMatrix(ctx context.Context, r io.Reader) Iterator {
+	pipe := make(chan *birch.Document)
 	iterctx, cancel := context.WithCancel(ctx)
 	iter := &matrixIterator{
-		closer: cancel,
-		chunks: ReadChunks(iterctx, r),
-		pipe:   make(chan *birch.Document, 25),
+		Iterator: itertool.Channel(pipe),
+		closer:   cancel,
+		chunks:   ReadChunks(iterctx, r),
 	}
-
-	go iter.worker(iterctx)
+	iter.wg.Add(1)
+	go iter.worker(iterctx, pipe)
 	return iter
 }
 
@@ -88,14 +92,16 @@ func ReadMatrix(ctx context.Context, r io.Reader) Iterator {
 //
 // Although the *birch.Document type does support iteration directly.
 func ReadSeries(ctx context.Context, r io.Reader) Iterator {
+	pipe := make(chan *birch.Document, 25)
 	iterctx, cancel := context.WithCancel(ctx)
 	iter := &matrixIterator{
-		closer:  cancel,
-		chunks:  ReadChunks(iterctx, r),
-		pipe:    make(chan *birch.Document, 25),
-		reflect: true,
+		Iterator: itertool.Channel(pipe),
+		closer:   cancel,
+		chunks:   ReadChunks(iterctx, r),
+		reflect:  true,
 	}
 
-	go iter.worker(iterctx)
+	iter.wg.Add(1)
+	go iter.worker(iterctx, pipe)
 	return iter
 }

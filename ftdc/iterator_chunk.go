@@ -3,10 +3,12 @@ package ftdc
 import (
 	"context"
 	"io"
+	"sync"
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/fun"
 	"github.com/tychoish/fun/erc"
+	"github.com/tychoish/fun/itertool"
 )
 
 // ChunkIterator is a simple iterator for reading off of an FTDC data
@@ -34,53 +36,33 @@ import (
 // You shoule check the Err() method when iterator is complete to see
 // if there were any issues encountered when decoding chunks.
 type ChunkIterator struct {
-	pipe    chan *Chunk
-	next    *Chunk
+	fun.Iterator[*Chunk]
 	cancel  context.CancelFunc
-	closed  bool
 	catcher erc.Collector
+	wg      sync.WaitGroup
 }
 
 // ReadChunks creates a ChunkIterator from an underlying FTDC data
 // source.
 func ReadChunks(ctx context.Context, r io.Reader) fun.Iterator[*Chunk] {
-	iter := &ChunkIterator{pipe: make(chan *Chunk, 2)}
+	pipe := make(chan *Chunk)
+	iter := &ChunkIterator{Iterator: itertool.Channel(pipe)}
 
 	ipc := make(chan *birch.Document)
 	ctx, iter.cancel = context.WithCancel(ctx)
 
+	iter.wg.Add(2)
 	go func() {
+		defer iter.wg.Done()
 		iter.catcher.Add(readDiagnostic(ctx, r, ipc))
 	}()
 
 	go func() {
-		iter.catcher.Add(readChunks(ctx, ipc, iter.pipe))
+		defer iter.wg.Done()
+		iter.catcher.Add(readChunks(ctx, ipc, pipe))
 	}()
 
 	return iter
-}
-
-// Next advances the iterator and returns true if the iterator has a
-// chunk that is unprocessed. Use the Chunk() method to access the
-// iterator.
-func (iter *ChunkIterator) Next(ctx context.Context) bool {
-	select {
-	case next, ok := <-iter.pipe:
-		if !ok {
-			return false
-		}
-		iter.next = next
-		return true
-	case <-ctx.Done():
-		return false
-	}
-}
-
-// Chunk returns a copy of the chunk processed by the iterator. You
-// must call Chunk no more than once per iteration. Additional
-// accesses to Chunk will panic.
-func (iter *ChunkIterator) Value() *Chunk {
-	return iter.next
 }
 
 // Close releases resources of the iterator. Use this method to
@@ -88,8 +70,8 @@ func (iter *ChunkIterator) Value() *Chunk {
 // is exhausted. Canceling the context that you used to create the
 // iterator has the same effect. Close returns a non-nil error if the
 // iterator encountered any errors during iteration.
-func (iter *ChunkIterator) Close(_ context.Context) error {
+func (iter *ChunkIterator) Close(ctx context.Context) error {
 	iter.cancel()
-	iter.closed = true
+	fun.Wait(ctx, &iter.wg)
 	return iter.catcher.Resolve()
 }
