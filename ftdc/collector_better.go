@@ -30,7 +30,7 @@ func NewBaseCollector(maxSize int) Collector {
 	}
 }
 
-func (c *betterCollector) SetMetadata(in interface{}) error {
+func (c *betterCollector) SetMetadata(in any) error {
 	doc, err := readDocument(in)
 	if err != nil {
 		return err
@@ -64,7 +64,7 @@ func (c *betterCollector) Info() CollectorInfo {
 	}
 }
 
-func (c *betterCollector) Add(in interface{}) error {
+func (c *betterCollector) Add(in any) error {
 	doc, err := readDocument(in)
 	if err != nil {
 		return err

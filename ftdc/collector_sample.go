@@ -21,7 +21,7 @@ func NewSamplingCollector(minimumInterval time.Duration, collector Collector) Co
 	}
 }
 
-func (c *samplingCollector) Add(d interface{}) error {
+func (c *samplingCollector) Add(d any) error {
 	if time.Since(c.lastCollection) < c.minimumInterval {
 		return nil
 	}

@@ -4,21 +4,21 @@ package ftdc
 // FTDC data series. Implementations may have different efficiencies
 // and handling of schema changes.
 //
-// The SetMetadata and Add methods both take interface{} values. These
+// The SetMetadata and Add methods both take any values. These
 // are converted to bson documents; however it is an error to pass a
 // type based on a map.
 type Collector interface {
 	// SetMetadata sets the metadata document for the collector or
 	// chunk. This document is optional. Pass a nil to unset it,
 	// or a different document to override a previous operation.
-	SetMetadata(interface{}) error
+	SetMetadata(any) error
 
 	// Add extracts metrics from a document and appends it to the
 	// current collector. These documents MUST all be
 	// identical including field order. Returns an error if there
 	// is a problem parsing the document or if the number of
 	// metrics collected changes.
-	Add(interface{}) error
+	Add(any) error
 
 	// Resolve renders the existing documents and outputs the full
 	// FTDC chunk as a byte slice to be written out to storage.

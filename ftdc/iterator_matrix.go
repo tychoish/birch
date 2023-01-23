@@ -15,8 +15,8 @@ import (
 	"github.com/tychoish/fun/erc"
 )
 
-func (c *Chunk) exportMatrix() map[string]interface{} {
-	out := make(map[string]interface{})
+func (c *Chunk) exportMatrix() map[string]any {
+	out := make(map[string]any)
 	for _, m := range c.Metrics {
 		out[m.Key()] = m.getSeries()
 	}
@@ -45,7 +45,7 @@ func (c *Chunk) export() (*birch.Document, error) {
 	return doc, nil
 }
 
-func (m *Metric) getSeries() interface{} {
+func (m *Metric) getSeries() any {
 	switch m.originalType {
 	case bsontype.Int64, bsontype.Timestamp:
 		out := make([]int64, len(m.Values))

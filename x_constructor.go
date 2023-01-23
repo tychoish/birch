@@ -138,7 +138,7 @@ func (DocumentConstructor) MapJSONX(in map[string]*jsonx.Document) *Document {
 	return out
 }
 
-func (DocumentConstructor) MapInterface(in map[string]interface{}) *Document {
+func (DocumentConstructor) MapInterface(in map[string]any) *Document {
 	out := DC.Make(len(in))
 	for k, v := range in {
 		out.Append(EC.Interface(k, v))
@@ -147,7 +147,7 @@ func (DocumentConstructor) MapInterface(in map[string]interface{}) *Document {
 	return out
 }
 
-func (DocumentConstructorError) MapInterface(in map[string]interface{}) (*Document, error) {
+func (DocumentConstructorError) MapInterface(in map[string]any) (*Document, error) {
 	out := DC.Make(len(in))
 
 	for k, v := range in {
@@ -164,7 +164,7 @@ func (DocumentConstructorError) MapInterface(in map[string]interface{}) (*Docume
 	return out, nil
 }
 
-func (DocumentConstructorError) MapInterfaceInterface(in map[interface{}]interface{}) (*Document, error) {
+func (DocumentConstructorError) MapInterfaceInterface(in map[any]any) (*Document, error) {
 	out := DC.Make(len(in))
 	for k, v := range in {
 		elem, err := EC.InterfaceErr(bestStringAttempt(k), v)
@@ -180,7 +180,7 @@ func (DocumentConstructorError) MapInterfaceInterface(in map[interface{}]interfa
 	return out, nil
 }
 
-func (DocumentConstructor) MapInterfaceInterface(in map[interface{}]interface{}) *Document {
+func (DocumentConstructor) MapInterfaceInterface(in map[any]any) *Document {
 	out := DC.Make(len(in))
 	for k, v := range in {
 		out.Append(EC.Interface(bestStringAttempt(k), v))
@@ -373,7 +373,7 @@ func (DocumentConstructor) MapSliceString(in map[string][]string) *Document {
 	return out
 }
 
-func (DocumentConstructor) MapSliceInterface(in map[string][]interface{}) *Document {
+func (DocumentConstructor) MapSliceInterface(in map[string][]any) *Document {
 	out := DC.Make(len(in))
 	for k, v := range in {
 		out.Append(EC.SliceInterface(k, v))
@@ -382,7 +382,7 @@ func (DocumentConstructor) MapSliceInterface(in map[string][]interface{}) *Docum
 	return out
 }
 
-func (DocumentConstructorError) MapSliceInterface(in map[string][]interface{}) (*Document, error) {
+func (DocumentConstructorError) MapSliceInterface(in map[string][]any) (*Document, error) {
 	out := DC.Make(len(in))
 
 	for k, v := range in {
@@ -399,7 +399,7 @@ func (DocumentConstructorError) MapSliceInterface(in map[string][]interface{}) (
 	return out, nil
 }
 
-func (DocumentConstructor) MapInterfaceSliceInterface(in map[interface{}][]interface{}) *Document {
+func (DocumentConstructor) MapInterfaceSliceInterface(in map[any][]any) *Document {
 	out := DC.Make(len(in))
 	for k, v := range in {
 		out.Append(EC.SliceInterface(bestStringAttempt(k), v))
@@ -408,7 +408,7 @@ func (DocumentConstructor) MapInterfaceSliceInterface(in map[interface{}][]inter
 	return out
 }
 
-func (DocumentConstructorError) MapInterfaceSliceInterface(in map[interface{}][]interface{}) (*Document, error) {
+func (DocumentConstructorError) MapInterfaceSliceInterface(in map[any][]any) (*Document, error) {
 	out := DC.Make(len(in))
 
 	for k, v := range in {
@@ -488,7 +488,7 @@ func (DocumentConstructor) MapSliceTime(in map[string][]time.Time) *Document {
 	return out
 }
 
-func (DocumentConstructor) Interface(value interface{}) *Document {
+func (DocumentConstructor) Interface(value any) *Document {
 	var (
 		doc *Document
 		err error
@@ -499,9 +499,9 @@ func (DocumentConstructor) Interface(value interface{}) *Document {
 		doc = DC.MapString(t)
 	case map[string][]string:
 		doc = DC.MapSliceString(t)
-	case map[string]interface{}:
+	case map[string]any:
 		doc = DC.MapInterface(t)
-	case map[string][]interface{}:
+	case map[string][]any:
 		doc = DC.MapSliceInterface(t)
 	case map[string]DocumentMarshaler:
 		doc, err = DCE.MapDocumentMarshaler(t)
@@ -531,7 +531,7 @@ func (DocumentConstructor) Interface(value interface{}) *Document {
 		doc = DC.MapDuration(t)
 	case map[string][]time.Duration:
 		doc = DC.MapSliceDuration(t)
-	case map[interface{}]interface{}:
+	case map[any]any:
 		doc = DC.Make(len(t))
 		for k, v := range t {
 			doc.Append(EC.Interface(bestStringAttempt(k), v))
@@ -557,7 +557,7 @@ func (DocumentConstructor) Interface(value interface{}) *Document {
 	return doc
 }
 
-func (DocumentConstructorError) Interface(value interface{}) (*Document, error) {
+func (DocumentConstructorError) Interface(value any) (*Document, error) {
 	switch t := value.(type) {
 	case map[string]string, map[string][]string, map[string]int64, map[string][]int64, map[string]int32, map[string][]int32, map[string]int, map[string][]int, map[string]time.Time, map[string][]time.Time, map[string]time.Duration, map[string][]time.Duration:
 		return DC.Interface(t), nil
@@ -569,13 +569,13 @@ func (DocumentConstructorError) Interface(value interface{}) (*Document, error) 
 		return DCE.MapDocumentMarshaler(t)
 	case map[string][]DocumentMarshaler:
 		return DCE.MapSliceDocumentMarshaler(t)
-	case map[string]interface{}:
+	case map[string]any:
 		return DCE.MapInterface(t)
-	case map[string][]interface{}:
+	case map[string][]any:
 		return DCE.MapSliceInterface(t)
-	case map[interface{}]interface{}:
+	case map[any]any:
 		return DCE.MapInterfaceInterface(t)
-	case map[interface{}][]interface{}:
+	case map[any][]any:
 		return DCE.MapInterfaceSliceInterface(t)
 	case Reader:
 		return DCE.Reader(t)
@@ -670,7 +670,7 @@ func (ElementConstructor) SliceString(key string, in []string) *Element {
 	return EC.Array(key, NewArray(vals...))
 }
 
-func (ElementConstructor) SliceInterface(key string, in []interface{}) *Element {
+func (ElementConstructor) SliceInterface(key string, in []any) *Element {
 	vals := make([]*Value, len(in))
 
 	for idx := range in {
@@ -680,7 +680,7 @@ func (ElementConstructor) SliceInterface(key string, in []interface{}) *Element 
 	return EC.Array(key, NewArray(vals...))
 }
 
-func (ElementConstructor) SliceInterfaceErr(key string, in []interface{}) (*Element, error) {
+func (ElementConstructor) SliceInterfaceErr(key string, in []any) (*Element, error) {
 	vals := make([]*Value, 0, len(in))
 
 	for idx := range in {
@@ -829,11 +829,11 @@ func (ValueConstructor) Int(in int) *Value {
 	return EC.Int("", in).value
 }
 
-func (ValueConstructor) Interface(in interface{}) *Value {
+func (ValueConstructor) Interface(in any) *Value {
 	return EC.Interface("", in).value
 }
 
-func (ValueConstructor) InterfaceErr(in interface{}) (*Value, error) {
+func (ValueConstructor) InterfaceErr(in any) (*Value, error) {
 	elem, err := EC.InterfaceErr("", in)
 	if err != nil {
 		return nil, err
@@ -934,19 +934,19 @@ func (ValueConstructor) MapSliceFloat64(in map[string][]float64) *Value {
 	return EC.SubDocument("", DC.MapSliceFloat64(in)).value
 }
 
-func (ValueConstructor) MapInterface(in map[string]interface{}) *Value {
+func (ValueConstructor) MapInterface(in map[string]any) *Value {
 	return EC.SubDocument("", DC.MapInterface(in)).value
 }
 
-func (ValueConstructor) MapInterfaceSliceInterface(in map[interface{}][]interface{}) *Value {
+func (ValueConstructor) MapInterfaceSliceInterface(in map[any][]any) *Value {
 	return EC.SubDocument("", DC.MapInterfaceSliceInterface(in)).value
 }
 
-func (ValueConstructor) MapInterfaceInterface(in map[interface{}]interface{}) *Value {
+func (ValueConstructor) MapInterfaceInterface(in map[any]any) *Value {
 	return EC.SubDocument("", DC.MapInterfaceInterface(in)).value
 }
 
-func (ValueConstructor) MapSliceInterface(in map[string][]interface{}) *Value {
+func (ValueConstructor) MapSliceInterface(in map[string][]any) *Value {
 	return EC.SubDocument("", DC.MapSliceInterface(in)).value
 }
 
@@ -974,7 +974,7 @@ func (ValueConstructor) MapSliceDuration(in map[string][]time.Duration) *Value {
 	return EC.SubDocument("", DC.MapSliceDuration(in)).value
 }
 
-func (ValueConstructor) MapInterfaceErr(in map[string]interface{}) (*Value, error) {
+func (ValueConstructor) MapInterfaceErr(in map[string]any) (*Value, error) {
 	doc, err := DCE.MapInterface(in)
 	if err != nil {
 		return nil, err
@@ -983,7 +983,7 @@ func (ValueConstructor) MapInterfaceErr(in map[string]interface{}) (*Value, erro
 	return EC.SubDocument("", doc).value, nil
 }
 
-func (ValueConstructor) MapSliceInterfaceErr(in map[string][]interface{}) (*Value, error) {
+func (ValueConstructor) MapSliceInterfaceErr(in map[string][]any) (*Value, error) {
 	doc, err := DCE.MapSliceInterface(in)
 	if err != nil {
 		return nil, err
@@ -1038,7 +1038,7 @@ func (ValueConstructor) SliceDuration(in []time.Duration) *Value {
 }
 
 func (ValueConstructor) SliceMarshaler(in []Marshaler) *Value { return EC.SliceMarshaler("", in).value }
-func (ValueConstructor) SliceInterface(in []interface{}) *Value {
+func (ValueConstructor) SliceInterface(in []any) *Value {
 	return EC.SliceInterface("", in).value
 }
 
@@ -1051,7 +1051,7 @@ func (ValueConstructor) SliceMarshalerErr(in []Marshaler) (*Value, error) {
 	return elem.value, nil
 }
 
-func (ValueConstructor) SliceInterfaceErr(in []interface{}) (*Value, error) {
+func (ValueConstructor) SliceInterfaceErr(in []any) (*Value, error) {
 	elem, err := EC.SliceInterfaceErr("", in)
 	if err != nil {
 		return nil, err

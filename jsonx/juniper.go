@@ -64,11 +64,11 @@ func (e *Element) Copy() *Element          { return EC.Value(e.key, e.value.Copy
 
 type Value struct {
 	t     Type
-	value interface{}
+	value any
 }
 
 func (v *Value) Type() Type                    { return v.t }
-func (v *Value) Interface() interface{}        { return v.value }
+func (v *Value) Interface() any                { return v.value }
 func (v *Value) StringValue() string           { return v.value.(string) }
 func (v *Value) Array() *Array                 { return v.value.(*Array) }
 func (v *Value) Document() *Document           { return v.value.(*Document) }

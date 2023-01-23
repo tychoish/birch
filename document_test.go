@@ -737,7 +737,7 @@ func TestDocument(t *testing.T) {
 	})
 
 	t.Run("InterfaceOutput", func(t *testing.T) {
-		out := map[string]interface{}{}
+		out := map[string]any{}
 		if err := DC.Elements(EC.String("key", "value"), EC.Int("value", 42)).Unmarshal(out); err != nil {
 			t.Fatal(err)
 		}

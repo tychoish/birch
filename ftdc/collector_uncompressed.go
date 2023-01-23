@@ -156,7 +156,7 @@ func (c *uncompressedCollector) Info() CollectorInfo {
 	}
 }
 
-func (c *uncompressedCollector) SetMetadata(in interface{}) error {
+func (c *uncompressedCollector) SetMetadata(in any) error {
 	doc, err := readDocument(in)
 	if err != nil {
 		return err
@@ -166,7 +166,7 @@ func (c *uncompressedCollector) SetMetadata(in interface{}) error {
 	return nil
 }
 
-func (c *uncompressedCollector) Add(in interface{}) error {
+func (c *uncompressedCollector) Add(in any) error {
 	doc, err := readDocument(in)
 	if err != nil {
 		return err

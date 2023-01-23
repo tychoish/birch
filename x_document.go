@@ -27,8 +27,8 @@ func (d *Document) UnmarshalDocument(in *Document) error {
 
 // ExportMap converts the values of the document to a map of strings
 // to interfaces, recursively, using the Value.Interface() method.
-func (d *Document) ExportMap() map[string]interface{} {
-	out := make(map[string]interface{}, d.Len())
+func (d *Document) ExportMap() map[string]any {
+	out := make(map[string]any, d.Len())
 
 	iter := d.Iterator()
 

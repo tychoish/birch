@@ -36,11 +36,11 @@ func BenchmarkEventCollection(b *testing.B) {
 		b.Run(collect.Name, func(b *testing.B) {
 			for _, test := range []struct {
 				Name      string
-				Generator func() interface{}
+				Generator func() any
 			}{
 				{
 					Name: "Performance",
-					Generator: func() interface{} {
+					Generator: func() any {
 						return &Performance{
 							Timestamp: time.Now(),
 							Counters: PerformanceCounters{
@@ -62,19 +62,19 @@ func BenchmarkEventCollection(b *testing.B) {
 				},
 				{
 					Name: "HistogramSecondZeroed",
-					Generator: func() interface{} {
+					Generator: func() any {
 						return NewHistogramSecond(PerformanceGauges{})
 					},
 				},
 				{
 					Name: "HistogramMillisecondZeroed",
-					Generator: func() interface{} {
+					Generator: func() any {
 						return NewHistogramMillisecond(PerformanceGauges{})
 					},
 				},
 				{
 					Name: "CustomMidsized",
-					Generator: func() interface{} {
+					Generator: func() any {
 						point := MakeCustom(20)
 						for i := int64(1); i <= 10; i++ {
 							point.Add(fmt.Sprintln("stat", i), rand.Int63n(i))            // nolint
@@ -85,7 +85,7 @@ func BenchmarkEventCollection(b *testing.B) {
 				},
 				{
 					Name: "CustomSmall",
-					Generator: func() interface{} {
+					Generator: func() any {
 						point := MakeCustom(4)
 						for i := int64(1); i <= 2; i++ {
 							point.Add(fmt.Sprintln("stat", i), rand.Int63n(i))            // nolint

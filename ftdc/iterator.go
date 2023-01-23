@@ -74,7 +74,7 @@ func ReadMatrix(ctx context.Context, r io.Reader) Iterator {
 // The matrix documents have better type fidelity than raw chunks but
 // do not properly collapse the bson timestamp type. To use these
 // values produced by the iterator, consider marshaling them directly
-// to map[string]interface{} and use a case statement, on the values
+// to map[string]any and use a case statement, on the values
 // in the map, such as:
 //
 //	switch v.(type) {

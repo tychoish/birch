@@ -245,7 +245,7 @@ func TestCollectJSON(t *testing.T) {
 		}
 	})
 	t.Run("RoundTrip", func(t *testing.T) {
-		inputs := []map[string]interface{}{
+		inputs := []map[string]any{
 			{
 				"one":   int64(1),
 				"other": int64(43),

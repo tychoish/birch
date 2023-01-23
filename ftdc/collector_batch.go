@@ -42,11 +42,11 @@ func (c *batchCollector) Reset() {
 	c.chunks = []*betterCollector{{maxDeltas: c.maxSamples}}
 }
 
-func (c *batchCollector) SetMetadata(in interface{}) error {
+func (c *batchCollector) SetMetadata(in any) error {
 	return (c.chunks[0].SetMetadata(in))
 }
 
-func (c *batchCollector) Add(in interface{}) error {
+func (c *batchCollector) Add(in any) error {
 	doc, err := readDocument(in)
 	if err != nil {
 		return err

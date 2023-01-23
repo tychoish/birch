@@ -125,7 +125,7 @@ type OpMessage struct {
 	Checksum   int32
 }
 
-func GetModel(msg Message) (interface{}, OpType) {
+func GetModel(msg Message) (any, OpType) {
 	switch m := msg.(type) {
 	case *CommandMessage:
 		return &model.Command{

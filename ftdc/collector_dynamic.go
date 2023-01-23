@@ -44,11 +44,11 @@ func (c *dynamicCollector) Reset() {
 	c.hash = ""
 }
 
-func (c *dynamicCollector) SetMetadata(in interface{}) error {
+func (c *dynamicCollector) SetMetadata(in any) error {
 	return (c.chunks[0].SetMetadata(in))
 }
 
-func (c *dynamicCollector) Add(in interface{}) error {
+func (c *dynamicCollector) Add(in any) error {
 	doc, err := readDocument(in)
 	if err != nil {
 		return err

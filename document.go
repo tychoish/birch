@@ -374,7 +374,7 @@ func (d *Document) UnmarshalBSON(b []byte) error {
 		return err
 	}
 
-	d.elems = make([]*Element, 0, 256)
+	d.elems = make([]*Element, 0, 128)
 
 	for iter.Next(iterCtx) {
 		d.elems = append(d.elems, iter.Value())
@@ -438,9 +438,9 @@ func (d *Document) String() string {
 // fields in the document which cannot be easily converted. While this
 // method does not work with arbitrary types that do not implement
 // DocumentUnmarshaler, it does not use reflection.
-func (d *Document) Unmarshal(into interface{}) error {
+func (d *Document) Unmarshal(into any) error {
 	switch out := into.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		for _, elem := range d.elems {
 			out[elem.Key()] = elem.value.Interface()
 		}
@@ -514,16 +514,16 @@ func (d *Document) Unmarshal(into interface{}) error {
 				out[elem.Key()] = []string{str}
 			}
 		}
-	case map[string][]interface{}:
+	case map[string][]any:
 		for _, elem := range d.elems {
 			if val, ok := elem.value.MutableArrayOK(); ok {
-				value := make([]interface{}, 0, val.Len())
+				value := make([]any, 0, val.Len())
 				for _, e := range val.doc.elems {
 					value = append(value, e.value.Interface())
 				}
 				out[elem.Key()] = value
 			} else {
-				out[elem.Key()] = []interface{}{elem.value.Interface()}
+				out[elem.Key()] = []any{elem.value.Interface()}
 			}
 		}
 	case map[string][]int:
@@ -636,20 +636,20 @@ func (d *Document) Unmarshal(into interface{}) error {
 				out[elem.Key()] = []*jsonx.Value{elem.value.toJSON()}
 			}
 		}
-	case map[interface{}]interface{}:
+	case map[any]any:
 		for _, elem := range d.elems {
 			out[elem.Key()] = elem.value.Interface()
 		}
-	case map[interface{}][]interface{}:
+	case map[any][]any:
 		for _, elem := range d.elems {
 			if val, ok := elem.value.MutableArrayOK(); ok {
-				value := make([]interface{}, 0, val.Len())
+				value := make([]any, 0, val.Len())
 				for _, e := range val.doc.elems {
 					value = append(value, e.value.Interface())
 				}
 				out[elem.Key()] = value
 			} else {
-				out[elem.Key()] = []interface{}{elem.value.Interface()}
+				out[elem.Key()] = []any{elem.value.Interface()}
 			}
 		}
 	case DocumentUnmarshaler:

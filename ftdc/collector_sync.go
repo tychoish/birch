@@ -18,13 +18,13 @@ func NewSynchronizedCollector(coll Collector) Collector {
 	}
 }
 
-func (c *synchronizedCollector) Add(in interface{}) error {
+func (c *synchronizedCollector) Add(in any) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.Collector.Add(in)
 }
 
-func (c *synchronizedCollector) SetMetadata(in interface{}) error {
+func (c *synchronizedCollector) SetMetadata(in any) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

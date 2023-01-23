@@ -88,7 +88,7 @@ func TestFlattenArray(t *testing.T) {
 func TestReadDocument(t *testing.T) {
 	for _, test := range []struct {
 		name        string
-		in          interface{}
+		in          any
 		shouldSkip  bool
 		shouldError bool
 		len         int
@@ -187,12 +187,12 @@ func TestReadDocument(t *testing.T) {
 		},
 		{
 			name:        "Map",
-			in:          map[string]interface{}{},
+			in:          map[string]any{},
 			shouldError: false,
 		},
 		{
 			name:        "MapPopulated",
-			in:          map[string]interface{}{"foo": "bar"},
+			in:          map[string]any{"foo": "bar"},
 			shouldError: false,
 			len:         1,
 		},

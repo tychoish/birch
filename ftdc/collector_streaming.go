@@ -35,7 +35,7 @@ func newStreamingCollector(maxSamples int, writer io.Writer) *streamingCollector
 }
 
 func (c *streamingCollector) Reset() { c.count = 0; c.Collector.Reset() }
-func (c *streamingCollector) Add(in interface{}) error {
+func (c *streamingCollector) Add(in any) error {
 	if c.count-1 >= c.maxSamples {
 		if err := FlushCollector(c, c.output); err != nil {
 			return fmt.Errorf("problem flushing collector contents: %w", err)
@@ -101,7 +101,7 @@ func (c *streamingDynamicCollector) Reset() {
 	c.hash = ""
 }
 
-func (c *streamingDynamicCollector) Add(in interface{}) error {
+func (c *streamingDynamicCollector) Add(in any) error {
 	doc, err := readDocument(in)
 	if err != nil {
 		return err

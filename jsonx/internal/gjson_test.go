@@ -179,8 +179,8 @@ func TestNewParse(t *testing.T) {
 }
 
 func TestUnmarshalMap(t *testing.T) {
-	var m1 = must(Parse(exampleJSON)).Value().(map[string]interface{})
-	var m2 map[string]interface{}
+	var m1 = must(Parse(exampleJSON)).Value().(map[string]any)
+	var m2 map[string]any
 	if err := json.Unmarshal([]byte(exampleJSON), &m2); err != nil {
 		t.Fatal(err)
 	}
@@ -228,7 +228,7 @@ type ComplicatedType struct {
 	}
 	NestedTagged struct {
 		Green string
-		Map   map[string]interface{}
+		Map   map[string]any
 		Ints  struct {
 			Int   int `json:"int"`
 			Int8  int8
@@ -255,7 +255,7 @@ type ComplicatedType struct {
 	SelfSlice    []ComplicatedType
 	SelfSlicePtr []*ComplicatedType
 	SelfPtrSlice *[]ComplicatedType
-	Interface    interface{} `json:"interface"`
+	Interface    any `json:"interface"`
 	Array        [3]int
 	Time         time.Time `json:"time"`
 	Binary       []byte

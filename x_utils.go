@@ -2,7 +2,7 @@ package birch
 
 import "fmt"
 
-func bestStringAttempt(in interface{}) string {
+func bestStringAttempt(in any) string {
 	switch val := in.(type) {
 	case string:
 		return val

@@ -42,7 +42,7 @@ func NewBasicCollector(fc ftdc.Collector) Collector {
 	}
 }
 
-func (c *basicCumulativeCollector) Add(interface{}) error { return nil }
+func (c *basicCumulativeCollector) Add(any) error { return nil }
 func (c *basicCumulativeCollector) AddEvent(in *Performance) error {
 	if in == nil {
 		return errors.New("cannot add nil performance event")
@@ -69,7 +69,7 @@ func NewPassthroughCollector(fc ftdc.Collector) Collector {
 	}
 }
 
-func (c *passthroughCollector) Add(interface{}) error { return nil }
+func (c *passthroughCollector) Add(any) error { return nil }
 func (c *passthroughCollector) AddEvent(in *Performance) error {
 	if in == nil {
 		return errors.New("cannot add nil performance event")
@@ -95,7 +95,7 @@ func NewSamplingCollector(fc ftdc.Collector, n int) Collector {
 	}
 }
 
-func (c *samplingCollector) Add(interface{}) error { return nil }
+func (c *samplingCollector) Add(any) error { return nil }
 func (c *samplingCollector) AddEvent(in *Performance) error {
 	if in == nil {
 		return errors.New("cannot add nil performance event")
@@ -135,7 +135,7 @@ func NewRandomSamplingCollector(fc ftdc.Collector, sumAll bool, percent int) Col
 	}
 }
 
-func (c *randSamplingCollector) Add(interface{}) error { return nil }
+func (c *randSamplingCollector) Add(any) error { return nil }
 func (c *randSamplingCollector) AddEvent(in *Performance) error {
 	if in == nil {
 		return errors.New("cannot add nil performance event")
@@ -182,7 +182,7 @@ func NewIntervalCollector(fc ftdc.Collector, interval time.Duration) Collector {
 	}
 }
 
-func (c *intervalSamplingCollector) Add(interface{}) error { return nil }
+func (c *intervalSamplingCollector) Add(any) error { return nil }
 func (c *intervalSamplingCollector) AddEvent(in *Performance) error {
 	if in == nil {
 		return errors.New("cannot add nil performance event")
@@ -214,7 +214,7 @@ func NewSynchronizedCollector(coll Collector) Collector {
 	}
 }
 
-func (c *synchronizedCollector) Add(in interface{}) error {
+func (c *synchronizedCollector) Add(in any) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.Collector.Add(in)
@@ -226,7 +226,7 @@ func (c *synchronizedCollector) AddEvent(in *Performance) error {
 	return c.Collector.AddEvent(in)
 }
 
-func (c *synchronizedCollector) SetMetadata(in interface{}) error {
+func (c *synchronizedCollector) SetMetadata(in any) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

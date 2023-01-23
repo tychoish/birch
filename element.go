@@ -119,7 +119,7 @@ func (e *Element) WriteTo(w io.Writer) (int64, error) {
 	return int64(n), err
 }
 
-func (e *Element) writeElement(key bool, start uint, writer interface{}) (int64, error) {
+func (e *Element) writeElement(key bool, start uint, writer any) (int64, error) {
 	// TODO(skriptble): Figure out if we want to use uint or uint32 and
 	// standardize across all packages.
 	var total int64

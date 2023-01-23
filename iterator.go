@@ -76,7 +76,6 @@ func newReaderIterator(r Reader) (*readerIterator, error) {
 	itr.r = r
 	itr.pos = 4
 	itr.end = uint32(givenLength)
-	itr.elem = &Element{value: &Value{}}
 
 	return itr, nil
 }
@@ -115,11 +114,6 @@ func (itr *readerIterator) Next(ctx context.Context) bool {
 		},
 	}
 
-	// itr.elem.value.start = elemStart
-	// itr.elem.value.offset = itr.pos
-	// itr.elem.value.data = itr.r
-	// itr.elem.value.d = nil
-
 	n, err = itr.elem.value.validate(true)
 	itr.pos += n
 
@@ -156,7 +150,6 @@ func (iter *arrayIterator) Next(ctx context.Context) bool {
 	}
 
 	val, err := iter.array.Lookup(iter.pos)
-
 	if err != nil {
 		// error if out of bounds
 		// don't assign iter.err

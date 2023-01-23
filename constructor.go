@@ -35,7 +35,7 @@ type ValueConstructor struct{}
 // If the value cannot be converted to bson, a null Element is constructed with the
 // key. This method will never return a nil *Element. If an error turning the
 // value into an Element is desired, use the InterfaceErr method.
-func (ElementConstructor) Interface(key string, value interface{}) *Element {
+func (ElementConstructor) Interface(key string, value any) *Element {
 	var (
 		elem *Element
 		err  error
@@ -95,7 +95,7 @@ func (ElementConstructor) Interface(key string, value interface{}) *Element {
 		elem = EC.Timestamp(key, t.T, t.I)
 	case map[string]string:
 		elem = EC.SubDocument(key, DC.MapString(t))
-	case map[string]interface{}:
+	case map[string]any:
 		elem = EC.SubDocument(key, DC.MapInterface(t))
 	case map[string]int64:
 		elem = EC.SubDocument(key, DC.MapInt64(t))
@@ -119,7 +119,7 @@ func (ElementConstructor) Interface(key string, value interface{}) *Element {
 		elem = EC.SubDocument(key, DC.MapJSONX(t))
 	case map[string][]string:
 		elem = EC.SubDocument(key, DC.MapSliceString(t))
-	case map[string][]interface{}:
+	case map[string][]any:
 		elem = EC.SubDocument(key, DC.MapSliceInterface(t))
 	case map[string][]int64:
 		elem = EC.SubDocument(key, DC.MapSliceInt64(t))
@@ -141,11 +141,11 @@ func (ElementConstructor) Interface(key string, value interface{}) *Element {
 		elem = EC.SubDocument(key, DC.MapSliceMarshaler(t))
 	case map[string][]*jsonx.Document:
 		elem = EC.SubDocument(key, DC.MapSliceJSONX(t))
-	case map[interface{}]interface{}:
+	case map[any]any:
 		elem = EC.SubDocument(key, DC.Interface(t))
-	case map[interface{}][]interface{}:
+	case map[any][]any:
 		elem = EC.SubDocument(key, DC.MapInterfaceSliceInterface(t))
-	case []interface{}:
+	case []any:
 		elem = EC.SliceInterface(key, t)
 	case []string:
 		elem = EC.SliceString(key, t)
@@ -205,7 +205,7 @@ func (ElementConstructor) Interface(key string, value interface{}) *Element {
 
 // InterfaceErr does what Interface does, but returns an error when it cannot
 // properly convert a value into an *Element. See Interface for details.
-func (ElementConstructor) InterfaceErr(key string, value interface{}) (*Element, error) {
+func (ElementConstructor) InterfaceErr(key string, value any) (*Element, error) {
 	switch t := value.(type) {
 	case uint:
 		switch {
@@ -233,13 +233,13 @@ func (ElementConstructor) InterfaceErr(key string, value interface{}) (*Element,
 		return EC.Interface(key, value), nil
 	case []string, []int32, []int64, []int, []time.Time, []time.Duration, []float64, []float32:
 		return EC.Interface(key, value), nil
-	case map[string]interface{}, map[string]Marshaler, map[string]DocumentMarshaler:
+	case map[string]any, map[string]Marshaler, map[string]DocumentMarshaler:
 		return EC.InterfaceErr(key, t)
-	case map[string][]interface{}, map[string][]Marshaler, map[string][]DocumentMarshaler:
+	case map[string][]any, map[string][]Marshaler, map[string][]DocumentMarshaler:
 		return EC.InterfaceErr(key, value)
-	case map[interface{}][]interface{}, map[interface{}]interface{}:
+	case map[any][]any, map[any]any:
 		return EC.InterfaceErr(key, value)
-	case []interface{}, []Marshaler, []DocumentMarshaler:
+	case []any, []Marshaler, []DocumentMarshaler:
 		return EC.InterfaceErr(key, value)
 	case *jsonx.Document, []*jsonx.Document, map[string]*jsonx.Document, map[string][]*jsonx.Document:
 		return EC.Interface(key, value), nil

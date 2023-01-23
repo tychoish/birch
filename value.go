@@ -63,11 +63,11 @@ func (v *Value) Set(v2 *Value) {
 // Interface returns the Go value of this Value as an empty interface.
 //
 // For embedded documents and arrays, Interface will convert the
-// elements to map[string]interface{} or []interface{} as possible.
+// elements to map[string]any or []any as possible.
 //
 // The underlying types of the values returned by this method are
 // their native corresponding type when possible.
-func (v *Value) Interface() interface{} {
+func (v *Value) Interface() any {
 	if v == nil {
 		return nil
 	}

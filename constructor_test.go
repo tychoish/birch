@@ -1043,7 +1043,7 @@ func TestDocumentConstructor(t *testing.T) {
 				Name: "MapInterface",
 				Size: 2,
 				Constructor: func() (*Document, error) {
-					return DC.MapInterface(map[string]interface{}{"a": true, "b": "c"}), nil
+					return DC.MapInterface(map[string]any{"a": true, "b": "c"}), nil
 				},
 			},
 			{
@@ -1127,14 +1127,14 @@ func TestDocumentConstructor(t *testing.T) {
 	t.Run("Interface", func(t *testing.T) {
 		for _, test := range []struct {
 			Name      string
-			Input     interface{}
+			Input     any
 			Size      int
 			HasErrors bool
 			Type      bsontype.Type
 		}{
 			{
 				Name:  "Empty",
-				Input: map[string]interface{}{},
+				Input: map[string]any{},
 				Size:  0,
 				Type:  bsontype.EmbeddedDocument,
 			},
@@ -1161,38 +1161,38 @@ func TestDocumentConstructor(t *testing.T) {
 			{
 				Name:  "MapInterfaceInterfaceErrorKey",
 				Size:  1,
-				Input: map[interface{}]interface{}{errors.New("hi"): "world"},
+				Input: map[any]any{errors.New("hi"): "world"},
 				Type:  bsontype.EmbeddedDocument,
 			},
 			{
 				Name:  "MapInterfaceInterfaceStrings",
 				Size:  1,
-				Input: map[interface{}]interface{}{"hi": "world"},
+				Input: map[any]any{"hi": "world"},
 				Type:  bsontype.EmbeddedDocument,
 			},
 			{
 				Name:  "MapInterfaceInterfaceBool",
 				Size:  1,
-				Input: map[interface{}]interface{}{true: "world"},
+				Input: map[any]any{true: "world"},
 				Type:  bsontype.EmbeddedDocument,
 			},
 			{
 				Name:  "MapInterfaceInterfaceStringer",
 				Size:  1,
-				Input: map[interface{}]interface{}{DC.New(): "world"},
+				Input: map[any]any{DC.New(): "world"},
 				Type:  bsontype.EmbeddedDocument,
 			},
 			{
 				Name:  "MapInterfaceStrings",
 				Size:  2,
-				Input: map[string]interface{}{"a": true, "b": "c"},
+				Input: map[string]any{"a": true, "b": "c"},
 				Type:  bsontype.EmbeddedDocument,
 			},
 			{
 				Name: "MapStringInterfaceSlice",
 				Type: bsontype.EmbeddedDocument,
 				Size: 2,
-				Input: map[string][]interface{}{
+				Input: map[string][]any{
 					"a": {"1", 2, "3"},
 					"b": {false, true, "1", 2, "3"},
 				},

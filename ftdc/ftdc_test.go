@@ -34,7 +34,7 @@ func printError(err error) {
 	}
 }
 
-type testMessage map[string]interface{}
+type testMessage map[string]any
 
 func (m testMessage) String() string {
 	by, err := json.Marshal(m)

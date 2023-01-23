@@ -16,7 +16,7 @@ import (
 	"github.com/tychoish/birch/ftdc/util"
 )
 
-func readDocument(in interface{}) (*birch.Document, error) {
+func readDocument(in any) (*birch.Document, error) {
 	switch doc := in.(type) {
 	case *birch.Document:
 		return doc, nil
@@ -30,7 +30,7 @@ func readDocument(in interface{}) (*birch.Document, error) {
 			return nil, fmt.Errorf("problem with unmarshaler: %w", err)
 		}
 		return birch.ReadDocument(data)
-	case map[string]interface{}, map[string]int, map[string]int64, map[string]uint, map[string]uint64:
+	case map[string]any, map[string]int, map[string]int64, map[string]uint, map[string]uint64:
 		elems := birch.DC.Interface(doc).Elements()
 		sort.Stable(elems)
 		return birch.DC.Elements(elems...), nil

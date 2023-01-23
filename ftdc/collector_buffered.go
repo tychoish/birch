@@ -8,7 +8,7 @@ import (
 
 type bufferedCollector struct {
 	Collector
-	pipe    chan interface{}
+	pipe    chan any
 	catcher erc.Collector
 	ctx     context.Context
 }
@@ -18,7 +18,7 @@ type bufferedCollector struct {
 func NewBufferedCollector(ctx context.Context, size int, coll Collector) Collector {
 	c := &bufferedCollector{
 		Collector: coll,
-		pipe:      make(chan interface{}, size),
+		pipe:      make(chan any, size),
 		ctx:       ctx,
 	}
 
@@ -42,7 +42,7 @@ func NewBufferedCollector(ctx context.Context, size int, coll Collector) Collect
 	return c
 }
 
-func (c *bufferedCollector) Add(in interface{}) error {
+func (c *bufferedCollector) Add(in any) error {
 	select {
 	case <-c.ctx.Done():
 		return c.ctx.Err()

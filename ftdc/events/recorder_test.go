@@ -9,8 +9,8 @@ import (
 )
 
 type MockCollector struct {
-	Metadata      interface{}
-	Data          []interface{}
+	Metadata      any
+	Data          []any
 	MetadataError error
 	ResolveError  error
 	AddError      error
@@ -20,11 +20,11 @@ type MockCollector struct {
 	State         ftdc.CollectorInfo
 }
 
-func (c *MockCollector) SetMetadata(in interface{}) error { c.Metadata = in; return c.MetadataError }
-func (c *MockCollector) Add(in interface{}) error         { c.Data = append(c.Data, in); return c.AddError }
-func (c *MockCollector) Resolve() ([]byte, error)         { c.ResolveCount++; return c.Output, c.ResolveError }
-func (c *MockCollector) Reset()                           { c.ResetCount++ }
-func (c *MockCollector) Info() ftdc.CollectorInfo         { return c.State }
+func (c *MockCollector) SetMetadata(in any) error { c.Metadata = in; return c.MetadataError }
+func (c *MockCollector) Add(in any) error         { c.Data = append(c.Data, in); return c.AddError }
+func (c *MockCollector) Resolve() ([]byte, error) { c.ResolveCount++; return c.Output, c.ResolveError }
+func (c *MockCollector) Reset()                   { c.ResetCount++ }
+func (c *MockCollector) Info() ftdc.CollectorInfo { return c.State }
 
 type recorderTestCase struct {
 	Name string

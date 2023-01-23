@@ -2596,7 +2596,7 @@ func testValidateValue(t *testing.T) {
 		}
 		testCases := []struct {
 			name string
-			doc  interface{}
+			doc  any
 			want string
 		}{
 			{

@@ -26,7 +26,7 @@ import (
 // and FTDC.
 type CustomPoint struct {
 	Name  string
-	Value interface{}
+	Value any
 }
 
 // Custom is a collection of data points designed to store computed
@@ -43,7 +43,7 @@ func MakeCustom(size int) Custom { return make(Custom, 0, size) }
 
 // Add appends a key to the Custom metric. Only accepts go native
 // number types and timestamps.
-func (ps *Custom) Add(key string, value interface{}) error {
+func (ps *Custom) Add(key string, value any) error {
 	// TODO: figure out
 	switch v := value.(type) {
 	case int64, int32, int, bool, time.Time, float64, float32, uint32, uint64:
