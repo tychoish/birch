@@ -7,7 +7,6 @@
 package birch
 
 import (
-	"bytes"
 	"fmt"
 	"strconv"
 
@@ -212,7 +211,8 @@ func (a *Array) Delete(index uint) *Value {
 
 // String implements the fmt.Stringer interface.
 func (a *Array) String() string {
-	var buf bytes.Buffer
+	buf := getBuf()
+	defer putBuf(buf)
 
 	buf.Write([]byte("bson.Array["))
 
@@ -221,7 +221,7 @@ func (a *Array) String() string {
 			buf.Write([]byte(", "))
 		}
 
-		fmt.Fprintf(&buf, "%s", elem.value.Interface())
+		fmt.Fprintf(buf, "%s", elem.value.Interface())
 	}
 
 	buf.WriteByte(']')

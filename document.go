@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"sync"
 	"time"
 
 	"github.com/tychoish/birch/bsonerr"
@@ -18,6 +19,20 @@ import (
 	"github.com/tychoish/birch/jsonx"
 	"github.com/tychoish/fun"
 )
+
+var bufPool = &sync.Pool{
+	New: func() any { return &bytes.Buffer{} },
+}
+
+func getBuf() *bytes.Buffer { return bufPool.Get().(*bytes.Buffer) }
+func putBuf(buf *bytes.Buffer) {
+	if buf.Cap() > 64<<10 {
+		return
+	}
+
+	buf.Reset()
+	bufPool.Put(buf)
+}
 
 var iterCtx = context.Background()
 
@@ -198,7 +213,6 @@ func (d *Document) ElementAtOK(index uint) (*Element, bool) {
 
 // Iterator creates an Iterator for this document and returns it.
 func (d *Document) Iterator() fun.Iterator[*Element] {
-
 	return newIterator(d)
 }
 
@@ -412,7 +426,8 @@ func (d *Document) ReadFrom(r io.Reader) (int64, error) {
 // String implements the fmt.Stringer interface.
 func (d *Document) String() string {
 
-	var buf bytes.Buffer
+	buf := getBuf()
+	defer putBuf(buf)
 
 	buf.Write([]byte("bson.Document{"))
 
@@ -421,7 +436,7 @@ func (d *Document) String() string {
 			buf.Write([]byte(", "))
 		}
 
-		fmt.Fprintf(&buf, "%s", elem)
+		fmt.Fprintf(buf, "%s", elem)
 	}
 
 	buf.WriteByte('}')
