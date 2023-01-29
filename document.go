@@ -7,11 +7,8 @@
 package birch
 
 import (
-	"bytes"
-	"context"
 	"fmt"
 	"io"
-	"sync"
 	"time"
 
 	"github.com/tychoish/birch/bsonerr"
@@ -19,22 +16,6 @@ import (
 	"github.com/tychoish/birch/jsonx"
 	"github.com/tychoish/fun"
 )
-
-var bufPool = &sync.Pool{
-	New: func() any { return &bytes.Buffer{} },
-}
-
-func getBuf() *bytes.Buffer { return bufPool.Get().(*bytes.Buffer) }
-func putBuf(buf *bytes.Buffer) {
-	if buf.Cap() > 64<<10 {
-		return
-	}
-
-	buf.Reset()
-	bufPool.Put(buf)
-}
-
-var iterCtx = context.Background()
 
 // Document is a mutable ordered map that compactly represents a BSON document.
 type Document struct {
@@ -425,9 +406,7 @@ func (d *Document) ReadFrom(r io.Reader) (int64, error) {
 
 // String implements the fmt.Stringer interface.
 func (d *Document) String() string {
-
-	buf := getBuf()
-	defer putBuf(buf)
+	buf := getMagicBuf(0)
 
 	buf.Write([]byte("bson.Document{"))
 

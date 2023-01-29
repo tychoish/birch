@@ -211,8 +211,7 @@ func (a *Array) Delete(index uint) *Value {
 
 // String implements the fmt.Stringer interface.
 func (a *Array) String() string {
-	buf := getBuf()
-	defer putBuf(buf)
+	buf := getBuf(64 << 10)
 
 	buf.Write([]byte("bson.Array["))
 

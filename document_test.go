@@ -582,12 +582,12 @@ func TestDocument(t *testing.T) {
 			}
 		})
 		t.Run("invalid-document", func(t *testing.T) {
-			var buf bytes.Buffer
-			_, err := (&buf).Write([]byte{'\x07', '\x00', '\x00', '\x00', '\x01', '\x00', '\x00'})
+			var buf = &bytes.Buffer{}
+			_, err := buf.Write([]byte{'\x07', '\x00', '\x00', '\x00', '\x01', '\x00', '\x00'})
 			if err != nil {
 				t.Errorf("Unexpected error while writing document to buffer: %s", err)
 			}
-			_, err = DC.Elements().ReadFrom(&buf)
+			_, err = DC.Elements().ReadFrom(buf)
 			if !IsTooSmall(err) {
 				t.Errorf("Expected error not returned. got %s; want %s", err, errTooSmall)
 			}
