@@ -9,7 +9,7 @@ import (
 
 	"errors"
 
-	"github.com/tychoish/birch/mrpc/mongowire"
+	"github.com/tychoish/birch/x/mrpc/mongowire"
 )
 
 type HandlerFunc func(context.Context, io.Writer, mongowire.Message)

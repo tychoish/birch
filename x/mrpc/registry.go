@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/tychoish/birch/mrpc/mongowire"
+	"github.com/tychoish/birch/x/mrpc/mongowire"
 )
 
 type OperationRegistry struct {

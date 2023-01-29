@@ -6,7 +6,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/tychoish/birch/mrpc/mongowire"
+	"github.com/tychoish/birch/x/mrpc/mongowire"
 )
 
 func assertRegistryLen(t *testing.T, size int, registry *OperationRegistry) {

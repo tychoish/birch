@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/tychoish/birch/mrpc"
-	"github.com/tychoish/birch/mrpc/mongowire"
+	"github.com/tychoish/birch/x/mrpc"
+	"github.com/tychoish/birch/x/mrpc/mongowire"
 )
 
 type shellService struct {

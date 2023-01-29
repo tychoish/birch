@@ -74,7 +74,7 @@ If you encounter a problem or have a feature that you'd like to see added to
 ``mrpc``, please feel free to create an issue or file a pull request.
 
 For complete API documentation see the `godoc
-<https://godoc.org/github.com/tychoish/birch/mrpc>`.
+<https://godoc.org/github.com/tychoish/birch/x/mrpc>`.
 
 History
 ~~~~~~~

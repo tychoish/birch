@@ -2,7 +2,7 @@ package mongowire
 
 import (
 	"github.com/tychoish/birch"
-	"github.com/tychoish/birch/mrpc/model"
+	"github.com/tychoish/birch/x/mrpc/model"
 )
 
 type Message interface {
