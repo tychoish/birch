@@ -31,9 +31,10 @@ github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKs
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/tidwall/pretty v1.0.0 h1:HsD+QiTn7sK6flMKIvNmpqz1qrpP3Ps6jOKIKMooyg4=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
-github.com/tychoish/birch v0.1.0 h1:ASACb4zgCvh1GkcwW1Wdu6s+5lfjROPrxdXlqZipVdU=
-github.com/tychoish/birch v0.1.0/go.mod h1:0ksDaN9jaDnAN8uZwhnASaoM9pgGZQfZsJBYtSDHI/Q=
+github.com/tychoish/birch v0.1.1 h1:ZjsztmynMoRFlqOe3tUP9D1MBZItQ+c6oi+1Y1FC6Tw=
+github.com/tychoish/birch v0.1.1/go.mod h1:ApDPb1vnttFeLKXmOFSRj3Fk1ZNiYTWUmmOD5HYQYBM=
 github.com/tychoish/fun v0.3.3 h1:oyptuZ9SL8vzPamERbZA2PnG7VMFyMBimVlJXn9rgas=
+github.com/tychoish/fun v0.3.3/go.mod h1:84A+BwGecz23UotmbB4mtvVS5ZcsZpspecduxpwF/XM=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.1.1/go.mod h1:RaEWvsqvNKKvBPvcKeFjrG2cJqOkHTiyTpzz23ni57g=
 github.com/xdg-go/stringprep v1.0.3/go.mod h1:W3f5j4i+9rC0kuIEJL0ky1VpHXQU3ocBgklLGvcBnW8=
