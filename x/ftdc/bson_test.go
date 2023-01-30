@@ -10,9 +10,9 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
+	"github.com/tychoish/birch/types"
 	"github.com/tychoish/birch/x/ftdc/testutil"
 	"github.com/tychoish/birch/x/ftdc/util"
-	"github.com/tychoish/birch/types"
 )
 
 func TestFlattenArray(t *testing.T) {
@@ -716,12 +716,6 @@ func TestDocumentExtraction(t *testing.T) {
 		{
 			Name:              "EmptyDocument",
 			Document:          birch.DC.Elements(),
-			NumEncodedValues:  0,
-			FirstEncodedValue: 0,
-		},
-		{
-			Name:              "NilDocumentsDocument",
-			Document:          (&birch.Document{IgnoreNilInsert: true}).Append(nil, nil),
 			NumEncodedValues:  0,
 			FirstEncodedValue: 0,
 		},

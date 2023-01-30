@@ -111,8 +111,8 @@ func SendMessage(ctx context.Context, m Message, writer io.Writer) error {
 			defer close(writeFinished)
 			n, err := writer.Write(buf)
 			select {
-			case writeFinished <- writeRes{n: n, err: err}:
 			case <-ctx.Done():
+			case writeFinished <- writeRes{n: n, err: err}:
 			}
 		}()
 		select {

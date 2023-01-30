@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"sync"
 	"testing"
 
 	"github.com/tychoish/birch"
@@ -106,7 +107,7 @@ func TestSendMessage(t *testing.T) {
 		if err := SendMessage(ctx, createSmallMessage(t), w); err == nil {
 			t.Error("error should be nil")
 		}
-		if len(w.data) != 0 {
+		if w.Len() != 0 {
 			t.Fatal("data should be empty")
 		}
 	})
@@ -133,10 +134,19 @@ func TestSendMessage(t *testing.T) {
 }
 
 type mockWriter struct {
+	mu   sync.Mutex
 	data []byte
 }
 
+func (w *mockWriter) Len() int {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return len(w.data)
+}
+
 func (w *mockWriter) Write(p []byte) (int, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
 	w.data = append(w.data, p...)
 	return len(p), nil
 }
