@@ -17,9 +17,6 @@ import (
 )
 
 func TestArray(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	t.Run("Append", func(t *testing.T) {
 		t.Run("Nil Insert", func(t *testing.T) {
 			func() {
@@ -33,35 +30,6 @@ func TestArray(t *testing.T) {
 				a.Append(nil)
 			}()
 		})
-		t.Run("Ignore Nil Insert", func(t *testing.T) {
-			func() {
-				defer func() {
-					r := recover()
-					if r != nil {
-						t.Errorf("Received unexpected panic from nil insert. got %#v; want %#v", r, nil)
-					}
-				}()
-				want := NewArray()
-				want.doc.IgnoreNilInsert = true
-
-				got := NewArray()
-				got.doc.IgnoreNilInsert = true
-				got.Append(nil)
-
-				if len(want.doc.elems) != len(got.doc.elems) {
-					t.Fatal("unquela lengths")
-				}
-				for idx := range want.doc.elems {
-					if !want.doc.elems[idx].Equal(got.doc.elems[idx]) {
-						t.Fatal("uneuqal elements at index", idx)
-					}
-				}
-
-				// if diff := cmp.Diff(got, want, cmp.AllowUnexported(Document{}, Array{})); diff != "" {
-				//	t.Errorf("Documents differ: (-got +want)\n%s", diff)
-				// }
-			}()
-		})
 		testCases := []struct {
 			name   string
 			values [][]*Value
@@ -70,7 +38,6 @@ func TestArray(t *testing.T) {
 			{"one-one", tapag.oneOne(), tapag.oneOneBytes(0)},
 			{"two-one", tapag.twoOne(), tapag.twoOneAppendBytes(0)},
 		}
-
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
 				a := NewArray()
@@ -84,86 +51,6 @@ func TestArray(t *testing.T) {
 				}
 				if !bytes.Equal(got, tc.want) {
 					t.Errorf("Output from Append is not correct. got %#v; want %#v", got, tc.want)
-				}
-			})
-		}
-	})
-	t.Run("Prepend", func(t *testing.T) {
-		t.Run("Nil Insert", func(t *testing.T) {
-			func() {
-				defer func() {
-					r := recover()
-					if r != bsonerr.NilElement {
-						t.Errorf("Did not received expected error from panic. got %#v; want %#v", r, bsonerr.NilElement)
-					}
-				}()
-				a := NewArray()
-				a.Prepend(nil)
-			}()
-		})
-		t.Run("Ignore Nil Insert", func(t *testing.T) {
-			testCases := []struct {
-				name   string
-				values []*Value
-				want   *Array
-			}{
-				{
-					"first element nil",
-					nil,
-					&Array{
-						&Document{
-							IgnoreNilInsert: true,
-							elems:           make([]*Element, 0),
-						},
-					},
-				},
-			}
-
-			for _, tc := range testCases {
-				var got *Array
-				func() {
-					defer func() {
-						r := recover()
-						if r != nil {
-							t.Errorf("Did not received expected error from panic. got %#v; want %#v", r, nil)
-						}
-
-						if len(tc.want.doc.elems) != len(got.doc.elems) {
-							t.Fatal("unquela lengths")
-						}
-						for idx := range tc.want.doc.elems {
-							if !tc.want.doc.elems[idx].Equal(got.doc.elems[idx]) {
-								t.Fatal("uneuqal elements at index", idx)
-							}
-						}
-					}()
-					got = NewArray()
-					got.doc.IgnoreNilInsert = true
-					got.Prepend(tc.values...)
-				}()
-			}
-		})
-		testCases := []struct {
-			name   string
-			values [][]*Value
-			want   []byte
-		}{
-			{"one-one", tapag.oneOne(), tapag.oneOneBytes(0)},
-			{"two-one", tapag.twoOne(), tapag.twoOnePrependBytes(0)},
-		}
-
-		for _, tc := range testCases {
-			t.Run(tc.name, func(t *testing.T) {
-				a := NewArray()
-				for _, elems := range tc.values {
-					a.Prepend(elems...)
-				}
-				got, err := a.MarshalBSON()
-				if err != nil {
-					t.Errorf("Received an unexpected error while marshaling BSON: %s", err)
-				}
-				if !bytes.Equal(got, tc.want) {
-					t.Errorf("Output from Prepend is not correct. got %#v; want %#v", got, tc.want)
 				}
 			})
 		}
@@ -257,7 +144,7 @@ func TestArray(t *testing.T) {
 			t.Run(tc.name, func(t *testing.T) {
 				a := NewArray()
 				for _, elems := range tc.values {
-					a.Prepend(elems...)
+					a.Append(elems...)
 				}
 
 				iter := a.Iterator()
@@ -290,28 +177,6 @@ func TestArray(t *testing.T) {
 		}
 	})
 	t.Run("Constructors", func(t *testing.T) {
-		t.Run("FromDocument", func(t *testing.T) {
-			doc := DC.Elements(EC.Int("foo", 42), EC.Int("bar", 84))
-			if 2 != doc.Len() {
-				t.Fatalf("unqueal %v and %v", 2, doc.Len())
-			}
-
-			ar := ArrayFromDocument(doc)
-			if 2 != ar.Len() {
-				t.Error("values should be equal")
-			}
-			iter := ar.Iterator()
-			if iter == nil {
-				t.Fatalf("%T value is nil", iter)
-			}
-			total := 0
-			for iter.Next(ctx) {
-				total += iter.Value().Int()
-			}
-			if 126 != total {
-				t.Error("values should be equal")
-			}
-		})
 		t.Run("Make", func(t *testing.T) {
 			ar := MakeArray(42)
 			if 0 != ar.Len() {

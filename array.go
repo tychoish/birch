@@ -25,18 +25,11 @@ type Array struct {
 
 // NewArray creates a new array with the specified value.
 func NewArray(values ...*Value) *Array {
-	elems := make([]*Element, 0, len(values))
+	doc := DC.Make(len(values))
 	for _, v := range values {
-		elems = append(elems, &Element{value: v})
+		doc.Append(&Element{value: v})
 	}
 
-	return &Array{doc: DC.Elements(elems...)}
-}
-
-// ArrayFromDocument creates an array from a *Document. The returned array
-// does not make a copy of the *Document, so any changes made to either will
-// be present in both.
-func ArrayFromDocument(doc *Document) *Array {
 	return &Array{doc: doc}
 }
 
@@ -166,13 +159,6 @@ func (a *Array) lookupTraverse(index uint, keys ...string) (*Value, error) {
 // Append adds the given values to the end of the array. It returns a reference to itself.
 func (a *Array) Append(values ...*Value) *Array {
 	a.doc.Append(elemsFromValues(values)...)
-
-	return a
-}
-
-// Prepend adds the given values to the beginning of the array. It returns a reference to itself.
-func (a *Array) Prepend(values ...*Value) *Array {
-	a.doc.Prepend(elemsFromValues(values)...)
 
 	return a
 }

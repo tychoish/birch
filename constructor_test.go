@@ -44,9 +44,6 @@ func requireValuesEqual(t *testing.T, expected *Value, actual *Value) {
 		if actual.d == nil {
 			t.Fatal("actual document was nil")
 		}
-		if expected.d.IgnoreNilInsert != actual.d.IgnoreNilInsert {
-			t.Fatal("ignore nil insert values not equal")
-		}
 		if len(expected.d.elems) != len(actual.d.elems) {
 			t.Fatal("expected numbers of elements were not correct")
 		}

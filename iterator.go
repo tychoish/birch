@@ -20,10 +20,6 @@ type elementIterator struct {
 	err   error
 }
 
-func newIterator(d *Document) *elementIterator {
-	return &elementIterator{d: d}
-}
-
 // Next fetches the next element of the document, returning whether or not the next element was able
 // to be fetched. If true is returned, then call Element to get the element. If false is returned,
 // call Err to check if an error occurred.

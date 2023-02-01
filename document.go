@@ -18,13 +18,7 @@ import (
 )
 
 // Document is a mutable ordered map that compactly represents a BSON document.
-type Document struct {
-	// The default behavior or Append, Prepend, and Replace is to panic on the
-	// insertion of a nil element. Setting IgnoreNilInsert to true will instead
-	// silently ignore any nil paramet()ers to these methods.
-	IgnoreNilInsert bool
-	elems           []*Element
-}
+type Document struct{ elems []*Element }
 
 // ReadDocument will create a Document using the provided slice of bytes. If the
 // slice of bytes is not a valid BSON document, this method will return an error.
@@ -40,10 +34,7 @@ func ReadDocument(b []byte) (*Document, error) {
 
 // Copy makes a shallow copy of this document.
 func (d *Document) Copy() *Document {
-	doc := &Document{
-		IgnoreNilInsert: d.IgnoreNilInsert,
-		elems:           make([]*Element, len(d.elems), cap(d.elems)),
-	}
+	doc := &Document{elems: make([]*Element, len(d.elems), cap(d.elems))}
 
 	copy(doc.elems, d.elems)
 
@@ -62,9 +53,6 @@ func (d *Document) Len() int { return len(d.elems) }
 func (d *Document) Append(elems ...*Element) *Document {
 	for _, elem := range elems {
 		if elem == nil {
-			if d.IgnoreNilInsert {
-				continue
-			}
 			panic(bsonerr.NilElement)
 		}
 
@@ -78,51 +66,11 @@ func (d *Document) Append(elems ...*Element) *Document {
 // no impact otherwise.
 func (d *Document) AppendOmitEmpty(elems ...*Element) *Document {
 	for _, elem := range elems {
-		if elem.Value().IsEmpty() {
+		if elem == nil || elem.Value().IsEmpty() {
 			continue
 		}
 
 		d.Append(elem)
-	}
-	return d
-}
-
-// Prepend adds each element to the beginning of the document, in
-// order. If a nil element is passed as a parameter this method will
-// panic.
-//
-// If a nil element is inserted and this method panics, it does not remove the
-// previously added elements.
-func (d *Document) Prepend(elems ...*Element) *Document {
-
-	// In order to insert the prepended elements in order we need to make space
-	// at the front of the elements slice.
-	d.elems = append(d.elems, elems...)
-	copy(d.elems[len(elems):], d.elems)
-
-	remaining := len(elems)
-
-	for idx, elem := range elems {
-		if elem == nil {
-			if d.IgnoreNilInsert {
-				// Having nil elements in a document would be problematic.
-				copy(d.elems[idx:], d.elems[idx+1:])
-				d.elems[len(d.elems)-1] = nil
-				d.elems = d.elems[:len(d.elems)-1]
-
-				continue
-			}
-			// Not very efficient, but we're about to blow up so ¯\_(ツ)_/¯
-			for j := idx; j < remaining; j++ {
-				copy(d.elems[j:], d.elems[j+1:])
-				d.elems[len(d.elems)-1] = nil
-				d.elems = d.elems[:len(d.elems)-1]
-			}
-			panic(bsonerr.NilElement)
-		}
-		remaining--
-
-		d.elems[idx] = elem
 	}
 
 	return d
@@ -132,17 +80,11 @@ func (d *Document) Prepend(elems ...*Element) *Document {
 // found, the element will be replaced with the one provided. If the document
 // does not have an element with that key, the element is appended to the
 // document instead. If a nil element is passed as a parameter this method will
-// panic. To change this behavior to silently ignore a nil element, set
-// IgnoreNilInsert to true on the Document.
+// panic.
 //
-// If a nil element is inserted and this method panics, it does not remove the
-// previously added elements.
+// If a nil element is inserted and this method panics.
 func (d *Document) Set(elem *Element) *Document {
 	if elem == nil {
-		if d.IgnoreNilInsert {
-			return d
-		}
-
 		panic(bsonerr.NilElement)
 	}
 
@@ -160,8 +102,7 @@ func (d *Document) Set(elem *Element) *Document {
 
 // Delete removes the keys from the Document. The deleted element is
 // returned. If the key does not exist, then nil is returned and the delete is
-// a no-op. The same is true if something along the depth tree does not exist
-// or is not a traversable type.
+// a no-op.
 func (d *Document) Delete(key string) *Element {
 	for idx := range d.elems {
 		if d.elems[idx].Key() == key {
@@ -174,11 +115,8 @@ func (d *Document) Delete(key string) *Element {
 	return nil
 }
 
-// ElementAt retrieves the element at the given index in a Document. It panics if the index is
-// out-of-bounds.
-//
-// TODO(skriptble): This method could be variadic and return the element at the
-// provided depth.
+// ElementAt retrieves the element at the given index in a
+// Document. It panics if the index is out-of-bounds.
 func (d *Document) ElementAt(index uint) *Element {
 	return d.elems[index]
 }
@@ -193,9 +131,7 @@ func (d *Document) ElementAtOK(index uint) (*Element, bool) {
 }
 
 // Iterator creates an Iterator for this document and returns it.
-func (d *Document) Iterator() fun.Iterator[*Element] {
-	return newIterator(d)
-}
+func (d *Document) Iterator() fun.Iterator[*Element] { return &elementIterator{d: d} }
 
 // Extend merges a second document into the document. It may produce a
 // document with duplicate keys.
@@ -284,9 +220,9 @@ func (d *Document) WriteTo(w io.Writer) (int64, error) {
 	return int64(n), err
 }
 
-// WriteToSlice will serialize this document to the byte slice,
+// writeToSlice will serialize this document to the byte slice,
 // starting at the specified index of the buffer.
-func (d *Document) WriteToSlice(start uint, output []byte) (int64, error) {
+func (d *Document) writeToSlice(start uint, output []byte) (int64, error) {
 	var total int64
 
 	size, err := d.Validate()
@@ -345,7 +281,6 @@ func (d *Document) writeByteSlice(start uint, size uint32, b []byte) (int64, err
 
 // MarshalBSON implements the Marshaler interface.
 func (d *Document) MarshalBSON() ([]byte, error) {
-
 	size, err := d.Validate()
 
 	if err != nil {
@@ -434,6 +369,14 @@ func (d *Document) String() string {
 // DocumentUnmarshaler, it does not use reflection.
 func (d *Document) Unmarshal(into any) error {
 	switch out := into.(type) {
+	case DocumentUnmarshaler:
+		return out.UnmarshalDocument(d)
+	case Unmarshaler:
+		raw, err := d.MarshalBSON()
+		if err != nil {
+			return err
+		}
+		return out.UnmarshalBSON(raw)
 	case map[string]any:
 		for _, elem := range d.elems {
 			out[elem.Key()] = elem.value.Interface()
@@ -646,14 +589,6 @@ func (d *Document) Unmarshal(into any) error {
 				out[elem.Key()] = []any{elem.value.Interface()}
 			}
 		}
-	case DocumentUnmarshaler:
-		return out.UnmarshalDocument(d)
-	case Unmarshaler:
-		raw, err := d.MarshalBSON()
-		if err != nil {
-			return err
-		}
-		return out.UnmarshalBSON(raw)
 	default:
 		// TODO consider falling back to reflection
 		return fmt.Errorf("cannot unmarshal into %T", into)

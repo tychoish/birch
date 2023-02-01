@@ -107,32 +107,6 @@ func TestDocument(t *testing.T) {
 				d.Append(nil)
 			}()
 		})
-		t.Run("Ignore Nil Insert", func(t *testing.T) {
-			func() {
-				defer func() {
-					r := recover()
-					if r != nil {
-						t.Errorf("Received unexpected panic from nil insert. got %#v; want %#v", r, nil)
-					}
-				}()
-				want := DC.Elements()
-				want.IgnoreNilInsert = true
-
-				got := DC.Elements()
-				got.IgnoreNilInsert = true
-				got.Append(nil)
-
-				if len(want.elems) != len(got.elems) {
-					t.Fatal("unequal lengths")
-				}
-				for idx := range want.elems {
-					if !want.elems[idx].Equal(got.elems[idx]) {
-						t.Fatal("uneuqal elements at index", idx)
-					}
-				}
-
-			}()
-		})
 		testCases := []struct {
 			name  string
 			elems [][]*Element
@@ -154,100 +128,6 @@ func TestDocument(t *testing.T) {
 				}
 				if !bytes.Equal(got, tc.want) {
 					t.Errorf("Output from Append is not correct. got %#v; want %#v", got, tc.want)
-				}
-			})
-		}
-	})
-	t.Run("Prepend", func(t *testing.T) {
-		t.Run("Nil Insert", func(t *testing.T) {
-			testCases := []struct {
-				name  string
-				elems []*Element
-				want  *Document
-			}{
-				{"first element nil", []*Element{nil}, &Document{elems: make([]*Element, 0)}},
-			}
-
-			for _, tc := range testCases {
-				var got *Document
-				func() {
-					defer func() {
-						r := recover()
-						if r != bsonerr.NilElement {
-							t.Errorf("Did not received expected error from panic. got %#v; want %#v", r, bsonerr.NilElement)
-						}
-
-						if len(tc.want.elems) != len(got.elems) {
-							t.Fatal("unequal lengths")
-						}
-						for idx := range tc.want.elems {
-							if !tc.want.elems[idx].Equal(got.elems[idx]) {
-								t.Fatal("uneuqal elements at index", idx)
-							}
-						}
-					}()
-					got = DC.Elements()
-					got.Prepend(tc.elems...)
-				}()
-			}
-		})
-		t.Run("Ignore Nil Insert", func(t *testing.T) {
-			testCases := []struct {
-				name  string
-				elems []*Element
-				want  *Document
-			}{
-				{"first element nil", []*Element{nil},
-					&Document{
-						IgnoreNilInsert: true,
-						elems:           make([]*Element, 0)},
-				},
-			}
-
-			for _, tc := range testCases {
-				var got *Document
-				func() {
-					defer func() {
-						r := recover()
-						if r != nil {
-							t.Errorf("Did not received expected error from panic. got %#v; want %#v", r, nil)
-						}
-						if len(tc.want.elems) != len(got.elems) {
-							t.Fatal("unequal lengths")
-						}
-						for idx := range tc.want.elems {
-							if !tc.want.elems[idx].Equal(got.elems[idx]) {
-								t.Fatal("uneuqal elements at index", idx)
-							}
-						}
-					}()
-					got = DC.Elements()
-					got.IgnoreNilInsert = true
-					got.Prepend(tc.elems...)
-				}()
-			}
-		})
-		testCases := []struct {
-			name  string
-			elems [][]*Element
-			want  []byte
-		}{
-			{"one-one", tpag.oneOne(), tpag.oneOnePrependBytes()},
-			{"two-one", tpag.twoOne(), tpag.twoOnePrependBytes()},
-		}
-
-		for _, tc := range testCases {
-			t.Run(tc.name, func(t *testing.T) {
-				d := DC.Elements()
-				for _, elems := range tc.elems {
-					d.Prepend(elems...)
-				}
-				got, err := d.MarshalBSON()
-				if err != nil {
-					t.Errorf("Received an unexpected error while marhsaling BSON: %s", err)
-				}
-				if !bytes.Equal(got, tc.want) {
-					t.Errorf("Output from Prepend is not correct. got %#v; want %#v", got, tc.want)
 				}
 			})
 		}
@@ -284,44 +164,6 @@ func TestDocument(t *testing.T) {
 						}
 					}()
 					got = DC.Elements()
-					got.Set(tc.elem)
-				}()
-			}
-		})
-		t.Run("Ignore Nil Insert", func(t *testing.T) {
-			testCases := []struct {
-				name string
-				elem *Element
-				want *Document
-			}{
-				{"first element nil", nil,
-					&Document{
-						IgnoreNilInsert: true,
-						elems:           make([]*Element, 0)},
-				},
-			}
-
-			for _, tc := range testCases {
-				var got *Document
-				func() {
-					defer func() {
-						r := recover()
-						if r != nil {
-							t.Errorf("Did not received expected error from panic. got %#v; want %#v", r, nil)
-						}
-
-						if len(tc.want.elems) != len(got.elems) {
-							t.Fatal("unequal lengths")
-						}
-						for idx := range tc.want.elems {
-							if !tc.want.elems[idx].Equal(got.elems[idx]) {
-								t.Fatal("uneuqal elements at index", idx)
-							}
-						}
-
-					}()
-					got = DC.Elements()
-					got.IgnoreNilInsert = true
 					got.Set(tc.elem)
 				}()
 			}
@@ -487,7 +329,7 @@ func TestDocument(t *testing.T) {
 			d := DC.Elements(EC.Double("", 3.14159))
 			d.elems[0].value.data = d.elems[0].value.data[:3]
 			b := make([]byte, 15)
-			_, err := d.WriteToSlice(0, b)
+			_, err := d.writeToSlice(0, b)
 			if !IsTooSmall(err) {
 				t.Errorf("Expected error not returned. got %s; want %s", err, errTooSmall)
 			}
@@ -495,7 +337,7 @@ func TestDocument(t *testing.T) {
 		t.Run("[]byte-too-small", func(t *testing.T) {
 			d := DC.Elements(EC.Double("", 3.14159))
 			b := make([]byte, 5)
-			_, err := d.WriteToSlice(0, b)
+			_, err := d.writeToSlice(0, b)
 			if !IsTooSmall(err) {
 				t.Errorf("Expected error not returned. got %s; want %s", err, errTooSmall)
 			}
@@ -514,7 +356,7 @@ func TestDocument(t *testing.T) {
 
 		for _, tc := range testCases {
 			b := make([]byte, tc.n)
-			n, err := tc.d.WriteToSlice(tc.start, b)
+			n, err := tc.d.writeToSlice(tc.start, b)
 			if n != tc.n {
 				t.Errorf("Number of bytes written does not match. got %d; want %d", n, tc.n)
 			}
