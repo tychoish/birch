@@ -1,6 +1,7 @@
 package mongowire
 
 import (
+	"bytes"
 	"errors"
 
 	"github.com/tychoish/birch"
@@ -30,19 +31,18 @@ func (m *deleteMessage) Serialize() []byte {
 
 	m.header.Size = int32(size)
 
-	buf := make([]byte, size)
-	m.header.WriteInto(buf)
+	buf := bytes.NewBuffer(make([]byte, 0, size))
+	m.header.WriteTo(buf)
 
-	loc := 16
-	loc += writeInt32(0, buf, loc)
+	bufWriteInt32(0, buf)
 
-	loc += writeCString(m.Namespace, buf, loc)
+	writeCString(m.Namespace, buf)
 
-	loc += writeInt32(m.Flags, buf, loc)
+	bufWriteInt32(m.Flags, buf)
 
-	loc += writeDocAt(m.Filter, buf, loc)
+	m.Filter.WriteTo(buf)
 
-	return buf
+	return buf.Bytes()
 }
 
 func (h *MessageHeader) parseDeleteMessage(buf []byte) (Message, error) {

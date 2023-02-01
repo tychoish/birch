@@ -1,6 +1,7 @@
 package mongowire
 
 import (
+	"bytes"
 	"errors"
 
 	"github.com/tychoish/birch"
@@ -42,24 +43,20 @@ func (m *CommandMessage) Serialize() []byte {
 	}
 	m.header.Size = int32(size)
 
-	buf := make([]byte, size)
-	m.header.WriteInto(buf)
+	buf := bytes.NewBuffer(make([]byte, 0, size))
+	m.header.WriteTo(buf)
 
-	loc := int64(16)
-	loc += int64(writeCString(m.DB, buf, int(loc)))
-	loc += int64(writeCString(m.CmdName, buf, int(loc)))
+	writeCString(m.DB, buf)
+	writeCString(m.CmdName, buf)
 
-	offset, _ := m.CommandArgs.WriteToSlice(uint(loc), buf)
-	loc += offset
-	offset, _ = m.Metadata.WriteToSlice(uint(loc), buf)
-	loc += offset
+	m.CommandArgs.WriteTo(buf)
+	m.Metadata.WriteTo(buf)
 
 	for _, d := range m.InputDocs {
-		offset, _ = d.WriteToSlice(uint(loc), buf)
-		loc += offset
+		d.WriteTo(buf)
 	}
 
-	return buf
+	return buf.Bytes()
 }
 
 func (h *MessageHeader) parseCommandMessage(buf []byte) (Message, error) {

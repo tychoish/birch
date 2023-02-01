@@ -1,6 +1,7 @@
 package mongowire
 
 import (
+	"bytes"
 	"errors"
 
 	"github.com/tychoish/birch"
@@ -32,20 +33,19 @@ func (m *ReplyMessage) Serialize() []byte {
 	}
 	m.header.Size = int32(size)
 
-	buf := make([]byte, size)
-	m.header.WriteInto(buf)
+	buf := bytes.NewBuffer(make([]byte, 0, size))
+	m.header.WriteTo(buf)
 
-	writeInt32(m.Flags, buf, 16)
-	writeInt64(m.CursorId, buf, 20)
-	writeInt32(m.StartingFrom, buf, 28)
-	writeInt32(m.NumberReturned, buf, 32)
+	bufWriteInt32(m.Flags, buf)
+	bufWriteInt64(m.CursorId, buf)
+	bufWriteInt32(m.StartingFrom, buf)
+	bufWriteInt32(m.NumberReturned, buf)
 
-	loc := 36
 	for _, d := range m.Docs {
-		loc += writeDocAt(&d, buf, loc)
+		d.WriteTo(buf)
 	}
 
-	return buf
+	return buf.Bytes()
 }
 
 func (h *MessageHeader) parseReplyMessage(buf []byte) (Message, error) {

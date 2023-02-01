@@ -1,6 +1,7 @@
 package mongowire
 
 import (
+	"bytes"
 	"errors"
 
 	"github.com/tychoish/birch"
@@ -35,19 +36,18 @@ func (m *insertMessage) Serialize() []byte {
 
 	m.header.Size = int32(size)
 
-	buf := make([]byte, size)
-	m.header.WriteInto(buf)
+	buf := bytes.NewBuffer(make([]byte, 0, size))
+	m.header.WriteTo(buf)
 
-	loc := 16
-	loc += writeInt32(m.Flags, buf, loc)
+	bufWriteInt32(m.Flags, buf)
 
-	loc += writeCString(m.Namespace, buf, loc)
+	writeCString(m.Namespace, buf)
 
 	for _, d := range m.Docs {
-		loc += writeDocAt(&d, buf, loc)
+		d.WriteTo(buf)
 	}
 
-	return buf
+	return buf.Bytes()
 }
 
 func (h *MessageHeader) parseInsertMessage(buf []byte) (Message, error) {

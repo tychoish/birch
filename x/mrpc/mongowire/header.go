@@ -1,6 +1,9 @@
 package mongowire
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+)
 
 type MessageHeader struct {
 	Size       int32 // total message size
@@ -9,11 +12,11 @@ type MessageHeader struct {
 	OpCode     OpType
 }
 
-func (h *MessageHeader) WriteInto(buf []byte) {
-	_ = writeInt32(h.Size, buf, 0)
-	_ = writeInt32(h.RequestID, buf, 4)
-	_ = writeInt32(h.ResponseTo, buf, 8)
-	_ = writeInt32(int32(h.OpCode), buf, 12)
+func (h *MessageHeader) WriteTo(wr io.Writer) {
+	bufWriteInt32(h.Size, wr)
+	bufWriteInt32(h.RequestID, wr)
+	bufWriteInt32(h.ResponseTo, wr)
+	bufWriteInt32(int32(h.OpCode), wr)
 }
 
 func (h *MessageHeader) Parse(body []byte) (Message, error) {

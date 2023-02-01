@@ -1,6 +1,7 @@
 package mongowire
 
 import (
+	"bytes"
 	"fmt"
 
 	"errors"
@@ -26,20 +27,17 @@ func (m *killCursorsMessage) Serialize() []byte {
 
 	m.header.Size = int32(size)
 
-	buf := make([]byte, size)
-	m.header.WriteInto(buf)
+	buf := bytes.NewBuffer(make([]byte, 0, size))
+	m.header.WriteTo(buf)
 
-	writeInt32(0, buf, 16)
-	writeInt32(m.NumCursors, buf, 20)
-
-	loc := 24
+	bufWriteInt32(0, buf)
+	bufWriteInt32(m.NumCursors, buf)
 
 	for _, c := range m.CursorIds {
-		writeInt64(c, buf, loc)
-		loc += 8
+		bufWriteInt64(c, buf)
 	}
 
-	return buf
+	return buf.Bytes()
 }
 
 func (h *MessageHeader) parseKillCursorsMessage(buf []byte) (Message, error) {

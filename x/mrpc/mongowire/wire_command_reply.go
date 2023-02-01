@@ -1,6 +1,7 @@
 package mongowire
 
 import (
+	"bytes"
 	"errors"
 
 	"github.com/tychoish/birch"
@@ -32,18 +33,17 @@ func (m *CommandReplyMessage) Serialize() []byte {
 	}
 	m.header.Size = int32(size)
 
-	buf := make([]byte, size)
-	m.header.WriteInto(buf)
+	buf := bytes.NewBuffer(make([]byte, 0, size))
+	m.header.WriteTo(buf)
 
-	loc := 16
-	loc += writeDocAt(m.CommandReply, buf, loc)
-	loc += writeDocAt(m.Metadata, buf, loc)
+	m.CommandReply.WriteTo(buf)
+	m.Metadata.WriteTo(buf)
 
 	for _, d := range m.OutputDocs {
-		loc += writeDocAt(&d, buf, loc)
+		d.WriteTo(buf)
 	}
 
-	return buf
+	return buf.Bytes()
 }
 
 func (h *MessageHeader) parseCommandReplyMessage(buf []byte) (Message, error) {

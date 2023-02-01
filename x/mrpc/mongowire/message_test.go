@@ -129,7 +129,7 @@ func TestMessage(t *testing.T) {
 				}
 			}
 			if headerSize+test.bodySize != len(test.message.Serialize()) {
-				t.Error("values should be equal")
+				t.Error("values should be equal", headerSize, test.bodySize, len(test.message.Serialize()))
 			}
 			if int32(headerSize+test.bodySize) != test.message.Header().Size {
 				t.Error("values should be equal")

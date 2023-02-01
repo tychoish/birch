@@ -1,6 +1,7 @@
 package mongowire
 
 import (
+	"bytes"
 	"errors"
 )
 
@@ -32,18 +33,16 @@ func (m *getMoreMessage) Serialize() []byte {
 
 	m.header.Size = int32(size)
 
-	buf := make([]byte, size)
-	m.header.WriteInto(buf)
+	buf := bytes.NewBuffer(make([]byte, 0, size))
+	m.header.WriteTo(buf)
 
-	loc := 16
-	loc += writeInt32(0, buf, loc)
+	bufWriteInt32(0, buf)
 
-	loc += writeCString(m.Namespace, buf, loc)
-	loc += writeInt32(m.NReturn, buf, loc)
+	writeCString(m.Namespace, buf)
+	bufWriteInt32(m.NReturn, buf)
+	bufWriteInt64(m.CursorId, buf)
 
-	loc += writeInt64(m.CursorId, buf, loc)
-
-	return buf
+	return buf.Bytes()
 }
 
 func (h *MessageHeader) parseGetMoreMessage(buf []byte) (Message, error) {

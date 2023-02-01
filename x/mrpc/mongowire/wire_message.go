@@ -1,6 +1,7 @@
 package mongowire
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 
@@ -50,10 +51,10 @@ func (p *opMessagePayloadType0) Documents() []birch.Document {
 }
 
 func (p *opMessagePayloadType0) Serialize() []byte {
-	buf := make([]byte, 1+getDocSize(p.Document))
-	buf[0] = p.Type() // kind
-	_ = writeDocAt(p.Document, buf, 1)
-	return buf
+	buf := bytes.NewBuffer(make([]byte, 0, 1+getDocSize(p.Document)))
+	buf.Write([]byte{p.Type()})
+	p.Document.WriteTo(buf)
+	return buf.Bytes()
 }
 
 type opMessagePayloadType1 struct {
@@ -79,15 +80,14 @@ func (p *opMessagePayloadType1) Serialize() []byte {
 	}
 	p.Size = int32(size)
 
-	buf := make([]byte, size)
-	buf[0] = p.Type() // kind
-	loc := 1
-	loc += writeInt32(p.Size, buf, loc)
-	loc += writeCString(p.Identifier, buf, loc)
+	buf := bytes.NewBuffer(make([]byte, 0, size))
+	buf.Write([]byte{p.Type()})
+	bufWriteInt32(p.Size, buf)
+	writeCString(p.Identifier, buf)
 	for _, doc := range p.Payload { // payload
-		loc += writeDocAt(&doc, buf, loc)
+		doc.WriteTo(buf)
 	}
-	return buf
+	return buf.Bytes()
 }
 
 func (m *OpMessage) Header() MessageHeader { return m.header }
@@ -133,21 +133,18 @@ func (m *OpMessage) Serialize() []byte {
 		size += 4
 	}
 	m.header.Size = int32(size)
-	buf := make([]byte, size)
-	m.header.WriteInto(buf)
+	buf := bytes.NewBuffer(make([]byte, 0, size))
+	m.header.WriteTo(buf)
+	bufWriteInt32(int32(m.Flags), buf)
 
-	loc := 16 // header
-	loc += writeInt32(int32(m.Flags), buf, loc)
-
-	copy(buf[loc:], sections)
-	loc += len(sections)
+	buf.Write(sections)
 
 	if m.Checksum != 0 && (m.Flags&1) == 1 {
-		loc += writeInt32(m.Checksum, buf, loc)
+		bufWriteInt32(m.Checksum, buf)
 	}
 
-	m.serialized = buf
-	return buf
+	m.serialized = buf.Bytes()
+	return m.serialized
 }
 
 func NewOpMessage(moreToCome bool, documents []birch.Document, items ...model.SequenceItem) Message {

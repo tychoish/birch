@@ -1,6 +1,7 @@
 package mongowire
 
 import (
+	"bytes"
 	"errors"
 
 	"github.com/tychoish/birch"
@@ -33,21 +34,20 @@ func (m *queryMessage) Serialize() []byte {
 
 	m.header.Size = int32(size)
 
-	buf := make([]byte, size)
-	m.header.WriteInto(buf)
+	buf := bytes.NewBuffer(make([]byte, 0, size))
+	m.header.WriteTo(buf)
 
-	loc := 16
-	loc += writeInt32(m.Flags, buf, loc)
+	bufWriteInt32(m.Flags, buf)
 
-	loc += writeCString(m.Namespace, buf, loc)
-	loc += writeInt32(m.Skip, buf, loc)
+	writeCString(m.Namespace, buf)
+	bufWriteInt32(m.Skip, buf)
 
-	loc += writeInt32(m.NReturn, buf, loc)
+	bufWriteInt32(m.NReturn, buf)
 
-	loc += writeDocAt(m.Query, buf, loc)
-	loc += writeDocAt(m.Project, buf, loc)
+	m.Query.WriteTo(buf)
+	m.Project.WriteTo(buf)
 
-	return buf
+	return buf.Bytes()
 }
 
 func (m *queryMessage) convertToCommand() *CommandMessage {

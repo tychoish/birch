@@ -2,8 +2,10 @@ package mongowire
 
 import (
 	"errors"
+	"io"
 
 	"github.com/tychoish/birch"
+	"github.com/tychoish/fun"
 )
 
 func readInt32(b []byte) int32 {
@@ -24,12 +26,24 @@ func readInt64(b []byte) int64 {
 		(int64(b[7]) << 56)
 }
 
+func bufWriteInt32(i int32, wr io.Writer) int {
+	val := make([]byte, 4)
+	writeInt32(i, val, 0)
+	return int(fun.Must(wr.Write(val)))
+}
+
 func writeInt32(i int32, buf []byte, loc int) int {
 	buf[loc] = byte(i)
 	buf[loc+1] = byte(i >> 8)
 	buf[loc+2] = byte(i >> 16)
 	buf[loc+3] = byte(i >> 24)
 	return 4
+}
+
+func bufWriteInt64(i int64, wr io.Writer) int {
+	val := make([]byte, 8)
+	writeInt64(i, val, 0)
+	return int(fun.Must(wr.Write(val)))
 }
 
 func writeInt64(i int64, buf []byte, loc int) int {
@@ -54,18 +68,15 @@ func readCString(b []byte) (string, error) {
 	return "", errors.New("c string with no terminator")
 }
 
-func writeCString(s string, buf []byte, loc int) int {
-	copy(buf[loc:], s)
-	buf[loc+len(s)] = 0
+func writeCString(s string, wr io.Writer) int {
+	wr.Write([]byte(s))
+	wr.Write([]byte{0})
 	return len(s) + 1
 }
 
 func getDocSize(doc *birch.Document) int {
-	size, _ := doc.Validate()
-	return int(size)
-}
-
-func writeDocAt(doc *birch.Document, buf []byte, loc int) int {
-	size, _ := doc.WriteToSlice(uint(loc), buf)
-	return int(size)
+	if doc == nil {
+		return 0
+	}
+	return int(fun.Must(doc.Validate()))
 }
