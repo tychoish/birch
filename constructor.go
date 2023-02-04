@@ -18,15 +18,19 @@ import (
 
 // EC is a convenience variable provided for access to the ElementConstructor methods.
 var EC ElementConstructor
+var ECE ElementConstructorError
 
 // VC is a convenience variable provided for access to the ValueConstructor methods.
 var VC ValueConstructor
+var VCE ValueConstructorError
 
 // ElementConstructor is used as a namespace for document element constructor functions.
 type ElementConstructor struct{}
+type ElementConstructorError struct{}
 
 // ValueConstructor is used as a namespace for value constructor functions.
 type ValueConstructor struct{}
+type ValueConstructorError struct{}
 
 // Interface will attempt to turn the provided key and value into an Element.
 // For common types, type casting is used, for all slices and all
@@ -93,58 +97,12 @@ func (ElementConstructor) Interface(key string, value any) *Element {
 		elem = EC.Time(key, t)
 	case types.Timestamp:
 		elem = EC.Timestamp(key, t.T, t.I)
-	case map[string]string:
-		elem = EC.SubDocument(key, DC.MapString(t))
 	case map[string]any:
 		elem = EC.SubDocument(key, DC.MapInterface(t))
-	case map[string]int64:
-		elem = EC.SubDocument(key, DC.MapInt64(t))
-	case map[string]int32:
-		elem = EC.SubDocument(key, DC.MapInt32(t))
-	case map[string]int:
-		elem = EC.SubDocument(key, DC.MapInt(t))
-	case map[string]float64:
-		elem = EC.SubDocument(key, DC.MapFloat64(t))
-	case map[string]float32:
-		elem = EC.SubDocument(key, DC.MapFloat32(t))
-	case map[string]time.Time:
-		elem = EC.SubDocument(key, DC.MapTime(t))
-	case map[string]time.Duration:
-		elem = EC.SubDocument(key, DC.MapDuration(t))
-	case map[string]DocumentMarshaler:
-		elem = EC.SubDocument(key, DC.MapDocumentMarshaler(t))
-	case map[string]Marshaler:
-		elem = EC.SubDocument(key, DC.MapMarshaler(t))
-	case map[string]*jsonx.Document:
-		elem = EC.SubDocument(key, DC.MapJSONX(t))
-	case map[string][]string:
-		elem = EC.SubDocument(key, DC.MapSliceString(t))
-	case map[string][]any:
-		elem = EC.SubDocument(key, DC.MapSliceInterface(t))
-	case map[string][]int64:
-		elem = EC.SubDocument(key, DC.MapSliceInt64(t))
-	case map[string][]int32:
-		elem = EC.SubDocument(key, DC.MapSliceInt32(t))
-	case map[string][]float64:
-		elem = EC.SubDocument(key, DC.MapSliceFloat64(t))
-	case map[string][]float32:
-		elem = EC.SubDocument(key, DC.MapSliceFloat32(t))
-	case map[string][]int:
-		elem = EC.SubDocument(key, DC.MapSliceInt(t))
-	case map[string][]time.Time:
-		elem = EC.SubDocument(key, DC.MapSliceTime(t))
-	case map[string][]time.Duration:
-		elem = EC.SubDocument(key, DC.MapSliceDuration(t))
-	case map[string][]DocumentMarshaler:
-		elem = EC.SubDocument(key, DC.MapSliceDocumentMarshaler(t))
-	case map[string][]Marshaler:
-		elem = EC.SubDocument(key, DC.MapSliceMarshaler(t))
-	case map[string][]*jsonx.Document:
-		elem = EC.SubDocument(key, DC.MapSliceJSONX(t))
 	case map[any]any:
 		elem = EC.SubDocument(key, DC.Interface(t))
-	case map[any][]any:
-		elem = EC.SubDocument(key, DC.MapInterfaceSliceInterface(t))
+	case map[string]string:
+		elem = EC.SubDocument(key, DC.MapString(t))
 	case []any:
 		elem = EC.SliceInterface(key, t)
 	case []string:
@@ -163,18 +121,14 @@ func (ElementConstructor) Interface(key string, value any) *Element {
 		elem = EC.SliceTime(key, t)
 	case []time.Duration:
 		elem = EC.SliceDuration(key, t)
-	case []DocumentMarshaler:
-		elem, err = EC.SliceDocumentMarshalerErr(key, t)
-	case []Marshaler:
-		elem, err = EC.SliceMarshalerErr(key, t)
 	case []*Element:
 		elem = EC.SubDocumentFromElements(key, t...)
-	case []*jsonx.Document:
-		elem = EC.SliceJSONX(key, t)
 	case *Element:
 		elem = t
 	case *Value:
 		elem = EC.Value(key, t)
+	case []*Value:
+		elem = EC.Array(key, MakeArray(len(t)).Append(t...))
 	case *jsonx.Document:
 		elem = EC.SubDocument(key, DC.JSONX(t))
 	case *Document:
@@ -189,9 +143,9 @@ func (ElementConstructor) Interface(key string, value any) *Element {
 			elem = EC.SubDocument(key, doc)
 		}
 	case DocumentMarshaler:
-		elem, err = EC.DocumentMarshalerErr(key, t)
+		elem, err = ECE.DocumentMarshaler(key, t)
 	case Marshaler:
-		elem, err = EC.MarshalerErr(key, t)
+		elem, err = ECE.Marshaler(key, t)
 	default:
 		elem = EC.Null(key)
 	}
@@ -205,7 +159,7 @@ func (ElementConstructor) Interface(key string, value any) *Element {
 
 // InterfaceErr does what Interface does, but returns an error when it cannot
 // properly convert a value into an *Element. See Interface for details.
-func (ElementConstructor) InterfaceErr(key string, value any) (*Element, error) {
+func (ElementConstructorError) Interface(key string, value any) (*Element, error) {
 	switch t := value.(type) {
 	case uint:
 		switch {
@@ -225,30 +179,32 @@ func (ElementConstructor) InterfaceErr(key string, value any) (*Element, error) 
 		default:
 			return EC.Int64(key, int64(t)), nil
 		}
-	case bool, int8, int16, int32, int, int64, uint8, uint16, uint32, string, float32, float64, *Element, *Document, Reader, types.Timestamp, time.Time:
+	case bool, int8, int16, int32, int, int64, uint8, uint16, uint32, string, float32, float64, types.Timestamp, time.Time:
 		return EC.Interface(key, t), nil
-	case map[string]string, map[string]float32, map[string]float64, map[string]int32, map[string]int64, map[string]int, map[string]time.Time, map[string]time.Duration:
+	case *Element:
+		return t, nil
+	case *Document:
+		return EC.SubDocument(key, t), nil
+	case Reader:
+		return EC.SubDocumentFromReader(key, t), nil
+	case map[string]string, map[string]any, map[any]any:
 		return EC.Interface(key, t), nil
-	case map[string][]string, map[string][]int32, map[string][]int64, map[string][]int, map[string][]time.Time, map[string][]time.Duration, map[string][]float32, map[string][]float64:
-		return EC.Interface(key, value), nil
 	case []string, []int32, []int64, []int, []time.Time, []time.Duration, []float64, []float32:
 		return EC.Interface(key, value), nil
-	case map[string]any, map[string]Marshaler, map[string]DocumentMarshaler:
-		return EC.InterfaceErr(key, t)
-	case map[string][]any, map[string][]Marshaler, map[string][]DocumentMarshaler:
-		return EC.InterfaceErr(key, value)
-	case map[any][]any, map[any]any:
-		return EC.InterfaceErr(key, value)
 	case []any, []Marshaler, []DocumentMarshaler:
-		return EC.InterfaceErr(key, value)
-	case *jsonx.Document, []*jsonx.Document, map[string]*jsonx.Document, map[string][]*jsonx.Document:
+		return ECE.Interface(key, value)
+	case *jsonx.Document, []*jsonx.Document:
 		return EC.Interface(key, value), nil
 	case *Value:
 		return EC.Value(key, t), nil
+	case []*Value:
+		return EC.Array(key, MakeArray(len(t)).Append(t...)), nil
+	case []*Element:
+		return EC.SubDocumentFromElements(key, t...), nil
 	case DocumentMarshaler:
-		return EC.DocumentMarshalerErr(key, t)
+		return ECE.DocumentMarshaler(key, t)
 	case Marshaler:
-		return EC.MarshalerErr(key, t)
+		return ECE.Marshaler(key, t)
 	default:
 		return nil, fmt.Errorf("Cannot create element for type %T, try using bsoncodec.ConstructElementErr", value)
 	}

@@ -43,16 +43,17 @@ func (DocumentConstructorError) Reader(in io.Reader) (*Document, error) {
 }
 
 type ArrayConstructor struct{}
+type ArrayConstructorError struct{}
 
 var AC = ArrayConstructor{}
+var ACE = ArrayConstructorError{}
 
 func (ArrayConstructor) New() *Array                     { return AC.Make(0) }
 func (ArrayConstructor) Make(n int) *Array               { return &Array{elems: make([]*Value, 0, n)} }
 func (ArrayConstructor) Elements(elems ...*Value) *Array { return AC.Make(len(elems)).Append(elems...) }
-func (ArrayConstructor) Bytes(in []byte) *Array          { return arrayConstructorOrPanic(AC.BytesErr(in)) }
-func (ArrayConstructor) Reader(in io.Reader) *Array      { return arrayConstructorOrPanic(AC.ReaderErr(in)) }
-
-func (ArrayConstructor) BytesErr(in []byte) (*Array, error) {
+func (ArrayConstructor) Bytes(in []byte) *Array          { return arrayConstructorOrPanic(ACE.Bytes(in)) }
+func (ArrayConstructor) Reader(in io.Reader) *Array      { return arrayConstructorOrPanic(ACE.Reader(in)) }
+func (ArrayConstructorError) Bytes(in []byte) (*Array, error) {
 	a := AC.New()
 	if err := a.UnmarshalJSON(in); err != nil {
 		return nil, err
@@ -61,13 +62,13 @@ func (ArrayConstructor) BytesErr(in []byte) (*Array, error) {
 	return a, nil
 }
 
-func (ArrayConstructor) ReaderErr(in io.Reader) (*Array, error) {
+func (ArrayConstructorError) Reader(in io.Reader) (*Array, error) {
 	buf, err := ioutil.ReadAll(in)
 	if err != nil {
 		return nil, err
 	}
 
-	return AC.BytesErr(buf)
+	return ACE.Bytes(buf)
 }
 
 type ElementConstructor struct{}
@@ -127,11 +128,13 @@ func (ElementConstructor) ArrayFromElements(key string, elems ...*Value) *Elemen
 }
 
 type ValueConstructor struct{}
+type ValueConstructorError struct{}
 
 var VC = ValueConstructor{}
+var VCE = ValueConstructorError{}
 
-func (ValueConstructor) Bytes(in []byte) *Value { return valueConstructorOrPanic(VC.BytesErr(in)) }
-func (ValueConstructor) BytesErr(in []byte) (*Value, error) {
+func (ValueConstructor) Bytes(in []byte) *Value { return valueConstructorOrPanic(VCE.Bytes(in)) }
+func (ValueConstructorError) Bytes(in []byte) (*Value, error) {
 	val := &Value{}
 
 	if err := val.UnmarshalJSON(in); err != nil {
@@ -141,14 +144,14 @@ func (ValueConstructor) BytesErr(in []byte) (*Value, error) {
 	return val, nil
 }
 
-func (ValueConstructor) Reader(in io.Reader) *Value { return valueConstructorOrPanic(VC.ReaderErr(in)) }
-func (ValueConstructor) ReaderErr(in io.Reader) (*Value, error) {
+func (ValueConstructor) Reader(in io.Reader) *Value { return valueConstructorOrPanic(VCE.Reader(in)) }
+func (ValueConstructorError) Reader(in io.Reader) (*Value, error) {
 	buf, err := ioutil.ReadAll(in)
 	if err != nil {
 		return nil, err
 	}
 
-	return VC.BytesErr(buf)
+	return VCE.Bytes(buf)
 }
 
 func (ValueConstructor) String(s string) *Value {

@@ -6,7 +6,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/tychoish/birch/jsonx"
+	"github.com/tychoish/fun"
 )
 
 // DC is a convenience variable provided for access to the DocumentConstructor methods.
@@ -31,11 +31,7 @@ func (DocumentConstructor) New() *Document { return DC.Make(0) }
 // Make returns a document with the underlying storage
 // allocated as specified. Provides some efficiency when building
 // larger documents iteratively.
-func (DocumentConstructor) Make(n int) *Document {
-	return &Document{
-		elems: make([]*Element, 0, n),
-	}
-}
+func (DocumentConstructor) Make(n int) *Document { return &Document{elems: make([]*Element, 0, n)} }
 
 // Elements returns a document initialized with the elements passed as
 // arguments.
@@ -52,12 +48,7 @@ func (DocumentConstructor) ElementsOmitEmpty(elems ...*Element) *Document {
 // around a byte slice representation of a bson document. Reader
 // panics if there is a problem reading the document.
 func (DocumentConstructor) Reader(r Reader) *Document {
-	doc, err := DCE.Reader(r)
-	if err != nil {
-		panic(err)
-	}
-
-	return doc
+	return fun.Must(DCE.Reader(r))
 }
 
 // ReaderErr constructs a document from a bson reader, which is a wrapper
@@ -101,12 +92,7 @@ func (DocumentConstructorError) ReadFrom(in io.Reader) (*Document, error) {
 }
 
 func (DocumentConstructor) Marshaler(in Marshaler) *Document {
-	doc, err := DCE.Marshaler(in)
-	if err != nil {
-		panic(err)
-	}
-
-	return doc
+	return fun.Must(DCE.Marshaler(in))
 }
 
 func (DocumentConstructorError) Marshaler(in Marshaler) (*Document, error) {
@@ -128,16 +114,6 @@ func (DocumentConstructor) MapString(in map[string]string) *Document {
 	return out
 }
 
-func (DocumentConstructor) MapJSONX(in map[string]*jsonx.Document) *Document {
-	out := DC.Make(len(in))
-
-	for k, v := range in {
-		out.Append(EC.JSONX(k, v))
-	}
-
-	return out
-}
-
 func (DocumentConstructor) MapInterface(in map[string]any) *Document {
 	out := DC.Make(len(in))
 	for k, v := range in {
@@ -151,7 +127,7 @@ func (DocumentConstructorError) MapInterface(in map[string]any) (*Document, erro
 	out := DC.Make(len(in))
 
 	for k, v := range in {
-		elem, err := EC.InterfaceErr(k, v)
+		elem, err := ECE.Interface(k, v)
 		if err != nil {
 			return nil, err
 		}
@@ -167,7 +143,7 @@ func (DocumentConstructorError) MapInterface(in map[string]any) (*Document, erro
 func (DocumentConstructorError) MapInterfaceInterface(in map[any]any) (*Document, error) {
 	out := DC.Make(len(in))
 	for k, v := range in {
-		elem, err := EC.InterfaceErr(bestStringAttempt(k), v)
+		elem, err := ECE.Interface(bestStringAttempt(k), v)
 		if err != nil {
 			return nil, err
 		}
@@ -188,306 +164,6 @@ func (DocumentConstructor) MapInterfaceInterface(in map[any]any) *Document {
 	return out
 }
 
-func (DocumentConstructor) MapInt64(in map[string]int64) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.Int64(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapInt32(in map[string]int32) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.Int32(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapFloat64(in map[string]float64) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.Double(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapFloat32(in map[string]float32) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.Double(k, float64(v)))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapInt(in map[string]int) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.Int(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapTime(in map[string]time.Time) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.Time(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapDuration(in map[string]time.Duration) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.Duration(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapMarshaler(in map[string]Marshaler) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.Marshaler(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructorError) MapMarshaler(in map[string]Marshaler) (*Document, error) {
-	out := DC.Make(len(in))
-
-	for k, v := range in {
-		elem, err := EC.MarshalerErr(k, v)
-		if err != nil {
-			return nil, err
-		}
-
-		if elem != nil {
-			out.Append(elem)
-		}
-	}
-
-	return out, nil
-}
-
-func (DocumentConstructor) MapSliceMarshaler(in map[string][]Marshaler) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.SliceMarshaler(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructorError) MapSliceMarshaler(in map[string][]Marshaler) (*Document, error) {
-	out := DC.Make(len(in))
-
-	for k, v := range in {
-		elem, err := EC.SliceMarshalerErr(k, v)
-		if err != nil {
-			return nil, err
-		}
-
-		if elem != nil {
-			out.Append(elem)
-		}
-	}
-
-	return out, nil
-}
-
-func (DocumentConstructor) MapDocumentMarshaler(in map[string]DocumentMarshaler) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.DocumentMarshaler(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapSliceJSONX(in map[string][]*jsonx.Document) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.SliceJSONX(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructorError) MapDocumentMarshaler(in map[string]DocumentMarshaler) (*Document, error) {
-	out := DC.Make(len(in))
-
-	for k, v := range in {
-		elem, err := EC.DocumentMarshalerErr(k, v)
-		if err != nil {
-			return nil, err
-		}
-
-		if elem != nil {
-			out.Append(elem)
-		}
-	}
-
-	return out, nil
-}
-
-func (DocumentConstructor) MapSliceDocumentMarshaler(in map[string][]DocumentMarshaler) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.SliceDocumentMarshaler(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructorError) MapSliceDocumentMarshaler(in map[string][]DocumentMarshaler) (*Document, error) {
-	out := DC.Make(len(in))
-
-	for k, v := range in {
-		elem, err := EC.SliceDocumentMarshalerErr(k, v)
-		if err != nil {
-			return nil, err
-		}
-
-		if elem != nil {
-			out.Append(elem)
-		}
-	}
-
-	return out, nil
-}
-
-func (DocumentConstructor) MapSliceString(in map[string][]string) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.SliceString(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapSliceInterface(in map[string][]any) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.SliceInterface(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructorError) MapSliceInterface(in map[string][]any) (*Document, error) {
-	out := DC.Make(len(in))
-
-	for k, v := range in {
-		elem, err := EC.SliceInterfaceErr(k, v)
-		if err != nil {
-			return nil, err
-		}
-
-		if elem != nil {
-			out.Append(elem)
-		}
-	}
-
-	return out, nil
-}
-
-func (DocumentConstructor) MapInterfaceSliceInterface(in map[any][]any) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.SliceInterface(bestStringAttempt(k), v))
-	}
-
-	return out
-}
-
-func (DocumentConstructorError) MapInterfaceSliceInterface(in map[any][]any) (*Document, error) {
-	out := DC.Make(len(in))
-
-	for k, v := range in {
-		elem, err := EC.SliceInterfaceErr(bestStringAttempt(k), v)
-		if err != nil {
-			return nil, err
-		}
-
-		if elem != nil {
-			out.Append(elem)
-		}
-	}
-
-	return out, nil
-}
-
-func (DocumentConstructor) MapSliceInt64(in map[string][]int64) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.SliceInt64(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapSliceInt32(in map[string][]int32) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.SliceInt32(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapSliceFloat64(in map[string][]float64) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.SliceFloat64(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapSliceFloat32(in map[string][]float32) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.SliceFloat32(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapSliceInt(in map[string][]int) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.SliceInt(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapSliceDuration(in map[string][]time.Duration) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.SliceDuration(k, v))
-	}
-
-	return out
-}
-
-func (DocumentConstructor) MapSliceTime(in map[string][]time.Time) *Document {
-	out := DC.Make(len(in))
-	for k, v := range in {
-		out.Append(EC.SliceTime(k, v))
-	}
-
-	return out
-}
-
 func (DocumentConstructor) Interface(value any) *Document {
 	var (
 		doc *Document
@@ -497,40 +173,8 @@ func (DocumentConstructor) Interface(value any) *Document {
 	switch t := value.(type) {
 	case map[string]string:
 		doc = DC.MapString(t)
-	case map[string][]string:
-		doc = DC.MapSliceString(t)
 	case map[string]any:
 		doc = DC.MapInterface(t)
-	case map[string][]any:
-		doc = DC.MapSliceInterface(t)
-	case map[string]DocumentMarshaler:
-		doc, err = DCE.MapDocumentMarshaler(t)
-	case map[string][]DocumentMarshaler:
-		doc, err = DCE.MapSliceDocumentMarshaler(t)
-	case map[string]Marshaler:
-		doc, err = DCE.MapMarshaler(t)
-	case map[string][]Marshaler:
-		doc, err = DCE.MapSliceMarshaler(t)
-	case map[string]int64:
-		doc = DC.MapInt64(t)
-	case map[string][]int64:
-		doc = DC.MapSliceInt64(t)
-	case map[string]int32:
-		doc = DC.MapInt32(t)
-	case map[string][]int32:
-		doc = DC.MapSliceInt32(t)
-	case map[string]int:
-		doc = DC.MapInt(t)
-	case map[string][]int:
-		doc = DC.MapSliceInt(t)
-	case map[string]time.Time:
-		doc = DC.MapTime(t)
-	case map[string][]time.Time:
-		doc = DC.MapSliceTime(t)
-	case map[string]time.Duration:
-		doc = DC.MapDuration(t)
-	case map[string][]time.Duration:
-		doc = DC.MapSliceDuration(t)
 	case map[any]any:
 		doc = DC.Make(len(t))
 		for k, v := range t {
@@ -559,24 +203,12 @@ func (DocumentConstructor) Interface(value any) *Document {
 
 func (DocumentConstructorError) Interface(value any) (*Document, error) {
 	switch t := value.(type) {
-	case map[string]string, map[string][]string, map[string]int64, map[string][]int64, map[string]int32, map[string][]int32, map[string]int, map[string][]int, map[string]time.Time, map[string][]time.Time, map[string]time.Duration, map[string][]time.Duration:
-		return DC.Interface(t), nil
-	case map[string]Marshaler:
-		return DCE.MapMarshaler(t)
-	case map[string][]Marshaler:
-		return DCE.MapSliceMarshaler(t)
-	case map[string]DocumentMarshaler:
-		return DCE.MapDocumentMarshaler(t)
-	case map[string][]DocumentMarshaler:
-		return DCE.MapSliceDocumentMarshaler(t)
+	case map[string]string:
+		return DC.MapString(t), nil
 	case map[string]any:
 		return DCE.MapInterface(t)
-	case map[string][]any:
-		return DCE.MapSliceInterface(t)
 	case map[any]any:
 		return DCE.MapInterfaceInterface(t)
-	case map[any][]any:
-		return DCE.MapInterfaceSliceInterface(t)
 	case Reader:
 		return DCE.Reader(t)
 	case *Element:
@@ -595,7 +227,7 @@ func (DocumentConstructorError) Interface(value any) (*Document, error) {
 }
 
 func (ElementConstructor) Marshaler(key string, val Marshaler) *Element {
-	elem, err := EC.MarshalerErr(key, val)
+	elem, err := ECE.Marshaler(key, val)
 	if err != nil {
 		panic(err)
 	}
@@ -603,7 +235,7 @@ func (ElementConstructor) Marshaler(key string, val Marshaler) *Element {
 	return elem
 }
 
-func (ElementConstructor) MarshalerErr(key string, val Marshaler) (*Element, error) {
+func (ElementConstructorError) Marshaler(key string, val Marshaler) (*Element, error) {
 	doc, err := val.MarshalBSON()
 	if err != nil {
 		return nil, err
@@ -613,33 +245,16 @@ func (ElementConstructor) MarshalerErr(key string, val Marshaler) (*Element, err
 }
 
 func (ElementConstructor) DocumentMarshaler(key string, val DocumentMarshaler) *Element {
-	doc, err := val.MarshalDocument()
-	if err != nil {
-		panic(err)
-	}
-
-	return EC.SubDocument(key, doc)
+	return EC.SubDocument(key, fun.Must(val.MarshalDocument()))
 }
 
-func (ElementConstructor) DocumentMarshalerErr(key string, val DocumentMarshaler) (*Element, error) {
+func (ElementConstructorError) DocumentMarshaler(key string, val DocumentMarshaler) (*Element, error) {
 	doc, err := val.MarshalDocument()
 	if err != nil {
 		return nil, err
 	}
 
 	return EC.SubDocument(key, doc), nil
-}
-
-func (ElementConstructor) JSONXErr(key string, val *jsonx.Document) (*Element, error) {
-	doc, err := DCE.JSONX(val)
-	if err != nil {
-		return nil, err
-	}
-	return EC.SubDocument(key, doc), nil
-}
-
-func (ElementConstructor) JSONX(key string, val *jsonx.Document) *Element {
-	return EC.SubDocument(key, DC.JSONX(val))
 }
 
 func (ElementConstructor) Int(key string, i int) *Element {
@@ -648,16 +263,6 @@ func (ElementConstructor) Int(key string, i int) *Element {
 	}
 
 	return EC.Int64(key, int64(i))
-}
-
-func (ElementConstructor) SliceJSONX(key string, in []*jsonx.Document) *Element {
-	vals := make([]*Value, len(in))
-
-	for idx := range in {
-		vals[idx] = VC.JSONX(in[idx])
-	}
-
-	return EC.Array(key, NewArray(vals...))
 }
 
 func (ElementConstructor) SliceString(key string, in []string) *Element {
@@ -680,11 +285,11 @@ func (ElementConstructor) SliceInterface(key string, in []any) *Element {
 	return EC.Array(key, NewArray(vals...))
 }
 
-func (ElementConstructor) SliceInterfaceErr(key string, in []any) (*Element, error) {
+func (ElementConstructorError) SliceInterface(key string, in []any) (*Element, error) {
 	vals := make([]*Value, 0, len(in))
 
 	for idx := range in {
-		elem, err := VC.InterfaceErr(in[idx])
+		elem, err := VCE.Interface(in[idx])
 		if err != nil {
 			return nil, err
 		}
@@ -767,60 +372,6 @@ func (ElementConstructor) SliceDuration(key string, in []time.Duration) *Element
 	return EC.Array(key, NewArray(vals...))
 }
 
-func (ElementConstructor) SliceMarshaler(key string, in []Marshaler) *Element {
-	vals := make([]*Value, len(in))
-
-	for idx := range in {
-		vals[idx] = VC.Marshaler(in[idx])
-	}
-
-	return EC.Array(key, NewArray(vals...))
-}
-
-func (ElementConstructor) SliceMarshalerErr(key string, in []Marshaler) (*Element, error) {
-	vals := make([]*Value, 0, len(in))
-
-	for idx := range in {
-		val, err := VC.MarshalerErr(in[idx])
-		if err != nil {
-			return nil, err
-		}
-
-		if val != nil {
-			vals = append(vals, val)
-		}
-	}
-
-	return EC.Array(key, NewArray(vals...)), nil
-}
-
-func (ElementConstructor) SliceDocumentMarshaler(key string, in []DocumentMarshaler) *Element {
-	vals := make([]*Value, len(in))
-
-	for idx := range in {
-		vals[idx] = VC.DocumentMarshaler(in[idx])
-	}
-
-	return EC.Array(key, NewArray(vals...))
-}
-
-func (ElementConstructor) SliceDocumentMarshalerErr(key string, in []DocumentMarshaler) (*Element, error) {
-	vals := make([]*Value, 0, len(in))
-
-	for idx := range in {
-		val, err := VC.DocumentMarshalerErr(in[idx])
-		if err != nil {
-			return nil, err
-		}
-
-		if val != nil {
-			vals = append(vals, val)
-		}
-	}
-
-	return EC.Array(key, NewArray(vals...)), nil
-}
-
 func (ElementConstructor) Duration(key string, t time.Duration) *Element {
 	return EC.Int64(key, int64(t))
 }
@@ -833,8 +384,8 @@ func (ValueConstructor) Interface(in any) *Value {
 	return EC.Interface("", in).value
 }
 
-func (ValueConstructor) InterfaceErr(in any) (*Value, error) {
-	elem, err := EC.InterfaceErr("", in)
+func (ValueConstructorError) Interface(in any) (*Value, error) {
+	elem, err := ECE.Interface("", in)
 	if err != nil {
 		return nil, err
 	}
@@ -846,8 +397,8 @@ func (ValueConstructor) Marshaler(in Marshaler) *Value {
 	return EC.Marshaler("", in).value
 }
 
-func (ValueConstructor) MarshalerErr(in Marshaler) (*Value, error) {
-	elem, err := EC.MarshalerErr("", in)
+func (ValueConstructorError) Marshaler(in Marshaler) (*Value, error) {
+	elem, err := ECE.Marshaler("", in)
 	if err != nil {
 		return nil, err
 	}
@@ -859,27 +410,13 @@ func (ValueConstructor) DocumentMarshaler(in DocumentMarshaler) *Value {
 	return EC.DocumentMarshaler("", in).value
 }
 
-func (ValueConstructor) DocumentMarshalerErr(in DocumentMarshaler) (*Value, error) {
-	elem, err := EC.DocumentMarshalerErr("", in)
+func (ValueConstructorError) DocumentMarshaler(in DocumentMarshaler) (*Value, error) {
+	elem, err := ECE.DocumentMarshaler("", in)
 	if err != nil {
 		return nil, err
 	}
 
 	return elem.value, nil
-}
-
-func (ValueConstructor) JSONXErr(in *jsonx.Document) (*Value, error) {
-	elem, err := EC.JSONXErr("", in)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return elem.value, nil
-}
-
-func (ValueConstructor) JSONX(in *jsonx.Document) *Value {
-	return EC.JSONX("", in).value
 }
 
 func (ValueConstructor) Duration(t time.Duration) *Value {
@@ -890,140 +427,21 @@ func (ValueConstructor) MapString(in map[string]string) *Value {
 	return EC.SubDocument("", DC.MapString(in)).value
 }
 
-func (ValueConstructor) MapSliceString(in map[string][]string) *Value {
-	return EC.SubDocument("", DC.MapSliceString(in)).value
-}
-
-func (ValueConstructor) MapInt(in map[string]int) *Value {
-	return EC.SubDocument("", DC.MapInt(in)).value
-}
-
-func (ValueConstructor) MapInt32(in map[string]int32) *Value {
-	return EC.SubDocument("", DC.MapInt32(in)).value
-}
-
-func (ValueConstructor) MapInt64(in map[string]int64) *Value {
-	return EC.SubDocument("", DC.MapInt64(in)).value
-}
-
-func (ValueConstructor) MapFloat32(in map[string]float32) *Value {
-	return EC.SubDocument("", DC.MapFloat32(in)).value
-}
-
-func (ValueConstructor) MapFloat64(in map[string]float64) *Value {
-	return EC.SubDocument("", DC.MapFloat64(in)).value
-}
-
-func (ValueConstructor) MapSliceInt(in map[string][]int) *Value {
-	return EC.SubDocument("", DC.MapSliceInt(in)).value
-}
-
-func (ValueConstructor) MapSliceInt32(in map[string][]int32) *Value {
-	return EC.SubDocument("", DC.MapSliceInt32(in)).value
-}
-
-func (ValueConstructor) MapSliceInt64(in map[string][]int64) *Value {
-	return EC.SubDocument("", DC.MapSliceInt64(in)).value
-}
-
-func (ValueConstructor) MapSliceFloat32(in map[string][]float32) *Value {
-	return EC.SubDocument("", DC.MapSliceFloat32(in)).value
-}
-
-func (ValueConstructor) MapSliceFloat64(in map[string][]float64) *Value {
-	return EC.SubDocument("", DC.MapSliceFloat64(in)).value
-}
-
 func (ValueConstructor) MapInterface(in map[string]any) *Value {
 	return EC.SubDocument("", DC.MapInterface(in)).value
-}
-
-func (ValueConstructor) MapInterfaceSliceInterface(in map[any][]any) *Value {
-	return EC.SubDocument("", DC.MapInterfaceSliceInterface(in)).value
 }
 
 func (ValueConstructor) MapInterfaceInterface(in map[any]any) *Value {
 	return EC.SubDocument("", DC.MapInterfaceInterface(in)).value
 }
 
-func (ValueConstructor) MapSliceInterface(in map[string][]any) *Value {
-	return EC.SubDocument("", DC.MapSliceInterface(in)).value
-}
-
-func (ValueConstructor) MapMarshaler(in map[string]Marshaler) *Value {
-	return EC.SubDocument("", DC.MapMarshaler(in)).value
-}
-
-func (ValueConstructor) MapSliceMarshaler(in map[string][]Marshaler) *Value {
-	return EC.SubDocument("", DC.MapSliceMarshaler(in)).value
-}
-
-func (ValueConstructor) MapTime(in map[string]time.Time) *Value {
-	return EC.SubDocument("", DC.MapTime(in)).value
-}
-
-func (ValueConstructor) MapSliceTime(in map[string][]time.Time) *Value {
-	return EC.SubDocument("", DC.MapSliceTime(in)).value
-}
-
-func (ValueConstructor) MapDuration(in map[string]time.Duration) *Value {
-	return EC.SubDocument("", DC.MapDuration(in)).value
-}
-
-func (ValueConstructor) MapSliceDuration(in map[string][]time.Duration) *Value {
-	return EC.SubDocument("", DC.MapSliceDuration(in)).value
-}
-
-func (ValueConstructor) MapInterfaceErr(in map[string]any) (*Value, error) {
+func (ValueConstructorError) MapInterface(in map[string]any) (*Value, error) {
 	doc, err := DCE.MapInterface(in)
 	if err != nil {
 		return nil, err
 	}
 
 	return EC.SubDocument("", doc).value, nil
-}
-
-func (ValueConstructor) MapSliceInterfaceErr(in map[string][]any) (*Value, error) {
-	doc, err := DCE.MapSliceInterface(in)
-	if err != nil {
-		return nil, err
-	}
-
-	return EC.SubDocument("", doc).value, nil
-}
-
-func (ValueConstructor) MapMarshalerErr(in map[string]Marshaler) (*Value, error) {
-	doc, err := DCE.MapMarshaler(in)
-	if err != nil {
-		return nil, err
-	}
-
-	return EC.SubDocument("", doc).value, nil
-}
-
-func (ValueConstructor) MapSliceMarshalerErr(in map[string][]Marshaler) (*Value, error) {
-	doc, err := DCE.MapSliceMarshaler(in)
-	if err != nil {
-		return nil, err
-	}
-
-	return EC.SubDocument("", doc).value, nil
-}
-
-func (ValueConstructor) MapJSONX(in map[string]*jsonx.Document) *Value {
-	doc := DC.Make(len(in))
-	for k, v := range in {
-		doc.Append(EC.JSONX(k, v))
-	}
-	return EC.SubDocument("", doc).value
-}
-
-func (ValueConstructor) MapSliceJSONX(in map[string][]*jsonx.Document) *Value {
-	doc := DC.Make(len(in))
-	for k, v := range in {
-		doc.Append(EC.SliceJSONX(k, v))
-	}
-	return EC.SubDocument("", doc).value
 }
 
 func (ValueConstructor) SliceString(in []string) *Value   { return EC.SliceString("", in).value }
@@ -1036,23 +454,12 @@ func (ValueConstructor) SliceTime(in []time.Time) *Value  { return EC.SliceTime(
 func (ValueConstructor) SliceDuration(in []time.Duration) *Value {
 	return EC.SliceDuration("", in).value
 }
-
-func (ValueConstructor) SliceMarshaler(in []Marshaler) *Value { return EC.SliceMarshaler("", in).value }
 func (ValueConstructor) SliceInterface(in []any) *Value {
 	return EC.SliceInterface("", in).value
 }
 
-func (ValueConstructor) SliceMarshalerErr(in []Marshaler) (*Value, error) {
-	elem, err := EC.SliceMarshalerErr("", in)
-	if err != nil {
-		return nil, err
-	}
-
-	return elem.value, nil
-}
-
-func (ValueConstructor) SliceInterfaceErr(in []any) (*Value, error) {
-	elem, err := EC.SliceInterfaceErr("", in)
+func (ValueConstructorError) SliceInterface(in []any) (*Value, error) {
+	elem, err := ECE.SliceInterface("", in)
 	if err != nil {
 		return nil, err
 	}

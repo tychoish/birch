@@ -328,16 +328,8 @@ func TestDocument(t *testing.T) {
 		t.Run("invalid-document", func(t *testing.T) {
 			d := DC.Elements(EC.Double("", 3.14159))
 			d.elems[0].value.data = d.elems[0].value.data[:3]
-			b := make([]byte, 15)
-			_, err := d.writeToSlice(0, b)
-			if !IsTooSmall(err) {
-				t.Errorf("Expected error not returned. got %s; want %s", err, errTooSmall)
-			}
-		})
-		t.Run("[]byte-too-small", func(t *testing.T) {
-			d := DC.Elements(EC.Double("", 3.14159))
-			b := make([]byte, 5)
-			_, err := d.writeToSlice(0, b)
+			b := bytes.NewBuffer(make([]byte, 0, 15))
+			_, err := d.WriteTo(b)
 			if !IsTooSmall(err) {
 				t.Errorf("Expected error not returned. got %s; want %s", err, errTooSmall)
 			}
@@ -355,16 +347,16 @@ func TestDocument(t *testing.T) {
 		}
 
 		for _, tc := range testCases {
-			b := make([]byte, tc.n)
-			n, err := tc.d.writeToSlice(tc.start, b)
+			b := bytes.NewBuffer(make([]byte, 0, tc.n))
+			n, err := tc.d.WriteTo(b)
 			if n != tc.n {
 				t.Errorf("Number of bytes written does not match. got %d; want %d", n, tc.n)
 			}
 			if err != tc.err {
 				t.Errorf("Returned error does not match expected error. got %s; want %s", err, tc.err)
 			}
-			if !bytes.Equal(tc.want, b) {
-				t.Fatalf("unqueal %v and %v", tc.want, b)
+			if !bytes.Equal(tc.want, b.Bytes()) {
+				t.Fatalf("unqueal %v and %v", tc.want, b.Bytes())
 			}
 
 		}

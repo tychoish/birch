@@ -104,7 +104,7 @@ func (ps Custom) MarshalDocument() (*birch.Document, error) {
 	doc := birch.DC.Make(ps.Len())
 
 	for _, elem := range ps {
-		de, err := birch.EC.InterfaceErr(elem.Name, elem.Value)
+		de, err := birch.ECE.Interface(elem.Name, elem.Value)
 		if err != nil {
 			return nil, err
 		}

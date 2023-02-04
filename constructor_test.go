@@ -8,7 +8,6 @@ package birch
 
 import (
 	"bytes"
-	"math"
 	"testing"
 	"time"
 
@@ -1044,27 +1043,6 @@ func TestDocumentConstructor(t *testing.T) {
 				},
 			},
 			{
-				Name: "MapInt",
-				Size: 2,
-				Constructor: func() (*Document, error) {
-					return DC.MapInt(map[string]int{"a": math.MaxInt32 + 2, "b": math.MaxInt64}), nil
-				},
-			},
-			{
-				Name: "MapInt32",
-				Size: 2,
-				Constructor: func() (*Document, error) {
-					return DC.MapInt32(map[string]int32{"a": 1, "b": 1000}), nil
-				},
-			},
-			{
-				Name: "MapInt64",
-				Size: 2,
-				Constructor: func() (*Document, error) {
-					return DC.MapInt64(map[string]int64{"a": math.MaxInt64 - 4, "b": 1000}), nil
-				},
-			},
-			{
 				Name: "Marshaler",
 				Size: 3,
 				Constructor: func() (*Document, error) {
@@ -1186,15 +1164,6 @@ func TestDocumentConstructor(t *testing.T) {
 				Type:  bsontype.EmbeddedDocument,
 			},
 			{
-				Name: "MapStringInterfaceSlice",
-				Type: bsontype.EmbeddedDocument,
-				Size: 2,
-				Input: map[string][]any{
-					"a": {"1", 2, "3"},
-					"b": {false, true, "1", 2, "3"},
-				},
-			},
-			{
 				Name:  "DocumentMarshaler",
 				Type:  bsontype.EmbeddedDocument,
 				Size:  3,
@@ -1213,72 +1182,10 @@ func TestDocumentConstructor(t *testing.T) {
 				Input: EC.Time("now", time.Now()),
 			},
 			{
-				Name: "MapMarshaler",
-				Size: 2,
-				Type: bsontype.EmbeddedDocument,
-				Input: map[string]Marshaler{
-					"one": DC.Elements(),
-					"two": NewArray(),
-				},
-			},
-			{
-				Name: "MapMarshalerSlice",
-				Size: 2,
-				Type: bsontype.EmbeddedDocument,
-				Input: map[string][]Marshaler{
-					"one": {DC.Elements(), DC.Elements()},
-					"two": {NewArray()},
-				},
-			},
-			{
 				Name:  "Marshaler",
 				Size:  1,
 				Type:  bsontype.EmbeddedDocument,
 				Input: NewArray(VC.String("hi")),
-			},
-			{
-				Name: "MapStringSlice",
-				Size: 3,
-				Type: bsontype.EmbeddedDocument,
-				Input: map[string][]string{
-					"hi":      {"hello", "world"},
-					"results": {},
-					"other":   {"one"},
-				},
-			},
-			{
-				Name: "MapStringInt64",
-				Size: 5,
-				Type: bsontype.EmbeddedDocument,
-				Input: map[string]int64{
-					"one":   400,
-					"two":   math.MaxInt32,
-					"three": math.MaxInt64 - 10,
-					"four":  -100,
-					"five":  -math.MaxInt64,
-				},
-			}, {
-				Name: "MapStringInt",
-				Size: 5,
-				Type: bsontype.EmbeddedDocument,
-				Input: map[string]int{
-					"one":   400,
-					"two":   math.MaxInt32,
-					"three": math.MaxInt64 - 10,
-					"four":  -100,
-					"five":  -math.MaxInt64,
-				},
-			},
-			{
-				Name: "MapStringInt32",
-				Size: 4,
-				Type: bsontype.EmbeddedDocument,
-				Input: map[string]int32{
-					"one":  400,
-					"two":  math.MaxInt32,
-					"four": -100,
-					"five": -math.MaxInt32,
-				},
 			},
 		} {
 			t.Run(test.Name, func(t *testing.T) {

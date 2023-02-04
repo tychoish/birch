@@ -40,7 +40,7 @@ func (d *Document) UnmarshalJSON(in []byte) error {
 }
 
 func (a *Array) UnmarshalJSON(in []byte) error {
-	ja, err := jsonx.AC.BytesErr(in)
+	ja, err := jsonx.ACE.Bytes(in)
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (a *Array) UnmarshalJSON(in []byte) error {
 }
 
 func (v *Value) UnmarshalJSON(in []byte) error {
-	va, err := jsonx.VC.BytesErr(in)
+	va, err := jsonx.VCE.Bytes(in)
 	if err != nil {
 		return err
 	}
