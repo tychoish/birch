@@ -36,10 +36,10 @@ func (m *ReplyMessage) Serialize() []byte {
 	buf := bytes.NewBuffer(make([]byte, 0, size))
 	m.header.WriteTo(buf)
 
-	bufWriteInt32(m.Flags, buf)
-	bufWriteInt64(m.CursorId, buf)
-	bufWriteInt32(m.StartingFrom, buf)
-	bufWriteInt32(m.NumberReturned, buf)
+	writeInt32(m.Flags, buf)
+	writeInt64(m.CursorId, buf)
+	writeInt32(m.StartingFrom, buf)
+	writeInt32(m.NumberReturned, buf)
 
 	for _, d := range m.Docs {
 		d.WriteTo(buf)

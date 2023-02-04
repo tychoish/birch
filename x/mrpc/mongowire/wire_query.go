@@ -37,12 +37,12 @@ func (m *queryMessage) Serialize() []byte {
 	buf := bytes.NewBuffer(make([]byte, 0, size))
 	m.header.WriteTo(buf)
 
-	bufWriteInt32(m.Flags, buf)
+	writeInt32(m.Flags, buf)
 
 	writeCString(m.Namespace, buf)
-	bufWriteInt32(m.Skip, buf)
+	writeInt32(m.Skip, buf)
 
-	bufWriteInt32(m.NReturn, buf)
+	writeInt32(m.NReturn, buf)
 
 	m.Query.WriteTo(buf)
 	m.Project.WriteTo(buf)

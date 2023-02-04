@@ -26,36 +26,34 @@ func readInt64(b []byte) int64 {
 		(int64(b[7]) << 56)
 }
 
-func bufWriteInt32(i int32, wr io.Writer) int {
-	val := make([]byte, 4)
-	writeInt32(i, val, 0)
-	return int(fun.Must(wr.Write(val)))
+func writeInt32(i int32, wr io.Writer) int {
+	return int(fun.Must(wr.Write(encodeInt32(i))))
 }
 
-func writeInt32(i int32, buf []byte, loc int) int {
-	buf[loc] = byte(i)
-	buf[loc+1] = byte(i >> 8)
-	buf[loc+2] = byte(i >> 16)
-	buf[loc+3] = byte(i >> 24)
-	return 4
+func encodeInt32(i int32) []byte {
+	buf := make([]byte, 4)
+	buf[0] = byte(i)
+	buf[1] = byte(i >> 8)
+	buf[2] = byte(i >> 16)
+	buf[3] = byte(i >> 24)
+	return buf
 }
 
-func bufWriteInt64(i int64, wr io.Writer) int {
-	val := make([]byte, 8)
-	writeInt64(i, val, 0)
-	return int(fun.Must(wr.Write(val)))
+func writeInt64(i int64, wr io.Writer) int {
+	return int(fun.Must(wr.Write(encodeInt64(i))))
 }
 
-func writeInt64(i int64, buf []byte, loc int) int {
-	buf[loc] = byte(i)
-	buf[loc+1] = byte(i >> 8)
-	buf[loc+2] = byte(i >> 16)
-	buf[loc+3] = byte(i >> 24)
-	buf[loc+4] = byte(i >> 32)
-	buf[loc+5] = byte(i >> 40)
-	buf[loc+6] = byte(i >> 48)
-	buf[loc+7] = byte(i >> 56)
-	return 8
+func encodeInt64(i int64) []byte {
+	buf := make([]byte, 8)
+	buf[0] = byte(i)
+	buf[1] = byte(i >> 8)
+	buf[2] = byte(i >> 16)
+	buf[3] = byte(i >> 24)
+	buf[4] = byte(i >> 32)
+	buf[5] = byte(i >> 40)
+	buf[6] = byte(i >> 48)
+	buf[7] = byte(i >> 56)
+	return buf
 }
 
 func readCString(b []byte) (string, error) {

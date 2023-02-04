@@ -30,11 +30,11 @@ func (m *killCursorsMessage) Serialize() []byte {
 	buf := bytes.NewBuffer(make([]byte, 0, size))
 	m.header.WriteTo(buf)
 
-	bufWriteInt32(0, buf)
-	bufWriteInt32(m.NumCursors, buf)
+	writeInt32(0, buf)
+	writeInt32(m.NumCursors, buf)
 
 	for _, c := range m.CursorIds {
-		bufWriteInt64(c, buf)
+		writeInt64(c, buf)
 	}
 
 	return buf.Bytes()

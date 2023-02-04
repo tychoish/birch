@@ -82,7 +82,7 @@ func (p *opMessagePayloadType1) Serialize() []byte {
 
 	buf := bytes.NewBuffer(make([]byte, 0, size))
 	buf.Write([]byte{p.Type()})
-	bufWriteInt32(p.Size, buf)
+	writeInt32(p.Size, buf)
 	writeCString(p.Identifier, buf)
 	for _, doc := range p.Payload { // payload
 		doc.WriteTo(buf)
@@ -135,12 +135,12 @@ func (m *OpMessage) Serialize() []byte {
 	m.header.Size = int32(size)
 	buf := bytes.NewBuffer(make([]byte, 0, size))
 	m.header.WriteTo(buf)
-	bufWriteInt32(int32(m.Flags), buf)
+	writeInt32(int32(m.Flags), buf)
 
 	buf.Write(sections)
 
 	if m.Checksum != 0 && (m.Flags&1) == 1 {
-		bufWriteInt32(m.Checksum, buf)
+		writeInt32(m.Checksum, buf)
 	}
 
 	m.serialized = buf.Bytes()

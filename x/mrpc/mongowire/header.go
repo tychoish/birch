@@ -13,10 +13,10 @@ type MessageHeader struct {
 }
 
 func (h *MessageHeader) WriteTo(wr io.Writer) {
-	bufWriteInt32(h.Size, wr)
-	bufWriteInt32(h.RequestID, wr)
-	bufWriteInt32(h.ResponseTo, wr)
-	bufWriteInt32(int32(h.OpCode), wr)
+	writeInt32(h.Size, wr)
+	writeInt32(h.RequestID, wr)
+	writeInt32(h.ResponseTo, wr)
+	writeInt32(int32(h.OpCode), wr)
 }
 
 func (h *MessageHeader) Parse(body []byte) (Message, error) {

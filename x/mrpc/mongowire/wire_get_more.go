@@ -36,11 +36,11 @@ func (m *getMoreMessage) Serialize() []byte {
 	buf := bytes.NewBuffer(make([]byte, 0, size))
 	m.header.WriteTo(buf)
 
-	bufWriteInt32(0, buf)
+	writeInt32(0, buf)
 
 	writeCString(m.Namespace, buf)
-	bufWriteInt32(m.NReturn, buf)
-	bufWriteInt64(m.CursorId, buf)
+	writeInt32(m.NReturn, buf)
+	writeInt64(m.CursorId, buf)
 
 	return buf.Bytes()
 }

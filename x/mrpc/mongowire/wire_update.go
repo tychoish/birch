@@ -37,11 +37,11 @@ func (m *updateMessage) Serialize() []byte {
 	buf := bytes.NewBuffer(make([]byte, 0, size))
 	m.header.WriteTo(buf)
 
-	bufWriteInt32(0, buf)
+	writeInt32(0, buf)
 
 	writeCString(m.Namespace, buf)
 
-	bufWriteInt32(m.Flags, buf)
+	writeInt32(m.Flags, buf)
 
 	m.Filter.WriteTo(buf)
 	m.Update.WriteTo(buf)

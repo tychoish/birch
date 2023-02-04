@@ -53,13 +53,13 @@ func TestReadMessage(t *testing.T) {
 		{
 			name:   "InvalidHeaderSize",
 			ctx:    context.TODO(),
-			reader: bytes.NewReader(int32ToBytes(-1)),
+			reader: bytes.NewReader(encodeInt32(-1)),
 			hasErr: true,
 		},
 		{
 			name:   "InvalidMessageHeader",
 			ctx:    context.TODO(),
-			reader: bytes.NewReader(append(int32ToBytes(20), bytes.Repeat([]byte{'a'}, 4)...)),
+			reader: bytes.NewReader(append(encodeInt32(20), bytes.Repeat([]byte{'a'}, 4)...)),
 			hasErr: true,
 		},
 		{
@@ -175,10 +175,4 @@ func createSmallMessage(t *testing.T) Message {
 func createLargeMessage(t *testing.T, size int) Message {
 	doc := birch.DC.Elements(birch.EC.Binary("foo", bytes.Repeat([]byte{'a'}, size)))
 	return NewQuery("ns", 0, 0, 1, doc, nil)
-}
-
-func int32ToBytes(i int32) []byte {
-	data := make([]byte, 4)
-	writeInt32(i, data, 0)
-	return data
 }
