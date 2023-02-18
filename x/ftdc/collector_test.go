@@ -150,7 +150,7 @@ func TestCollectorInterface(t *testing.T) {
 						if len(docs)-1 != idx {
 							t.Error("values should be equal", len(docs)-1, idx)
 						} // zero index
-						if err := iter.Close(ctx); err != nil {
+						if err := iter.Close(); err != nil {
 							t.Fatal("close err", err)
 						}
 
@@ -214,7 +214,7 @@ func TestStreamingEncoding(t *testing.T) {
 							}
 							idx++
 						}
-						if err := iter.Close(ctx); err != nil {
+						if err := iter.Close(); err != nil {
 							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
@@ -263,7 +263,7 @@ func TestStreamingEncoding(t *testing.T) {
 							}
 						}
 
-						if err := iter.Close(ctx); err != nil {
+						if err := iter.Close(); err != nil {
 							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
@@ -322,7 +322,7 @@ func TestStreamingEncoding(t *testing.T) {
 							}
 						}
 
-						if err := iter.Close(ctx); err != nil {
+						if err := iter.Close(); err != nil {
 							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
@@ -382,7 +382,7 @@ func TestStreamingEncoding(t *testing.T) {
 								t.Error("values should be equal")
 							}
 						}
-						if err := iter.Close(ctx); err != nil {
+						if err := iter.Close(); err != nil {
 							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
@@ -446,7 +446,7 @@ func TestFixedEncoding(t *testing.T) {
 							}
 							idx++
 						}
-						if err := iter.Close(ctx); err != nil {
+						if err := iter.Close(); err != nil {
 							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
@@ -494,7 +494,7 @@ func TestFixedEncoding(t *testing.T) {
 							}
 						}
 
-						if err := iter.Close(ctx); err != nil {
+						if err := iter.Close(); err != nil {
 							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
@@ -684,7 +684,7 @@ func TestTimestampHandling(t *testing.T) {
 
 						idx++
 					}
-					if err := iter.Close(ctx); err != nil {
+					if err := iter.Close(); err != nil {
 						t.Fatal(err)
 					}
 				})
@@ -701,7 +701,7 @@ func TestTimestampHandling(t *testing.T) {
 						}
 						idx++
 					}
-					if err := iter.Close(ctx); err != nil {
+					if err := iter.Close(); err != nil {
 						t.Fatal(err)
 					}
 				})
@@ -718,7 +718,7 @@ func TestTimestampHandling(t *testing.T) {
 						}
 						idx++
 					}
-					if err := chunks.Close(ctx); err != nil {
+					if err := chunks.Close(); err != nil {
 						t.Fatal(err)
 					}
 				})
@@ -750,7 +750,7 @@ func TestTimestampHandling(t *testing.T) {
 					}
 					idx++
 				}
-				if err := iter.Close(ctx); err != nil {
+				if err := iter.Close(); err != nil {
 					t.Fatal(err)
 				}
 			})
@@ -781,7 +781,7 @@ func TestTimestampHandling(t *testing.T) {
 
 					idx++
 				}
-				if err := iter.Close(ctx); err != nil {
+				if err := iter.Close(); err != nil {
 					t.Fatal(err)
 				}
 			})

@@ -154,7 +154,7 @@ func TestArray(t *testing.T) {
 						t.Errorf("ArrayIterator.Next() returned false")
 					}
 
-					if err := iter.Close(ctx); err != nil {
+					if err := iter.Close(); err != nil {
 						t.Errorf("ArrayIterator.Err() returned non-nil error: %s", err)
 					}
 
@@ -170,7 +170,7 @@ func TestArray(t *testing.T) {
 					t.Errorf("ArrayIterator.Next() returned true. expected false")
 				}
 
-				if err := iter.Close(ctx); err != nil {
+				if err := iter.Close(); err != nil {
 					t.Errorf("ArrayIterator.Err() returned non-nil error: %s", err)
 				}
 			})

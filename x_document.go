@@ -22,7 +22,7 @@ func (d *Document) UnmarshalDocument(in *Document) error {
 		d.Append(iter.Value())
 	}
 
-	return iter.Close(iterCtx)
+	return iter.Close()
 }
 
 // ExportMap converts the values of the document to a map of strings

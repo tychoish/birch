@@ -265,7 +265,7 @@ func TestDocument(t *testing.T) {
 			if !iter.Next(ctx) {
 				t.Fatal("truth assertion failed")
 			}
-			if err := iter.Close(ctx); err != nil {
+			if err := iter.Close(); err != nil {
 				t.Fatal(err)
 			}
 			requireElementsEqual(t, elem, iter.Value())
@@ -274,7 +274,7 @@ func TestDocument(t *testing.T) {
 		if iter.Next(ctx) {
 			t.Fatal("iterator should be empty")
 		}
-		if err := iter.Close(ctx); err != nil {
+		if err := iter.Close(); err != nil {
 			t.Fatal(err)
 		}
 	})

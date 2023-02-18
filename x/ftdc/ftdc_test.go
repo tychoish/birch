@@ -179,7 +179,7 @@ func TestReadPathIntegration(t *testing.T) {
 					}
 				}
 
-				if err := iter.Close(ctx); err != nil {
+				if err := iter.Close(); err != nil {
 					t.Error(err)
 				}
 
@@ -213,7 +213,7 @@ func TestReadPathIntegration(t *testing.T) {
 				if test.expectedChunks != counter {
 					t.Error("values should be equal")
 				}
-				if err := iter.Close(ctx); err != nil {
+				if err := iter.Close(); err != nil {
 					t.Fatal(err)
 				}
 				fmt.Println(testMessage{
@@ -244,7 +244,7 @@ func TestReadPathIntegration(t *testing.T) {
 						t.Fatal("truth assertion failed")
 					}
 				}
-				if err := iter.Close(ctx); err != nil {
+				if err := iter.Close(); err != nil {
 					t.Fatal(err)
 				}
 				if test.expectedChunks != counter {
@@ -294,7 +294,7 @@ func TestReadPathIntegration(t *testing.T) {
 							t.Fatalf("unqueal %v and %v", test.docLen, doc.Len())
 						}
 					}
-					if err := iter.Close(ctx); err != nil {
+					if err := iter.Close(); err != nil {
 						t.Error(err)
 					}
 					if counter < expectedSamples/10 {
@@ -332,7 +332,7 @@ func TestReadPathIntegration(t *testing.T) {
 							t.Fatalf("unqueal %v and %v", test.expectedNum, doc.Len())
 						}
 					}
-					if err := iter.Close(ctx); err != nil {
+					if err := iter.Close(); err != nil {
 						t.Error(err)
 					}
 					if counter < expectedSamples/10 {

@@ -22,8 +22,8 @@ func (d *Document) toJSON() *jsonx.Document {
 		out.Append(jsonx.EC.Value(elem.Key(), elem.Value().toJSON()))
 	}
 
-	if iter.Close(iterCtx) != nil {
-		return nil
+	if err := iter.Close(); err != nil {
+		panic(err)
 	}
 
 	return out
@@ -41,7 +41,7 @@ func (a *Array) toJSON() *jsonx.Array {
 	for iter.Next(iterCtx) {
 		out.Append(iter.Value().toJSON())
 	}
-	if err := iter.Close(iterCtx); err != nil {
+	if err := iter.Close(); err != nil {
 		panic(err)
 	}
 

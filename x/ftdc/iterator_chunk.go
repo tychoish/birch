@@ -70,8 +70,8 @@ func ReadChunks(ctx context.Context, r io.Reader) fun.Iterator[*Chunk] {
 // is exhausted. Canceling the context that you used to create the
 // iterator has the same effect. Close returns a non-nil error if the
 // iterator encountered any errors during iteration.
-func (iter *ChunkIterator) Close(ctx context.Context) error {
+func (iter *ChunkIterator) Close() error {
 	iter.cancel()
-	fun.Wait(ctx, &iter.wg)
+	iter.wg.Wait()
 	return iter.catcher.Resolve()
 }

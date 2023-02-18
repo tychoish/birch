@@ -365,7 +365,7 @@ func TestReader(t *testing.T) {
 					if !itr.Next(ctx) {
 						t.Fatal("truth assertion failed")
 					}
-					if err := itr.Close(ctx); err != nil {
+					if err := itr.Close(); err != nil {
 						t.Fatal(err)
 					}
 					if !readerElementComparer(elem, itr.Value()) {
@@ -376,7 +376,7 @@ func TestReader(t *testing.T) {
 				if itr.Next(ctx) {
 					t.Fatal("iterator should be empty")
 				}
-				if err := itr.Close(ctx); tc.finalErr != err {
+				if err := itr.Close(); tc.finalErr != err {
 					t.Fatalf("unqueal %v and %v", tc.finalErr, err)
 				}
 			})

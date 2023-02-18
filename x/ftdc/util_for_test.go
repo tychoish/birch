@@ -93,7 +93,7 @@ func produceMockMetrics(ctx context.Context, samples int, newDoc func() *birch.D
 	}
 
 	metrics := iter.Value().Metrics
-	_ = iter.Close(ctx)
+	_ = iter.Close()
 	return metrics
 }
 

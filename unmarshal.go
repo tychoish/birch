@@ -60,7 +60,7 @@ func (dm DocumentMap) UnmarshalDocument(in *Document) error {
 		}
 		dm[elem.Key()] = elem
 	}
-	return iter.Close(iterCtx)
+	return iter.Close()
 }
 
 func (dm DocumentMap) MarshalBSON() ([]byte, error) {

@@ -91,12 +91,12 @@ type matrixIterator struct {
 	wg       sync.WaitGroup
 }
 
-func (iter *matrixIterator) Close(ctx context.Context) error {
+func (iter *matrixIterator) Close() error {
 	if iter.chunks != nil {
-		iter.catcher.Add(iter.chunks.Close(ctx))
+		iter.catcher.Add(iter.chunks.Close())
 	}
-	iter.catcher.Add(iter.Iterator.Close(ctx))
-	fun.Wait(ctx, &iter.wg)
+	iter.catcher.Add(iter.Iterator.Close())
+	iter.wg.Wait()
 	return iter.catcher.Resolve()
 }
 

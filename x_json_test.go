@@ -387,7 +387,7 @@ func TestJSON(t *testing.T) {
 							t.Fatalf("[%s] %s != %s", test.Expected, expected.Interface(), elem.Value().Interface())
 						}
 					}
-					if err := iter.Close(ctx); err != nil {
+					if err := iter.Close(); err != nil {
 						t.Fatal(err)
 					}
 				})
@@ -419,7 +419,7 @@ func TestJSON(t *testing.T) {
 						}
 						idx++
 					}
-					if err := iter.Close(ctx); err != nil {
+					if err := iter.Close(); err != nil {
 						t.Fatal(err)
 					}
 				})

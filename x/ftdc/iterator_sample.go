@@ -52,11 +52,11 @@ func (c *Chunk) streamDocuments(ctx context.Context, out chan *birch.Document) {
 }
 
 // Close releases all resources associated with the iterator.
-func (iter *sampleIterator) Close(ctx context.Context) error {
+func (iter *sampleIterator) Close() error {
 	iter.closer()
-	fun.Wait(ctx, &iter.wg)
+	iter.wg.Wait()
 
-	return iter.Iterator.Close(ctx)
+	return iter.Iterator.Close()
 }
 
 func (iter *sampleIterator) Metadata() *birch.Document { return iter.metadata }

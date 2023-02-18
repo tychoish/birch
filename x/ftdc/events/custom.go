@@ -91,7 +91,7 @@ func (ps *Custom) UnmarshalBSON(in []byte) error {
 		})
 	}
 
-	if err = iter.Close(ctx); err != nil {
+	if err = iter.Close(); err != nil {
 		return fmt.Errorf("problem reading document: %w", err)
 	}
 

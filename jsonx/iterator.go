@@ -20,8 +20,8 @@ func (iter *documentIterImpl) Next(ctx context.Context) bool {
 	return true
 }
 
-func (iter *documentIterImpl) Value() *Element               { return iter.current }
-func (iter *documentIterImpl) Close(_ context.Context) error { return nil }
+func (iter *documentIterImpl) Value() *Element { return iter.current }
+func (iter *documentIterImpl) Close() error    { return nil }
 
 type arrayIterImpl struct {
 	idx     int
@@ -41,5 +41,5 @@ func (iter *arrayIterImpl) Next(ctx context.Context) bool {
 	return true
 }
 
-func (iter *arrayIterImpl) Value() *Value                 { return iter.current }
-func (iter *arrayIterImpl) Close(_ context.Context) error { return nil }
+func (iter *arrayIterImpl) Value() *Value { return iter.current }
+func (iter *arrayIterImpl) Close() error  { return nil }

@@ -20,10 +20,10 @@ type combinedIterator struct {
 	flatten  bool
 }
 
-func (iter *combinedIterator) Close(ctx context.Context) error {
+func (iter *combinedIterator) Close() error {
 	iter.closer()
-	iter.catcher.Add(iter.Iterator.Close(ctx))
-	fun.Wait(ctx, &iter.wg)
+	iter.catcher.Add(iter.Iterator.Close())
+	iter.wg.Wait()
 	return iter.catcher.Resolve()
 }
 
@@ -61,7 +61,7 @@ func (iter *combinedIterator) worker(
 			}
 
 		}
-		iter.catcher.Add(sample.Close(ctx))
+		iter.catcher.Add(sample.Close())
 	}
-	iter.catcher.Add(chunks.Close(ctx))
+	iter.catcher.Add(chunks.Close())
 }

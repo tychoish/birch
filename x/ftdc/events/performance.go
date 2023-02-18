@@ -112,7 +112,7 @@ func (p *Performance) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return (iter.Close(ctx))
+	return iter.Close()
 }
 
 func (p *PerformanceCounters) UnmarshalDocument(doc *birch.Document) error {
@@ -135,7 +135,7 @@ func (p *PerformanceCounters) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return (iter.Close(ctx))
+	return iter.Close()
 }
 
 func (p *PerformanceTimers) UnmarshalDocument(doc *birch.Document) error {
@@ -153,7 +153,7 @@ func (p *PerformanceTimers) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return (iter.Close(ctx))
+	return iter.Close()
 }
 
 func (p *PerformanceGauges) UnmarshalDocument(doc *birch.Document) error {
@@ -174,7 +174,7 @@ func (p *PerformanceGauges) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return (iter.Close(ctx))
+	return iter.Close()
 }
 
 // Add combines the values of the input Performance struct into this struct,

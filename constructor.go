@@ -11,6 +11,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/elements"
 	"github.com/tychoish/birch/jsonx"
 	"github.com/tychoish/birch/types"
@@ -179,34 +180,19 @@ func (ElementConstructorError) Interface(key string, value any) (*Element, error
 		default:
 			return EC.Int64(key, int64(t)), nil
 		}
-	case bool, int8, int16, int32, int, int64, uint8, uint16, uint32, string, float32, float64, types.Timestamp, time.Time:
-		return EC.Interface(key, t), nil
-	case *Element:
-		return t, nil
-	case *Document:
-		return EC.SubDocument(key, t), nil
-	case Reader:
-		return EC.SubDocumentFromReader(key, t), nil
-	case map[string]string, map[string]any, map[any]any:
-		return EC.Interface(key, t), nil
-	case []string, []int32, []int64, []int, []time.Time, []time.Duration, []float64, []float32:
-		return EC.Interface(key, value), nil
-	case []any, []Marshaler, []DocumentMarshaler:
-		return ECE.Interface(key, value)
-	case *jsonx.Document, []*jsonx.Document:
-		return EC.Interface(key, value), nil
-	case *Value:
-		return EC.Value(key, t), nil
-	case []*Value:
-		return EC.Array(key, MakeArray(len(t)).Append(t...)), nil
-	case []*Element:
-		return EC.SubDocumentFromElements(key, t...), nil
 	case DocumentMarshaler:
 		return ECE.DocumentMarshaler(key, t)
 	case Marshaler:
 		return ECE.Marshaler(key, t)
 	default:
-		return nil, fmt.Errorf("Cannot create element for type %T, try using bsoncodec.ConstructElementErr", value)
+		if t == nil {
+			return EC.Null(key), nil
+		}
+		elem := EC.Interface(key, t)
+		if elem.Value().Type() == bsontype.Null {
+			return nil, fmt.Errorf("Cannot create element for type %T, try using bsoncodec.ConstructElementErr", value)
+		}
+		return elem, nil
 	}
 }
 
@@ -259,7 +245,6 @@ func (ElementConstructor) SubDocument(key string, d *Document) *Element {
 	return elem
 }
 
-// SubDocumentFromReader creates a subdocument element with the given key and value.
 func (ElementConstructor) SubDocumentFromReader(key string, r Reader) *Element {
 	size := uint32(1 + len(key) + 1 + len(r))
 	b := make([]byte, size)

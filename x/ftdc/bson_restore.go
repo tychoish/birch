@@ -61,7 +61,7 @@ func restoreElement(ctx context.Context, ref *birch.Element, sample int, metrics
 			elems = append(elems, item)
 		}
 
-		if iter.Close(ctx) != nil {
+		if iter.Close() != nil {
 			return nil, 0
 		}
 

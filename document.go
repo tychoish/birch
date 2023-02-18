@@ -294,7 +294,7 @@ func (d *Document) UnmarshalBSON(b []byte) error {
 		d.elems = append(d.elems, iter.Value())
 	}
 
-	return iter.Close(iterCtx)
+	return iter.Close()
 }
 
 // ReadFrom will read one BSON document from the given io.Reader.

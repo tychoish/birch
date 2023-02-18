@@ -44,7 +44,7 @@ func extractMetricsFromDocument(doc *birch.Document) (extractedMetrics, error) {
 		}
 	}
 
-	catcher.Add(iter.Close(ctx))
+	catcher.Add(iter.Close())
 
 	if metrics.ts.IsZero() {
 		metrics.ts = time.Now()
@@ -78,7 +78,7 @@ func extractMetricsFromArray(array *birch.Array) (extractedMetrics, error) {
 		}
 	}
 
-	catcher.Add(iter.Close(ctx))
+	catcher.Add(iter.Close())
 
 	return metrics, catcher.Resolve()
 }

@@ -44,8 +44,8 @@ func (itr *elementIterator) Next(ctx context.Context) bool {
 
 // Element returns the current element of the Iterator. The pointer that it returns will
 // _always_ be the same for a given Iterator.
-func (itr *elementIterator) Value() *Element               { return itr.elem }
-func (itr *elementIterator) Close(_ context.Context) error { return itr.err }
+func (itr *elementIterator) Value() *Element { return itr.elem }
+func (itr *elementIterator) Close() error    { return itr.err }
 
 // readerIterator facilitates iterating over a bson.Reader.
 type readerIterator struct {
@@ -123,8 +123,8 @@ func (itr *readerIterator) Next(ctx context.Context) bool {
 
 // Element returns the current element of the readerIterator. The pointer that it returns will
 // _always_ be the same for a given readerIterator.
-func (itr *readerIterator) Value() *Element                 { return itr.elem }
-func (itr *readerIterator) Close(ctx context.Context) error { return itr.err }
+func (itr *readerIterator) Value() *Element { return itr.elem }
+func (itr *readerIterator) Close() error    { return itr.err }
 
 // arrayIterator facilitates iterating over a bson.Array.
 type arrayIterator struct {
@@ -166,5 +166,5 @@ func (iter *arrayIterator) Next(ctx context.Context) bool {
 
 // Value returns the current value of the arrayIterator. The pointer returned will _always_ be the same for a given
 // arrayIterator. The returned value will be nil if this function is called before the first successful call to Next().
-func (iter *arrayIterator) Value() *Value                 { return iter.elem }
-func (iter *arrayIterator) Close(_ context.Context) error { return iter.err }
+func (iter *arrayIterator) Value() *Value { return iter.elem }
+func (iter *arrayIterator) Close() error  { return iter.err }

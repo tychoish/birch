@@ -69,7 +69,7 @@ func WriteCSV(ctx context.Context, iter fun.Iterator[*Chunk], writer io.Writer) 
 			return fmt.Errorf("problem flushing csv data: %w", err)
 		}
 	}
-	if err := iter.Close(ctx); err != nil {
+	if err := iter.Close(); err != nil {
 		return fmt.Errorf("problem reading chunks: %w", err)
 	}
 
@@ -152,7 +152,7 @@ func DumpCSV(ctx context.Context, iter fun.Iterator[*Chunk], prefix string) erro
 			return fmt.Errorf("problem flushing csv data: %w", err)
 		}
 	}
-	if err := iter.Close(ctx); err != nil {
+	if err := iter.Close(); err != nil {
 		return fmt.Errorf("problem reading chunks: %w", err)
 	}
 
