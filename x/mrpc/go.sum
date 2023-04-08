@@ -1,6 +1,4 @@
-github.com/tychoish/birch v0.0.0-20230123093516-e845e841626a h1:L5En7ZEcKuQZnwr2FJe6L6nyVKMjlSQ7MqFRVfZSPtg=
-github.com/tychoish/birch v0.0.0-20230123093516-e845e841626a/go.mod h1:6oCcVd3qZw8+s0smlI/pCHWbnflw2KvFZ0ddExZovVw=
-github.com/tychoish/birch v0.1.1 h1:ZjsztmynMoRFlqOe3tUP9D1MBZItQ+c6oi+1Y1FC6Tw=
-github.com/tychoish/birch v0.1.1/go.mod h1:ApDPb1vnttFeLKXmOFSRj3Fk1ZNiYTWUmmOD5HYQYBM=
-github.com/tychoish/fun v0.3.3 h1:oyptuZ9SL8vzPamERbZA2PnG7VMFyMBimVlJXn9rgas=
-github.com/tychoish/fun v0.3.3/go.mod h1:84A+BwGecz23UotmbB4mtvVS5ZcsZpspecduxpwF/XM=
+github.com/tychoish/birch v0.2.0 h1:vUXPTsqXQz4Ej+OvEPt02pJRyW4ic0SiGZbLEdari6g=
+github.com/tychoish/birch v0.2.0/go.mod h1:hGLJLT0ZMUw17FmaYsnLu6dn1rd4sluGuhFIjVtcSvI=
+github.com/tychoish/fun v0.8.0 h1:wQYGsDmbWq08O8JC2nznQSaHsS2LFoFm+g7AtahsncI=
+github.com/tychoish/fun v0.8.0/go.mod h1:84A+BwGecz23UotmbB4mtvVS5ZcsZpspecduxpwF/XM=

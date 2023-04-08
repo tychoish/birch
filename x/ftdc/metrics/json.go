@@ -12,8 +12,8 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/tychoish/birch"
-	"github.com/tychoish/birch/x/ftdc"
 	"github.com/tychoish/birch/jsonx"
+	"github.com/tychoish/birch/x/ftdc"
 )
 
 // CollectJSONOptions specifies options for a JSON2FTDC collector. You

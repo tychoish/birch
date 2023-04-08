@@ -98,7 +98,7 @@ func TestCollectRuntime(t *testing.T) {
 						t.Fatalf("unqueal %v and %v", 4, doc.Len())
 					}
 				}
-				if err := iter.Close(ctx); err != nil {
+				if err := iter.Close(); err != nil {
 					t.Fatal(err)
 				}
 				total += counter
@@ -143,7 +143,7 @@ func TestCollectRuntime(t *testing.T) {
 						t.Fatalf("unqueal %v and %v", 15, doc.Len())
 					}
 				}
-				if err := iter.Close(ctx); err != nil {
+				if err := iter.Close(); err != nil {
 					t.Fatal(err)
 				}
 				total += counter

@@ -151,7 +151,7 @@ func dErr(s string) (Decimal128, error) {
 	return dNaN, fmt.Errorf("cannot parse %q as a decimal128", s)
 }
 
-//ParseDecimal128 takes the given string and attempts to parse it into a valid
+// ParseDecimal128 takes the given string and attempts to parse it into a valid
 // Decimal128 value.
 func ParseDecimal128(s string) (Decimal128, error) {
 	orig := s

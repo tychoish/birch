@@ -323,7 +323,7 @@ func TestCollectJSON(t *testing.T) {
 				}
 			}
 		}
-		if err := iter.Close(ctx); err != nil {
+		if err := iter.Close(); err != nil {
 			t.Fatal(err)
 		}
 		if 2 != idx {
