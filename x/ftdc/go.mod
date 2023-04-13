@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/tychoish/birch v0.2.1
-	github.com/tychoish/fun v0.8.3
+	github.com/tychoish/fun v0.8.5
 	github.com/tychoish/grip/x/metrics v0.0.0-20230408192639-ef555fcdf0fd
 )
 
