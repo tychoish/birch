@@ -81,8 +81,8 @@ func (m *Metric) getSeries() any {
 }
 
 type matrixIterator struct {
-	fun.Iterator[*birch.Document]
-	chunks   fun.Iterator[*Chunk]
+	*fun.Iterator[*birch.Document]
+	chunks   *fun.Iterator[*Chunk]
 	closer   context.CancelFunc
 	metadata *birch.Document
 	document *birch.Document

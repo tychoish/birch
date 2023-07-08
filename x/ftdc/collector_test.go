@@ -706,7 +706,7 @@ func TestTimestampHandling(t *testing.T) {
 					}
 				})
 				t.Run("Chunks", func(t *testing.T) {
-					chunks := ReadChunks(ctx, bytes.NewBuffer(out))
+					chunks := ReadChunks(bytes.NewBuffer(out))
 					idx := 0
 					for chunks.Next(ctx) {
 						chunk := chunks.Value()

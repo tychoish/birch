@@ -3,7 +3,6 @@ package birch
 import (
 	"bytes"
 	"context"
-	"runtime"
 	"sync"
 )
 
@@ -13,9 +12,6 @@ import (
 var iterCtx = context.Background()
 var bufPool = &sync.Pool{
 	New: func() any { return &bytes.Buffer{} },
-}
-var bsPool = &sync.Pool{
-	New: func() any { return []byte{} },
 }
 
 func getBuf(size int) *bytes.Buffer {
@@ -27,18 +23,3 @@ func getBuf(size int) *bytes.Buffer {
 }
 
 const maxBufPoolSize = 64 << 10
-
-func putBuf(buf *bytes.Buffer) {
-	if buf.Len() > maxBufPoolSize {
-		buf.Truncate(maxBufPoolSize)
-	}
-	buf.Reset()
-	bufPool.Put(buf)
-}
-
-func getMagicBuf(size int) *bytes.Buffer {
-	buf := getBuf(size)
-	runtime.SetFinalizer(buf, putBuf)
-	buf.Grow(size)
-	return buf
-}

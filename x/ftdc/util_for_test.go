@@ -73,7 +73,7 @@ func newMixedChunk(num int64) []byte {
 
 }
 
-func produceMockChunkIter(ctx context.Context, samples int, newDoc func() *birch.Document) fun.Iterator[*Chunk] {
+func produceMockChunkIter(ctx context.Context, samples int, newDoc func() *birch.Document) *fun.Iterator[*Chunk] {
 	collector := NewBaseCollector(samples)
 	for i := 0; i < samples; i++ {
 		panicIfError(collector.Add(newDoc()))
@@ -81,7 +81,7 @@ func produceMockChunkIter(ctx context.Context, samples int, newDoc func() *birch
 	payload, err := collector.Resolve()
 	panicIfError(err)
 
-	return ReadChunks(ctx, bytes.NewBuffer(payload))
+	return ReadChunks(bytes.NewBuffer(payload))
 
 }
 

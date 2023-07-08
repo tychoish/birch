@@ -177,19 +177,22 @@ func legacyIteratorConverter[V any, T interface {
 	Close() error
 }](iter T) fun.Producer[V] {
 	var closeErr error
-	var hasClosed bool
+	var hasNext bool = true
 	var zero V
 
 	return func(ctx context.Context) (V, error) {
 		if closeErr != nil {
 			return zero, closeErr
 		}
-		if hasClosed {
+		if !hasNext {
 			return zero, io.EOF
 		}
-		hasClosed = !iter.Next(ctx)
-		if hasClosed {
+		hasNext = iter.Next(ctx)
+		if !hasNext {
 			closeErr = iter.Close()
+			if closeErr == nil {
+				closeErr = io.EOF
+			}
 			return zero, closeErr
 		}
 		return iter.Value(), nil

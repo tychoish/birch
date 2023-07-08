@@ -261,12 +261,9 @@ func TestDocument(t *testing.T) {
 
 		iter := d.Iterator()
 
-		for _, elem := range elems {
+		for idx, elem := range elems {
 			if !iter.Next(ctx) {
-				t.Fatal("truth assertion failed")
-			}
-			if err := iter.Close(); err != nil {
-				t.Fatal(err)
+				t.Error("truth assertion failed", idx)
 			}
 			requireElementsEqual(t, elem, iter.Value())
 		}

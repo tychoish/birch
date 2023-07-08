@@ -19,7 +19,7 @@ func TestWriteCSVIntegration(t *testing.T) {
 	tmp := t.TempDir()
 
 	t.Run("Write", func(t *testing.T) {
-		iter := ReadChunks(ctx, bytes.NewBuffer(newChunk(10)))
+		iter := ReadChunks(bytes.NewBuffer(newChunk(10)))
 		out := &bytes.Buffer{}
 		err := WriteCSV(ctx, iter, out)
 		if err != nil {
@@ -32,7 +32,7 @@ func TestWriteCSVIntegration(t *testing.T) {
 		}
 	})
 	t.Run("ResuseIterPass", func(t *testing.T) {
-		iter := ReadChunks(ctx, bytes.NewBuffer(newChunk(10)))
+		iter := ReadChunks(bytes.NewBuffer(newChunk(10)))
 		err := DumpCSV(ctx, iter, filepath.Join(tmp, "dump"))
 		if err != nil {
 			t.Fatal(err)
@@ -43,21 +43,21 @@ func TestWriteCSVIntegration(t *testing.T) {
 		}
 	})
 	t.Run("Dump", func(t *testing.T) {
-		iter := ReadChunks(ctx, bytes.NewBuffer(newChunk(10)))
+		iter := ReadChunks(bytes.NewBuffer(newChunk(10)))
 		err := DumpCSV(ctx, iter, filepath.Join(tmp, "dump"))
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 	t.Run("DumpMixed", func(t *testing.T) {
-		iter := ReadChunks(ctx, bytes.NewBuffer(newMixedChunk(10)))
+		iter := ReadChunks(bytes.NewBuffer(newMixedChunk(10)))
 		err := DumpCSV(ctx, iter, filepath.Join(tmp, "dump"))
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 	t.Run("WriteWithSchemaChange", func(t *testing.T) {
-		iter := ReadChunks(ctx, bytes.NewBuffer(newMixedChunk(10)))
+		iter := ReadChunks(bytes.NewBuffer(newMixedChunk(10)))
 		out := &bytes.Buffer{}
 		err := WriteCSV(ctx, iter, out)
 
@@ -73,7 +73,7 @@ func TestReadCSVIntegration(t *testing.T) {
 
 	for _, test := range []struct {
 		Name   string
-		Iter   fun.Iterator[*Chunk]
+		Iter   *fun.Iterator[*Chunk]
 		Rows   int
 		Fields int
 	}{

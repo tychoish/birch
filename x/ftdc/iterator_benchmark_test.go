@@ -48,7 +48,7 @@ func BenchmarkIterator(b *testing.B) {
 
 			b.Run("Chunk", func(b *testing.B) {
 				b.Run("Resolving", func(b *testing.B) {
-					iter := ReadChunks(ctx, bytes.NewBuffer(data))
+					iter := ReadChunks(bytes.NewBuffer(data))
 					b.ResetTimer()
 					for n := 0; n < b.N; n++ {
 						if !iter.Next(ctx) {
@@ -61,7 +61,7 @@ func BenchmarkIterator(b *testing.B) {
 				})
 				b.Run("Iterating", func(b *testing.B) {
 					for n := 0; n < b.N; n++ {
-						iter := ReadChunks(ctx, bytes.NewBuffer(data))
+						iter := ReadChunks(bytes.NewBuffer(data))
 						for iter.Next(ctx) {
 							if iter.Value() == nil {
 								b.Fatalf("%T value is nil", iter.Value())

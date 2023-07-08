@@ -98,7 +98,7 @@ func TestReadPathIntegration(t *testing.T) {
 			expectedSamples := test.expectedChunks * test.expectedMetrics
 			t.Run("Chunks", func(t *testing.T) {
 				startAt := time.Now()
-				iter := ReadChunks(ctx, bytes.NewBuffer(data))
+				iter := ReadChunks(bytes.NewBuffer(data))
 				counter := 0
 				num := 0
 				hasSeries := 0

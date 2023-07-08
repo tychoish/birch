@@ -149,18 +149,15 @@ func TestArray(t *testing.T) {
 
 				iter := a.Iterator()
 
-				for _, elem := range tc.values {
+				for idx, elem := range tc.values {
 					if !iter.Next(ctx) {
-						t.Errorf("ArrayIterator.Next() returned false")
+						t.Error("ArrayIterator.Next() returned false", idx)
 					}
 
-					if err := iter.Close(); err != nil {
-						t.Errorf("ArrayIterator.Err() returned non-nil error: %s", err)
-					}
-
-					for _, val := range elem {
+					for iidx, val := range elem {
 						got := iter.Value()
 						if !valueEqual(got, val) {
+							t.Log(idx, iidx)
 							t.Errorf("Returned element does not match expected element. got %#v; want %#v", got, val)
 						}
 					}
