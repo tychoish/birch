@@ -9,7 +9,7 @@ import (
 	ebirch "github.com/evergreen-ci/birch"
 	lbson "github.com/globalsign/mgo/bson"
 	"github.com/tychoish/birch"
-	"github.com/tychoish/fun"
+	"github.com/tychoish/fun/ft"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -43,8 +43,8 @@ func BenchmarkBSON(b *testing.B) {
 		input[fmt.Sprint("key", i)] = fmt.Sprint("value", i*2)
 	}
 
-	output := fun.Must(bson.Marshal(input))
-	jsonOut := fun.Must(json.Marshal(input))
+	output := ft.Must(bson.Marshal(input))
+	jsonOut := ft.Must(json.Marshal(input))
 	var err error
 	b.Run("Marshal", func(b *testing.B) {
 		b.Run("Baseline", func(b *testing.B) {
