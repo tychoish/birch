@@ -9,7 +9,7 @@ import (
 
 	"github.com/tychoish/birch/jsonx"
 	"github.com/tychoish/birch/types"
-	"github.com/tychoish/fun"
+	"github.com/tychoish/fun/ft"
 )
 
 // UnmarshalJSON converts the contents of a document to JSON
@@ -93,7 +93,7 @@ func (DocumentConstructorError) JSONX(jd *jsonx.Document) (*Document, error) {
 	return d, nil
 }
 
-func (DocumentConstructor) JSONX(jd *jsonx.Document) *Document { return fun.Must(DCE.JSONX(jd)) }
+func (DocumentConstructor) JSONX(jd *jsonx.Document) *Document { return ft.Must(DCE.JSONX(jd)) }
 
 func convertJSONElements(ctx context.Context, in *jsonx.Element) (*Element, error) {
 	inv := in.Value()

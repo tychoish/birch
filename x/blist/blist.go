@@ -3,11 +3,11 @@ package blist
 import (
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsonerr"
-	"github.com/tychoish/fun/seq"
+	"github.com/tychoish/fun/dt"
 )
 
 type Document struct {
-	seq.List[*birch.Element]
+	dt.List[*birch.Element]
 }
 
 func (d *Document) Len() int { return d.Len() }

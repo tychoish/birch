@@ -1,12 +1,39 @@
 package jsonx
 
-import "context"
+import (
+	"context"
+	"io"
+
+	"github.com/tychoish/fun"
+)
 
 type documentIterImpl struct {
 	idx     int
 	doc     *Document
 	current *Element
 	err     error
+}
+
+func legacyIteratorConverter[V any, T interface {
+	Next(context.Context) bool
+	Value() V
+}](iter T) fun.Producer[V] {
+	var hasNext bool = true
+	var zero V
+
+	return func(ctx context.Context) (V, error) {
+		if !hasNext {
+			return zero, io.EOF
+		}
+		if cerr := ctx.Err(); cerr != nil {
+			return zero, cerr
+		}
+		hasNext = iter.Next(ctx)
+		if !hasNext {
+			return zero, io.EOF
+		}
+		return iter.Value(), nil
+	}
 }
 
 func (iter *documentIterImpl) Next(ctx context.Context) bool {

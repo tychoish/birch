@@ -137,7 +137,9 @@ func (d *Document) ElementAtOK(index uint) (*Element, bool) {
 }
 
 // Iterator creates an Iterator for this document and returns it.
-func (d *Document) Iterator() fun.Iterator[*Element] { return &elementIterator{d: d} }
+func (d *Document) Iterator() *fun.Iterator[*Element] {
+	return legacyIteratorConverter[*Element, *elementIterator](&elementIterator{d: d}).Iterator()
+}
 
 // Extend merges a second document into the document. It may produce a
 // document with duplicate keys.

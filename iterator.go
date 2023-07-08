@@ -8,8 +8,10 @@ package birch
 
 import (
 	"context"
+	"io"
 
 	"github.com/tychoish/birch/bsonerr"
+	"github.com/tychoish/fun"
 )
 
 // ElementIterator facilitates iterating over a bson.Document.
@@ -134,8 +136,8 @@ type arrayIterator struct {
 	err   error
 }
 
-func newArrayIterator(a *Array) *arrayIterator {
-	return &arrayIterator{array: a}
+func newArrayIterator(a *Array) *fun.Iterator[*Value] {
+	return legacyIteratorConverter[*Value, *arrayIterator](&arrayIterator{array: a}).Iterator()
 }
 
 // Next fetches the next value in the Array, returning whether or not it could be fetched successfully. If true is
@@ -168,3 +170,28 @@ func (iter *arrayIterator) Next(ctx context.Context) bool {
 // arrayIterator. The returned value will be nil if this function is called before the first successful call to Next().
 func (iter *arrayIterator) Value() *Value { return iter.elem }
 func (iter *arrayIterator) Close() error  { return iter.err }
+
+func legacyIteratorConverter[V any, T interface {
+	Next(context.Context) bool
+	Value() V
+	Close() error
+}](iter T) fun.Producer[V] {
+	var closeErr error
+	var hasClosed bool
+	var zero V
+
+	return func(ctx context.Context) (V, error) {
+		if closeErr != nil {
+			return zero, closeErr
+		}
+		if hasClosed {
+			return zero, io.EOF
+		}
+		hasClosed = !iter.Next(ctx)
+		if hasClosed {
+			closeErr = iter.Close()
+			return zero, closeErr
+		}
+		return iter.Value(), nil
+	}
+}

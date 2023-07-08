@@ -281,6 +281,6 @@ func (a *Array) MarshalBSON() ([]byte, error) {
 
 // Iterator returns a ArrayIterator that can be used to iterate through the
 // elements of this Array.
-func (a *Array) Iterator() fun.Iterator[*Value] {
+func (a *Array) Iterator() *fun.Iterator[*Value] {
 	return newArrayIterator(a)
 }
