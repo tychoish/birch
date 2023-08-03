@@ -5,23 +5,22 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/x/ftdc/util"
+	"github.com/tychoish/fun/dt/hdrhist"
 )
 
-// A Snapshot is an exported view of a Histogram, useful for serializing them.
-// A Histogram can be constructed from it by passing it to Import.
-type Snapshot struct {
-	LowestTrackableValue  int64   `bson:"lowest" json:"lowest" yaml:"lowest"`
-	HighestTrackableValue int64   `bson:"highest" json:"highest" yaml:"highest"`
-	SignificantFigures    int64   `bson:"figures" json:"figures" yaml:"figures"`
-	Counts                []int64 `bson:"counts" json:"counts" yaml:"counts"`
-}
+type (
+	Histogram struct{ *hdrhist.Histogram }
+	Snapshot  struct{ *hdrhist.Snapshot }
+)
 
 func (h *Histogram) MarshalDocument() (*birch.Document, error) {
+	ss := h.Export()
+
 	return birch.DC.Make(5).Append(
-		birch.EC.Int64("lowest", h.lowestTrackableValue),
-		birch.EC.Int64("highest", h.highestTrackableValue),
-		birch.EC.Int64("figures", h.significantFigures),
-		birch.EC.SliceInt64("counts", h.counts),
+		birch.EC.Int64("lowest", ss.LowestTrackableValue),
+		birch.EC.Int64("highest", ss.HighestTrackableValue),
+		birch.EC.Int64("figures", ss.SignificantFigures),
+		birch.EC.SliceInt64("counts", ss.Counts),
 	), nil
 }
 
@@ -29,21 +28,21 @@ func (h *Histogram) MarshalBSON() ([]byte, error) { return birch.MarshalDocument
 func (h *Histogram) MarshalJSON() ([]byte, error) { return json.Marshal(h.Export()) }
 
 func (h *Histogram) UnmarshalBSON(in []byte) error {
-	s := &Snapshot{}
+	s := &hdrhist.Snapshot{}
 	if err := util.GlobalUnmarshaler()(in, s); err != nil {
 		return err
 	}
 
-	*h = *Import(s)
+	*h = Histogram{hdrhist.Import(s)}
 	return nil
 }
 
 func (h *Histogram) UnmarshalJSON(in []byte) error {
-	s := &Snapshot{}
+	s := &hdrhist.Snapshot{}
 	if err := json.Unmarshal(in, s); err != nil {
 		return err
 	}
 
-	*h = *Import(s)
+	*h = Histogram{hdrhist.Import(s)}
 	return nil
 }

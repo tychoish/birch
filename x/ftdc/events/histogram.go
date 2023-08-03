@@ -11,7 +11,8 @@ import (
 	"time"
 
 	"github.com/tychoish/birch"
-	"github.com/tychoish/birch/x/ftdc/hdrhist"
+	bfhdrhist "github.com/tychoish/birch/x/ftdc/hdrhist"
+	"github.com/tychoish/fun/dt/hdrhist"
 )
 
 // PerformanceHDR the same as the Performance structure, but with all time
@@ -89,14 +90,14 @@ func (p *PerformanceHDR) MarshalDocument() (*birch.Document, error) {
 		birch.EC.Time("ts", p.Timestamp),
 		birch.EC.Int64("id", p.ID),
 		birch.EC.SubDocumentFromElements("counters",
-			birch.EC.DocumentMarshaler("n", p.Counters.Number),
-			birch.EC.DocumentMarshaler("ops", p.Counters.Operations),
-			birch.EC.DocumentMarshaler("size", p.Counters.Size),
-			birch.EC.DocumentMarshaler("errors", p.Counters.Errors),
+			birch.EC.DocumentMarshaler("n", &bfhdrhist.Histogram{Histogram: p.Counters.Number}),
+			birch.EC.DocumentMarshaler("ops", &bfhdrhist.Histogram{Histogram: p.Counters.Operations}),
+			birch.EC.DocumentMarshaler("size", &bfhdrhist.Histogram{Histogram: p.Counters.Size}),
+			birch.EC.DocumentMarshaler("errors", &bfhdrhist.Histogram{Histogram: p.Counters.Errors}),
 		),
 		birch.EC.SubDocumentFromElements("timers",
-			birch.EC.DocumentMarshaler("dur", p.Timers.Duration),
-			birch.EC.DocumentMarshaler("total", p.Timers.Total),
+			birch.EC.DocumentMarshaler("dur", &bfhdrhist.Histogram{Histogram: p.Timers.Duration}),
+			birch.EC.DocumentMarshaler("total", &bfhdrhist.Histogram{Histogram: p.Timers.Total}),
 		),
 		birch.EC.SubDocumentFromElements("gauges",
 			birch.EC.Int64("state", p.Gauges.State),
