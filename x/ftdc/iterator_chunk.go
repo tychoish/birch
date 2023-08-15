@@ -46,22 +46,22 @@ type ChunkIterator struct {
 func ReadChunks(r io.Reader) *fun.Iterator[*Chunk] {
 	pipe := make(chan *Chunk)
 	ipc := make(chan *birch.Document)
-	errob, errprod := fun.HF.ErrorCollector()
 
+	ec := &erc.Collector{}
 	wg := &fun.WaitGroup{}
 	ch := fun.Blocking(pipe)
+
 	return ch.Producer().
 		PreHook(fun.Operation(func(ctx context.Context) {
-			fun.Operation(func(ctx context.Context) {
-				errob(readChunks(ctx, ipc, pipe))
-			}).Add(ctx, wg)
-			fun.Operation(func(ctx context.Context) {
-				errob(readDiagnostic(ctx, r, ipc))
-			}).Add(ctx, wg)
-		}).Once()).
-		IteratorWithHook(func(iter *fun.Iterator[*Chunk]) {
-			iter.AddError(erc.Join(errprod()...))
-		})
+			wg.Launch(ctx, func(ctx context.Context) {
+				ec.Add(readChunks(ctx, ipc, pipe))
+			})
+			wg.Launch(ctx, func(ctx context.Context) {
+				ec.Add(readDiagnostic(ctx, r, ipc))
+			})
+
+			wg.Operation().PostHook(ch.Close).Background(ctx)
+		}).Once()).IteratorWithHook(erc.IteratorHook[*Chunk](ec))
 }
 
 // Close releases resources of the iterator. Use this method to
