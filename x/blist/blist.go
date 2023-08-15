@@ -41,7 +41,7 @@ func (d *Document) Prepend(elems ...*birch.Element) *Document {
 }
 
 func (d *Document) Set(elem *birch.Element) *Document {
-	for e := d.Front(); e.Ok(); e = e.Next() {
+	for e := d.Front(); e.OK(); e = e.Next() {
 		if e.Value().Key() != elem.Key() {
 			continue
 		}
@@ -52,7 +52,7 @@ func (d *Document) Set(elem *birch.Element) *Document {
 }
 
 func (d *Document) Delete(key string) *birch.Element {
-	for e := d.Front(); e.Ok(); e = e.Next() {
+	for e := d.Front(); e.OK(); e = e.Next() {
 		if e.Value().Key() != key {
 			continue
 		}
@@ -71,7 +71,7 @@ func (d *Document) Validate() (uint32, error) {
 	// header and footer
 	var size uint32 = 4 + 1
 
-	for e := d.Front(); e.Ok(); e = e.Next() {
+	for e := d.Front(); e.OK(); e = e.Next() {
 		n, err := e.Value().Validate()
 		if err != nil {
 			return 0, err

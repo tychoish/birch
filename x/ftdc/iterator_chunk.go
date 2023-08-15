@@ -60,14 +60,7 @@ func ReadChunks(r io.Reader) *fun.Iterator[*Chunk] {
 			}).Add(ctx, wg)
 		}).Once()).
 		IteratorWithHook(func(iter *fun.Iterator[*Chunk]) {
-
-			errs, err := errprod.Block()
-			if err != nil {
-				errs = append(errs, err)
-			}
-			for idx := range errs {
-				iter.AddError(errs[idx])
-			}
+			iter.AddError(erc.Join(errprod()...))
 		})
 }
 
