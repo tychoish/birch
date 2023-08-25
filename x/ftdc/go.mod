@@ -15,7 +15,7 @@ require (
 	github.com/stretchr/testify v1.8.1 // indirect
 	github.com/tklauser/go-sysconf v0.3.11 // indirect
 	github.com/tklauser/numcpus v0.6.0 // indirect
-	github.com/tychoish/grip v0.3.5-0.20230814212257-3ad44e121b2d // indirect
+	github.com/tychoish/grip v0.3.6 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	golang.org/x/sys v0.4.0 // indirect
 )
