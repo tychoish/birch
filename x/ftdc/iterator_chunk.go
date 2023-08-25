@@ -60,7 +60,7 @@ func ReadChunks(r io.Reader) *fun.Iterator[*Chunk] {
 				ec.Add(readDiagnostic(ctx, r, ipc))
 			})
 
-			wg.Operation().PostHook(ch.Close).Background(ctx)
+			wg.Operation().Background(ctx)
 		}).Once()).IteratorWithHook(erc.IteratorHook[*Chunk](ec))
 }
 
