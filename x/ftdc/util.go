@@ -89,7 +89,7 @@ func encodeValue(val int64) []byte {
 }
 
 func compressBuffer(input []byte) ([]byte, error) {
-	buf := bytes.NewBuffer([]byte{})
+	buf := bytes.NewBuffer(bufpool.Make())
 	zbuf := zlib.NewWriter(buf)
 
 	_, err := buf.Write(encodeSizeValue(uint32(len(input))))

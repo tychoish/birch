@@ -268,7 +268,7 @@ func TestArray(t *testing.T) {
 		t.Run("Empty", func(t *testing.T) {
 			ar := NewArray()
 			if "bson.Array[]" != ar.String() {
-				t.Error("values should be equal")
+				t.Error("values should be equal", ar.String())
 			}
 		})
 		t.Run("Content", func(t *testing.T) {

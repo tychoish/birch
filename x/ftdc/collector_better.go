@@ -8,6 +8,7 @@ import (
 	"errors"
 
 	"github.com/tychoish/birch"
+	"github.com/tychoish/fun/adt"
 )
 
 type betterCollector struct {
@@ -19,6 +20,8 @@ type betterCollector struct {
 	numSamples int
 	maxDeltas  int
 }
+
+var bufpool = adt.DefaultBufferPool()
 
 // NewBasicCollector provides a basic FTDC data collector that mirrors
 // the server's implementation. The Add method will error if you
@@ -127,7 +130,7 @@ func (c *betterCollector) Resolve() ([]byte, error) {
 		return nil, err
 	}
 
-	buf := bytes.NewBuffer([]byte{})
+	buf := bytes.NewBuffer(bufpool.Make())
 	if c.metadata != nil {
 		_, err = birch.DC.Elements(
 			birch.EC.Time("_id", c.startedAt),
@@ -150,7 +153,7 @@ func (c *betterCollector) Resolve() ([]byte, error) {
 }
 
 func (c *betterCollector) getPayload() ([]byte, error) {
-	payload := bytes.NewBuffer([]byte{})
+	payload := bytes.NewBuffer(bufpool.Make())
 	if _, err := c.reference.WriteTo(payload); err != nil {
 		return nil, fmt.Errorf("problem writing reference document: %w", err)
 	}

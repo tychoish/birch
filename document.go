@@ -14,7 +14,11 @@ import (
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/birch/elements"
 	"github.com/tychoish/fun"
+	"github.com/tychoish/fun/adt"
+	"github.com/tychoish/fun/dt"
 )
+
+var bufpool = adt.DefaultBufferPool()
 
 // Document is a mutable ordered map that compactly represents a BSON document.
 type Document struct {
@@ -301,10 +305,12 @@ func (d *Document) UnmarshalBSON(b []byte) error {
 
 // ReadFrom will read one BSON document from the given io.Reader.
 func (d *Document) ReadFrom(r io.Reader) (int64, error) {
-
 	var total int64
 
-	sizeBuf := make([]byte, 4)
+	sizeBuf := dt.Sliceify(bufpool.Get())
+	sizeBuf.Grow(4)
+	defer bufpool.Put(sizeBuf)
+
 	n, err := io.ReadFull(r, sizeBuf)
 	total += int64(n)
 
@@ -313,7 +319,10 @@ func (d *Document) ReadFrom(r io.Reader) (int64, error) {
 	}
 
 	givenLength := readi32(sizeBuf)
-	b := make([]byte, givenLength)
+
+	b := dt.Sliceify(bufpool.Make())
+	b.Grow(int(givenLength))
+
 	copy(b[0:4], sizeBuf)
 	n, err = io.ReadFull(r, b[4:])
 	total += int64(n)
@@ -329,14 +338,13 @@ func (d *Document) ReadFrom(r io.Reader) (int64, error) {
 func (d *Document) String() string {
 	buf := &bytes.Buffer{}
 
-	buf.Write([]byte("bson.Document{"))
+	buf.WriteString("bson.Document{")
 
 	for idx, elem := range d.elems {
 		if idx > 0 {
-			buf.Write([]byte(", "))
+			buf.WriteString(", ")
 		}
-
-		fmt.Fprintf(buf, "%s", elem)
+		buf.WriteString(elem.String())
 	}
 
 	buf.WriteByte('}')

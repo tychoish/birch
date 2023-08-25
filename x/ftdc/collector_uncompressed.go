@@ -193,7 +193,7 @@ func (c *uncompressedCollector) Resolve() ([]byte, error) {
 		return nil, errors.New("no data")
 	}
 
-	buf := bytes.NewBuffer([]byte{})
+	buf := bytes.NewBuffer(bufpool.Make())
 
 	if c.metadata != nil {
 		if err := c.marshalWrite(buf, c.metadata); err != nil {

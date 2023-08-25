@@ -78,7 +78,7 @@ func (c *dynamicCollector) Add(in any) error {
 }
 
 func (c *dynamicCollector) Resolve() ([]byte, error) {
-	buf := bytes.NewBuffer([]byte{})
+	buf := bytes.NewBuffer(bufpool.Make())
 	for _, chunk := range c.chunks {
 		out, err := chunk.Resolve()
 		if err != nil {

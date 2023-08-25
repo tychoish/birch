@@ -15,6 +15,7 @@ import (
 
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/fun"
+	"github.com/tychoish/fun/dt"
 )
 
 var errValidateDone = errors.New("validation loop complete")
@@ -33,7 +34,9 @@ func NewFromIOReader(r io.Reader) (Reader, error) {
 		return nil, bsonerr.NilReader
 	}
 
-	var lengthBytes [4]byte
+	lengthBytes := dt.Sliceify(bufpool.Get())
+	lengthBytes.Grow(4)
+	defer bufpool.Put(lengthBytes)
 
 	count, err := io.ReadFull(r, lengthBytes[:])
 	if err != nil {
