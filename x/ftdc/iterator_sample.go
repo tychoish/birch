@@ -56,7 +56,7 @@ func (iter *sampleIterator) Close() error {
 	iter.closer()
 	iter.wg.Wait()
 
-	return iter.Iterator.Close()
+	return iter.Stream.Close()
 }
 
 func (iter *sampleIterator) Metadata() *birch.Document { return iter.metadata }

@@ -22,7 +22,7 @@ type combinedIterator struct {
 
 func (iter *combinedIterator) Close() error {
 	iter.closer()
-	iter.catcher.Add(iter.Iterator.Close())
+	iter.catcher.Add(iter.Stream.Close())
 	iter.wg.Wait()
 	return iter.catcher.Resolve()
 }

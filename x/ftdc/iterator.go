@@ -6,7 +6,7 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/fun"
-	"github.com/tychoish/fun/ers"
+	"github.com/tychoish/fun/erc"
 )
 
 type Iterator struct {
@@ -18,23 +18,23 @@ type Iterator struct {
 }
 
 func (iter *Iterator) Metadata() *birch.Document { return iter.state.Metadata() }
-func (iter *Iterator) Close() error              { return ers.Join(iter.Iterator.Close(), iter.state.Close()) }
+func (iter *Iterator) Close() error              { return erc.Join(iter.Stream.Close(), iter.state.Close()) }
 
 // ReadMetrics returns a standard document iterator that reads FTDC
 // chunks. The Documents returned by the iterator are flattened.
 func ReadMetrics(ctx context.Context, r io.Reader) *Iterator {
 	pipe := make(chan *birch.Document)
 	iterctx, cancel := context.WithCancel(ctx)
-	pipeIter := fun.ChannelIterator(pipe)
+	pipeIter := fun.ChannelStream(pipe)
 	citer := &combinedIterator{
-		Iterator: pipeIter,
-		closer:   cancel,
-		flatten:  true,
+		Stream:  pipeIter,
+		closer:  cancel,
+		flatten: true,
 	}
 
 	citer.wg.Add(1)
 	go citer.worker(iterctx, ReadChunks(r), pipe)
-	return &Iterator{Iterator: pipeIter, state: citer}
+	return &Iterator{Stream: pipeIter, state: citer}
 }
 
 // ReadStructuredMetrics returns a standard document iterator that reads FTDC
@@ -44,16 +44,16 @@ func ReadStructuredMetrics(ctx context.Context, r io.Reader) *Iterator {
 	pipe := make(chan *birch.Document)
 	iterctx, cancel := context.WithCancel(ctx)
 
-	pipeIter := fun.ChannelIterator(pipe)
+	pipeIter := fun.ChannelStream(pipe)
 	citer := &combinedIterator{
-		Iterator: pipeIter,
-		closer:   cancel,
-		flatten:  false,
+		Stream:  pipeIter,
+		closer:  cancel,
+		flatten: false,
 	}
 
 	citer.wg.Add(1)
 	go citer.worker(iterctx, ReadChunks(r), pipe)
-	return &Iterator{Iterator: citer.Iterator, state: citer}
+	return &Iterator{Stream: citer.Stream, state: citer}
 }
 
 // ReadMatrix returns a "matrix format" for the data in a chunk. The
@@ -68,13 +68,13 @@ func ReadMatrix(ctx context.Context, r io.Reader) *Iterator {
 	iterctx, cancel := context.WithCancel(ctx)
 
 	miter := &matrixIterator{
-		Iterator: fun.ChannelIterator(pipe),
-		closer:   cancel,
-		chunks:   ReadChunks(r),
+		Stream: fun.ChannelStream(pipe),
+		closer: cancel,
+		chunks: ReadChunks(r),
 	}
 	miter.wg.Add(1)
 	go miter.worker(iterctx, pipe)
-	return &Iterator{Iterator: miter.Iterator, state: miter}
+	return &Iterator{Stream: miter.Stream, state: miter}
 }
 
 // ReadSeries is similar to the ReadMatrix format, and produces a
@@ -105,13 +105,13 @@ func ReadSeries(ctx context.Context, r io.Reader) *Iterator {
 	pipe := make(chan *birch.Document, 25)
 	iterctx, cancel := context.WithCancel(ctx)
 	iter := &matrixIterator{
-		Iterator: fun.ChannelIterator(pipe),
-		closer:   cancel,
-		chunks:   ReadChunks(r),
-		reflect:  true,
+		Stream:  fun.ChannelStream(pipe),
+		closer:  cancel,
+		chunks:  ReadChunks(r),
+		reflect: true,
 	}
 
 	iter.wg.Add(1)
 	go iter.worker(iterctx, pipe)
-	return &Iterator{Iterator: iter.Iterator, state: iter}
+	return &Iterator{Stream: iter.Stream, state: iter}
 }

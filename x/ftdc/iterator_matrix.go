@@ -95,7 +95,7 @@ func (iter *matrixIterator) Close() error {
 	if iter.chunks != nil {
 		iter.catcher.Add(iter.chunks.Close())
 	}
-	iter.catcher.Add(iter.Iterator.Close())
+	iter.catcher.Add(iter.Stream.Close())
 	iter.wg.Wait()
 	return iter.catcher.Resolve()
 }

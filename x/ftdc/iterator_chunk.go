@@ -51,7 +51,7 @@ func ReadChunks(r io.Reader) *fun.Stream[*Chunk] {
 	wg := &fun.WaitGroup{}
 	ch := fun.Blocking(pipe)
 
-	return ch.Producer().
+	return ch.Generator().
 		PreHook(fun.Operation(func(ctx context.Context) {
 			wg.Launch(ctx, func(ctx context.Context) {
 				ec.Add(readChunks(ctx, ipc, pipe))
@@ -61,7 +61,7 @@ func ReadChunks(r io.Reader) *fun.Stream[*Chunk] {
 			})
 
 			wg.Operation().Background(ctx)
-		}).Once()).IteratorWithHook(erc.IteratorHook[*Chunk](ec))
+		}).Once()).Stream().WithHook(func(st *fun.Stream[*Chunk]) { st.AddError(ec.Resolve()) })
 }
 
 // Close releases resources of the iterator. Use this method to

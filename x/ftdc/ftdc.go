@@ -33,7 +33,7 @@ func (c *Chunk) Iterator(ctx context.Context) *Iterator {
 	sctx, cancel := context.WithCancel(ctx)
 	pipe := make(chan *birch.Document)
 	iter := &sampleIterator{
-		Iterator: fun.ChannelIterator(pipe),
+		Stream:   fun.ChannelStream(pipe),
 		closer:   cancel,
 		metadata: c.GetMetadata(),
 	}
@@ -45,8 +45,8 @@ func (c *Chunk) Iterator(ctx context.Context) *Iterator {
 	}()
 
 	return &Iterator{
-		Iterator: iter.Iterator,
-		state:    iter,
+		Stream: iter.Stream,
+		state:  iter,
 	}
 }
 
@@ -58,7 +58,7 @@ func (c *Chunk) StructuredIterator(ctx context.Context) *Iterator {
 	sctx, cancel := context.WithCancel(ctx)
 	pipe := make(chan *birch.Document)
 	iter := &sampleIterator{
-		Iterator: fun.ChannelIterator(pipe),
+		Stream:   fun.ChannelStream(pipe),
 		closer:   cancel,
 		metadata: c.GetMetadata(),
 	}
@@ -69,8 +69,8 @@ func (c *Chunk) StructuredIterator(ctx context.Context) *Iterator {
 		c.streamDocuments(sctx, pipe)
 	}()
 	return &Iterator{
-		Iterator: iter.Iterator,
-		state:    iter,
+		Stream: iter.Stream,
+		state:  iter,
 	}
 }
 

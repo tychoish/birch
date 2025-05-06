@@ -52,7 +52,7 @@ func (c *bufferedCollector) Add(in any) error {
 }
 
 func (c *bufferedCollector) Resolve() ([]byte, error) {
-	if c.catcher.HasErrors() {
+	if !c.catcher.Ok() {
 		return nil, c.catcher.Resolve()
 	}
 
