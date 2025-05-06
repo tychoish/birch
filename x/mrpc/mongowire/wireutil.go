@@ -5,7 +5,6 @@ import (
 	"io"
 
 	"github.com/tychoish/birch"
-	"github.com/tychoish/fun/ft"
 )
 
 func readInt32(b []byte) int32 {
@@ -26,8 +25,15 @@ func readInt64(b []byte) int64 {
 		(int64(b[7]) << 56)
 }
 
+func must[T any](arg T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return arg
+}
+
 func writeInt32(i int32, wr io.Writer) int {
-	return int(ft.Must(wr.Write(encodeInt32(i))))
+	return int(must(wr.Write(encodeInt32(i))))
 }
 
 func encodeInt32(i int32) []byte {
@@ -40,7 +46,7 @@ func encodeInt32(i int32) []byte {
 }
 
 func writeInt64(i int64, wr io.Writer) int {
-	return int(ft.Must(wr.Write(encodeInt64(i))))
+	return int(must(wr.Write(encodeInt64(i))))
 }
 
 func encodeInt64(i int64) []byte {
@@ -76,5 +82,5 @@ func getDocSize(doc *birch.Document) int {
 	if doc == nil {
 		return 0
 	}
-	return int(ft.Must(doc.Validate()))
+	return int(must(doc.Validate()))
 }
