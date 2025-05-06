@@ -1,11 +1,13 @@
 module github.com/tychoish/birch/x/ftdc
 
-go 1.20
+go 1.24
+
+toolchain go1.24.0
 
 require (
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/tychoish/birch v0.2.1
-	github.com/tychoish/fun v0.10.4
+	github.com/tychoish/fun v0.12.0
 	github.com/tychoish/grip/x/metrics v0.0.0-20230408192639-ef555fcdf0fd
 )
 
