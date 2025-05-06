@@ -141,8 +141,8 @@ func (d *Document) ElementAtOK(index uint) (*Element, bool) {
 }
 
 // Iterator creates an Iterator for this document and returns it.
-func (d *Document) Iterator() *fun.Iterator[*Element] {
-	return legacyIteratorConverter[*Element, *elementIterator](&elementIterator{d: d}).Iterator()
+func (d *Document) Iterator() *fun.Stream[*Element] {
+	return legacyIteratorConverter[*Element, *elementIterator](&elementIterator{d: d}).Stream()
 }
 
 // Extend merges a second document into the document. It may produce a
@@ -307,7 +307,7 @@ func (d *Document) UnmarshalBSON(b []byte) error {
 func (d *Document) ReadFrom(r io.Reader) (int64, error) {
 	var total int64
 
-	sizeBuf := dt.Sliceify(bufpool.Get())
+	sizeBuf := dt.NewSlice(bufpool.Get())
 	sizeBuf.Grow(4)
 	defer bufpool.Put(sizeBuf)
 
@@ -320,7 +320,7 @@ func (d *Document) ReadFrom(r io.Reader) (int64, error) {
 
 	givenLength := readi32(sizeBuf)
 
-	b := dt.Sliceify(bufpool.Make())
+	b := dt.NewSlice(bufpool.Make())
 	b.Grow(int(givenLength))
 
 	copy(b[0:4], sizeBuf)

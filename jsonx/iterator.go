@@ -17,7 +17,7 @@ type documentIterImpl struct {
 func legacyIteratorConverter[V any, T interface {
 	Next(context.Context) bool
 	Value() V
-}](iter T) fun.Producer[V] {
+}](iter T) fun.Generator[V] {
 	var hasNext bool = true
 	var zero V
 

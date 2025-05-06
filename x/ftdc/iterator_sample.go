@@ -11,7 +11,7 @@ import (
 // sampleIterator provides an iterator for iterating through the
 // results of a FTDC data chunk as BSON documents.
 type sampleIterator struct {
-	*fun.Iterator[*birch.Document]
+	*fun.Stream[*birch.Document]
 	closer   context.CancelFunc
 	metadata *birch.Document
 	wg       sync.WaitGroup

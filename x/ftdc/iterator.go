@@ -10,7 +10,7 @@ import (
 )
 
 type Iterator struct {
-	*fun.Iterator[*birch.Document]
+	*fun.Stream[*birch.Document]
 	state interface {
 		Metadata() *birch.Document
 		Close() error

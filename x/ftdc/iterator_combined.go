@@ -11,7 +11,7 @@ import (
 )
 
 type combinedIterator struct {
-	*fun.Iterator[*birch.Document]
+	*fun.Stream[*birch.Document]
 	closer   context.CancelFunc
 	metadata *birch.Document
 	document *birch.Document
@@ -31,7 +31,7 @@ func (iter *combinedIterator) Metadata() *birch.Document { return iter.metadata 
 
 func (iter *combinedIterator) worker(
 	ctx context.Context,
-	chunks *fun.Iterator[*Chunk],
+	chunks *fun.Stream[*Chunk],
 	pipe chan *birch.Document,
 ) {
 	defer iter.wg.Done()

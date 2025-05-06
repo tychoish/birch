@@ -1,9 +1,8 @@
 package birch
 
 import (
-	"fmt"
-
 	"github.com/tychoish/fun/erc"
+	"github.com/tychoish/fun/ft"
 )
 
 // DocumentMap is a map-based view of a document, used for
@@ -29,11 +28,8 @@ func (dm DocumentMap) Validate() error {
 		elem := dm[key]
 		ekey := elem.Key()
 
-		erc.Whenf(ec, ekey != key, "map key %q not equal to element key %q", key, ekey)
-
-		if _, err := elem.Validate(); err != nil {
-			ec.Add(fmt.Errorf("for mapKey=%q, invalid element: %w", ekey, err))
-		}
+		ec.Whenf(ekey != key, "map key %q not equal to element key %q", key, ekey)
+		ec.Wrapf(ft.IgnoreFirst(elem.Validate()), "for mapKey=%q, invalid element", ekey)
 	}
 
 	return ec.Resolve()

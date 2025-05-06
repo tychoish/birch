@@ -136,8 +136,8 @@ type arrayIterator struct {
 	err   error
 }
 
-func newArrayIterator(a *Array) *fun.Iterator[*Value] {
-	return legacyIteratorConverter[*Value, *arrayIterator](&arrayIterator{array: a}).Iterator()
+func newArrayIterator(a *Array) *fun.Stream[*Value] {
+	return legacyIteratorConverter[*Value, *arrayIterator](&arrayIterator{array: a}).Stream()
 }
 
 // Next fetches the next value in the Array, returning whether or not it could be fetched successfully. If true is
@@ -175,7 +175,7 @@ func legacyIteratorConverter[V any, T interface {
 	Next(context.Context) bool
 	Value() V
 	Close() error
-}](iter T) fun.Producer[V] {
+}](iter T) fun.Generator[V] {
 	var closeErr error
 	var hasNext bool = true
 	var zero V

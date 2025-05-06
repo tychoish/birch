@@ -34,7 +34,7 @@ func NewFromIOReader(r io.Reader) (Reader, error) {
 		return nil, bsonerr.NilReader
 	}
 
-	lengthBytes := dt.Sliceify(bufpool.Get())
+	lengthBytes := dt.NewSlice(bufpool.Get())
 	lengthBytes.Grow(4)
 	defer bufpool.Put(lengthBytes)
 
@@ -182,13 +182,13 @@ func (r Reader) ElementAt(index uint) (*Element, error) {
 
 // Iterator returns a ReaderIterator that can be used to iterate through the
 // elements of this Reader.
-func (r Reader) Iterator() (*fun.Iterator[*Element], error) {
+func (r Reader) Iterator() (*fun.Stream[*Element], error) {
 	iter, err := newReaderIterator(r)
 	if err != nil {
 		return nil, err
 	}
 
-	return legacyIteratorConverter[*Element](iter).Iterator(), nil
+	return legacyIteratorConverter[*Element](iter).Stream(), nil
 }
 
 // String implements the fmt.Stringer interface.

@@ -199,7 +199,7 @@ func (a *Array) Delete(index uint) *Value {
 
 // String implements the fmt.Stringer interface.
 func (a *Array) String() string {
-	bufbuf := dt.Sliceify(bufpool.Get())
+	bufbuf := dt.NewSlice(bufpool.Get())
 	defer bufpool.Put(bufbuf)
 	buf := bytes.NewBuffer(bufbuf)
 
@@ -274,7 +274,7 @@ func (a *Array) MarshalBSON() ([]byte, error) {
 		return nil, err
 	}
 
-	b := dt.Sliceify(bufpool.Make())
+	b := dt.NewSlice(bufpool.Make())
 	b.Grow(int(size))
 
 	if _, err = a.writeByteSlice(0, size, b); err != nil {
@@ -286,6 +286,6 @@ func (a *Array) MarshalBSON() ([]byte, error) {
 
 // Iterator returns a ArrayIterator that can be used to iterate through the
 // elements of this Array.
-func (a *Array) Iterator() *fun.Iterator[*Value] {
+func (a *Array) Iterator() *fun.Stream[*Value] {
 	return newArrayIterator(a)
 }

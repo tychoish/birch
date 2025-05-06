@@ -8,8 +8,8 @@ type Document struct {
 
 func (d *Document) Append(elems ...*Element) *Document { d.elems = append(d.elems, elems...); return d }
 func (d *Document) Len() int                           { return len(d.elems) }
-func (d *Document) Iterator() *fun.Iterator[*Element] {
-	return legacyIteratorConverter[*Element, *documentIterImpl](&documentIterImpl{doc: d}).Iterator()
+func (d *Document) Iterator() *fun.Stream[*Element] {
+	return legacyIteratorConverter[*Element, *documentIterImpl](&documentIterImpl{doc: d}).Stream()
 }
 func (d *Document) Copy() *Document {
 	nd := DC.Make(d.Len())
@@ -43,8 +43,8 @@ type Array struct {
 
 func (a *Array) Append(vals ...*Value) *Array { a.elems = append(a.elems, vals...); return a }
 func (a *Array) Len() int                     { return len(a.elems) }
-func (a *Array) Iterator() *fun.Iterator[*Value] {
-	return legacyIteratorConverter[*Value, *arrayIterImpl](&arrayIterImpl{array: a}).Iterator()
+func (a *Array) Iterator() *fun.Stream[*Value] {
+	return legacyIteratorConverter[*Value, *arrayIterImpl](&arrayIterImpl{array: a}).Stream()
 }
 
 func (a *Array) Copy() *Array {

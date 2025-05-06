@@ -35,7 +35,7 @@ import (
 // You shoule check the Err() method when iterator is complete to see
 // if there were any issues encountered when decoding chunks.
 type ChunkIterator struct {
-	*fun.Iterator[*Chunk]
+	*fun.Stream[*Chunk]
 	cancel  context.CancelFunc
 	catcher erc.Collector
 	wg      sync.WaitGroup
@@ -43,7 +43,7 @@ type ChunkIterator struct {
 
 // ReadChunks creates a ChunkIterator from an underlying FTDC data
 // source.
-func ReadChunks(r io.Reader) *fun.Iterator[*Chunk] {
+func ReadChunks(r io.Reader) *fun.Stream[*Chunk] {
 	pipe := make(chan *Chunk)
 	ipc := make(chan *birch.Document)
 

@@ -73,7 +73,7 @@ func TestReadCSVIntegration(t *testing.T) {
 
 	for _, test := range []struct {
 		Name   string
-		Iter   *fun.Iterator[*Chunk]
+		Iter   *fun.Stream[*Chunk]
 		Rows   int
 		Fields int
 	}{
