@@ -28,7 +28,6 @@ func (dm DocumentMap) Validate() error {
 		elem := dm[key]
 		ekey := elem.Key()
 
-		ec.Whenf(ekey != key, "map key %q not equal to element key %q", key, ekey)
 		ec.Wrapf(ft.IgnoreFirst(elem.Validate()), "for mapKey=%q, invalid element", ekey)
 	}
 

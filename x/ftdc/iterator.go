@@ -25,7 +25,7 @@ func (iter *Iterator) Close() error              { return erc.Join(iter.Stream.C
 func ReadMetrics(ctx context.Context, r io.Reader) *Iterator {
 	pipe := make(chan *birch.Document)
 	iterctx, cancel := context.WithCancel(ctx)
-	pipeIter := fun.ChannelStream(pipe)
+	pipeIter := fun.Blocking(pipe).Receive().Stream()
 	citer := &combinedIterator{
 		Stream:  pipeIter,
 		closer:  cancel,
