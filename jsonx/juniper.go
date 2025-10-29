@@ -9,8 +9,9 @@ type Document struct {
 func (d *Document) Append(elems ...*Element) *Document { d.elems = append(d.elems, elems...); return d }
 func (d *Document) Len() int                           { return len(d.elems) }
 func (d *Document) Iterator() *fun.Stream[*Element] {
-	return legacyIteratorConverter[*Element, *documentIterImpl](&documentIterImpl{doc: d}).Stream()
+	return fun.MakeStream(legacyIteratorConverter[*Element, *documentIterImpl](&documentIterImpl{doc: d}))
 }
+
 func (d *Document) Copy() *Document {
 	nd := DC.Make(d.Len())
 	for _, elem := range d.elems {
@@ -44,7 +45,7 @@ type Array struct {
 func (a *Array) Append(vals ...*Value) *Array { a.elems = append(a.elems, vals...); return a }
 func (a *Array) Len() int                     { return len(a.elems) }
 func (a *Array) Iterator() *fun.Stream[*Value] {
-	return legacyIteratorConverter[*Value, *arrayIterImpl](&arrayIterImpl{array: a}).Stream()
+	return fun.MakeStream(legacyIteratorConverter[*Value, *arrayIterImpl](&arrayIterImpl{array: a}))
 }
 
 func (a *Array) Copy() *Array {

@@ -12,6 +12,7 @@ import (
 
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/fun"
+	"github.com/tychoish/fun/fnx"
 )
 
 // ElementIterator facilitates iterating over a bson.Document.
@@ -137,7 +138,7 @@ type arrayIterator struct {
 }
 
 func newArrayIterator(a *Array) *fun.Stream[*Value] {
-	return legacyIteratorConverter[*Value, *arrayIterator](&arrayIterator{array: a}).Stream()
+	return fun.MakeStream(legacyIteratorConverter[*Value, *arrayIterator](&arrayIterator{array: a}))
 }
 
 // Next fetches the next value in the Array, returning whether or not it could be fetched successfully. If true is
@@ -175,7 +176,7 @@ func legacyIteratorConverter[V any, T interface {
 	Next(context.Context) bool
 	Value() V
 	Close() error
-}](iter T) fun.Generator[V] {
+}](iter T) fnx.Future[V] {
 	var closeErr error
 	var hasNext bool = true
 	var zero V

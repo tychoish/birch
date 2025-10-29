@@ -40,40 +40,43 @@ func (r *histogramGroupedStream) SetState(val int64)   { r.point.Gauges.State = 
 func (r *histogramGroupedStream) SetWorkers(val int64) { r.point.Gauges.Workers = val }
 func (r *histogramGroupedStream) SetFailed(val bool)   { r.point.Gauges.Failed = val }
 func (r *histogramGroupedStream) IncOperations(val int64) {
-	r.catcher.Add(r.point.Counters.Operations.RecordValue(val))
+	r.catcher.Push(r.point.Counters.Operations.RecordValue(val))
 }
+
 func (r *histogramGroupedStream) IncSize(val int64) {
-	r.catcher.Add(r.point.Counters.Size.RecordValue(val))
+	r.catcher.Push(r.point.Counters.Size.RecordValue(val))
 }
+
 func (r *histogramGroupedStream) IncError(val int64) {
-	r.catcher.Add(r.point.Counters.Errors.RecordValue(val))
+	r.catcher.Push(r.point.Counters.Errors.RecordValue(val))
 }
+
 func (r *histogramGroupedStream) EndIteration(dur time.Duration) {
 	r.point.setTimestamp(r.started)
-	r.catcher.Add(r.point.Counters.Number.RecordValue(1))
-	r.catcher.Add(r.point.Timers.Duration.RecordValue(int64(dur)))
+	r.catcher.Push(r.point.Counters.Number.RecordValue(1))
+	r.catcher.Push(r.point.Timers.Duration.RecordValue(int64(dur)))
 
 	if !r.started.IsZero() {
-		r.catcher.Add(r.point.Timers.Total.RecordValue(int64(time.Since(r.started))))
+		r.catcher.Push(r.point.Timers.Total.RecordValue(int64(time.Since(r.started))))
 		r.started = time.Time{}
 	}
 
 	if time.Since(r.lastCollected) >= r.interval {
-		r.catcher.Add(r.collector.Add(r.point))
+		r.catcher.Push(r.collector.Add(r.point))
 		r.lastCollected = time.Now()
 	}
 }
 
 func (r *histogramGroupedStream) SetTotalDuration(dur time.Duration) {
-	r.catcher.Add(r.point.Timers.Total.RecordValue(int64(dur)))
+	r.catcher.Push(r.point.Timers.Total.RecordValue(int64(dur)))
 }
 
 func (r *histogramGroupedStream) SetDuration(dur time.Duration) {
-	r.catcher.Add(r.point.Timers.Duration.RecordValue(int64(dur)))
+	r.catcher.Push(r.point.Timers.Duration.RecordValue(int64(dur)))
 }
 
 func (r *histogramGroupedStream) IncIterations(val int64) {
-	r.catcher.Add(r.point.Counters.Number.RecordValue(val))
+	r.catcher.Push(r.point.Counters.Number.RecordValue(val))
 }
 
 func (r *histogramGroupedStream) SetTime(t time.Time) { r.point.Timestamp = t }
@@ -84,7 +87,7 @@ func (r *histogramGroupedStream) BeginIteration() {
 
 func (r *histogramGroupedStream) EndTest() error {
 	if !r.point.Timestamp.IsZero() {
-		r.catcher.Add(r.collector.Add(r.point))
+		r.catcher.Push(r.collector.Add(r.point))
 	}
 	err := r.catcher.Resolve()
 	r.Reset()

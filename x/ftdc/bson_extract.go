@@ -35,7 +35,7 @@ func extractMetricsFromDocument(doc *birch.Document) (extractedMetrics, error) {
 	defer cancel()
 	for iter.Next(ctx) {
 		data, err = extractMetricsFromValue(iter.Value().Value())
-		catcher.Add(err)
+		catcher.Push(err)
 		metrics.values = append(metrics.values, data.values...)
 		metrics.types = append(metrics.types, data.types...)
 
@@ -44,7 +44,7 @@ func extractMetricsFromDocument(doc *birch.Document) (extractedMetrics, error) {
 		}
 	}
 
-	catcher.Add(iter.Close())
+	catcher.Push(iter.Close())
 
 	if metrics.ts.IsZero() {
 		metrics.ts = time.Now()
@@ -69,7 +69,7 @@ func extractMetricsFromArray(array *birch.Array) (extractedMetrics, error) {
 
 	for iter.Next(ctx) {
 		data, err = extractMetricsFromValue(iter.Value())
-		catcher.Add(err)
+		catcher.Push(err)
 		metrics.values = append(metrics.values, data.values...)
 		metrics.types = append(metrics.types, data.types...)
 
@@ -78,7 +78,7 @@ func extractMetricsFromArray(array *birch.Array) (extractedMetrics, error) {
 		}
 	}
 
-	catcher.Add(iter.Close())
+	catcher.Push(iter.Close())
 
 	return metrics, catcher.Resolve()
 }

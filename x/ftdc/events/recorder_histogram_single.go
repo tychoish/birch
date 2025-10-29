@@ -37,35 +37,37 @@ func (r *histogramSingle) SetState(val int64)   { r.point.Gauges.State = val }
 func (r *histogramSingle) SetWorkers(val int64) { r.point.Gauges.Workers = val }
 func (r *histogramSingle) SetFailed(val bool)   { r.point.Gauges.Failed = val }
 func (r *histogramSingle) IncOperations(val int64) {
-	r.catcher.Add(r.point.Counters.Operations.RecordValue(val))
+	r.catcher.Push(r.point.Counters.Operations.RecordValue(val))
 }
+
 func (r *histogramSingle) IncSize(val int64) {
-	r.catcher.Add(r.point.Counters.Size.RecordValue(val))
+	r.catcher.Push(r.point.Counters.Size.RecordValue(val))
 }
+
 func (r *histogramSingle) IncError(val int64) {
-	r.catcher.Add(r.point.Counters.Errors.RecordValue(val))
+	r.catcher.Push(r.point.Counters.Errors.RecordValue(val))
 }
 
 func (r *histogramSingle) IncIterations(val int64) {
-	r.catcher.Add(r.point.Counters.Number.RecordValue(val))
+	r.catcher.Push(r.point.Counters.Number.RecordValue(val))
 }
 
 func (r *histogramSingle) EndIteration(dur time.Duration) {
 	r.point.setTimestamp(r.started)
-	r.catcher.Add(r.point.Counters.Number.RecordValue(1))
-	r.catcher.Add(r.point.Timers.Duration.RecordValue(int64(dur)))
+	r.catcher.Push(r.point.Counters.Number.RecordValue(1))
+	r.catcher.Push(r.point.Timers.Duration.RecordValue(int64(dur)))
 	if !r.started.IsZero() {
-		r.catcher.Add(r.point.Timers.Total.RecordValue(int64(time.Since(r.started))))
+		r.catcher.Push(r.point.Timers.Total.RecordValue(int64(time.Since(r.started))))
 		r.started = time.Time{}
 	}
 }
 
 func (r *histogramSingle) SetTotalDuration(dur time.Duration) {
-	r.catcher.Add(r.point.Timers.Total.RecordValue(int64(dur)))
+	r.catcher.Push(r.point.Timers.Total.RecordValue(int64(dur)))
 }
 
 func (r *histogramSingle) SetDuration(dur time.Duration) {
-	r.catcher.Add(r.point.Timers.Duration.RecordValue(int64(dur)))
+	r.catcher.Push(r.point.Timers.Duration.RecordValue(int64(dur)))
 }
 
 func (r *histogramSingle) SetTime(t time.Time) { r.point.Timestamp = t }
@@ -73,7 +75,7 @@ func (r *histogramSingle) BeginIteration()     { r.started = time.Now() }
 
 func (r *histogramSingle) EndTest() error {
 	r.point.setTimestamp(r.started)
-	r.catcher.Add(r.collector.Add(r.point))
+	r.catcher.Push(r.collector.Add(r.point))
 	err := r.catcher.Resolve()
 	r.Reset()
 	return err

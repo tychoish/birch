@@ -55,7 +55,7 @@ func (r *intervalHistogramStream) worker(ctx context.Context, interval time.Dura
 				return
 			}
 			r.point.setTimestamp(r.started)
-			r.catcher.Add(r.collector.Add(r.point))
+			r.catcher.Push(r.collector.Add(r.point))
 			r.point.Timestamp = time.Time{}
 			r.point = NewHistogramMillisecond(r.point.Gauges)
 			r.Unlock()
@@ -81,11 +81,11 @@ func (r *intervalHistogramStream) BeginIteration() {
 func (r *intervalHistogramStream) EndIteration(dur time.Duration) {
 	r.Lock()
 	r.point.setTimestamp(r.started)
-	r.catcher.Add(r.point.Counters.Number.RecordValue(1))
-	r.catcher.Add(r.point.Timers.Duration.RecordValue(int64(dur)))
+	r.catcher.Push(r.point.Counters.Number.RecordValue(1))
+	r.catcher.Push(r.point.Timers.Duration.RecordValue(int64(dur)))
 
 	if !r.started.IsZero() {
-		r.catcher.Add(r.point.Timers.Total.RecordValue(int64(time.Since(r.started))))
+		r.catcher.Push(r.point.Timers.Total.RecordValue(int64(time.Since(r.started))))
 	}
 
 	r.Unlock()
@@ -105,13 +105,13 @@ func (r *intervalHistogramStream) SetID(id int64) {
 
 func (r *intervalHistogramStream) SetTotalDuration(dur time.Duration) {
 	r.Lock()
-	r.catcher.Add(r.point.Timers.Total.RecordValue(int64(dur)))
+	r.catcher.Push(r.point.Timers.Total.RecordValue(int64(dur)))
 	r.Unlock()
 }
 
 func (r *intervalHistogramStream) SetDuration(dur time.Duration) {
 	r.Lock()
-	r.catcher.Add(r.point.Timers.Duration.RecordValue(int64(dur)))
+	r.catcher.Push(r.point.Timers.Duration.RecordValue(int64(dur)))
 	r.Unlock()
 }
 
@@ -119,11 +119,11 @@ func (r *intervalHistogramStream) EndTest() error {
 	r.Lock()
 
 	if !r.started.IsZero() {
-		r.catcher.Add(r.point.Timers.Total.RecordValue(int64(time.Since(r.started))))
+		r.catcher.Push(r.point.Timers.Total.RecordValue(int64(time.Since(r.started))))
 		r.started = time.Time{}
 	}
 	if !r.point.Timestamp.IsZero() {
-		r.catcher.Add(r.collector.Add(r.point))
+		r.catcher.Push(r.collector.Add(r.point))
 	}
 	err := r.catcher.Resolve()
 	r.reset()
@@ -150,25 +150,25 @@ func (r *intervalHistogramStream) reset() {
 
 func (r *intervalHistogramStream) IncOperations(val int64) {
 	r.Lock()
-	r.catcher.Add(r.point.Counters.Operations.RecordValue(val))
+	r.catcher.Push(r.point.Counters.Operations.RecordValue(val))
 	r.Unlock()
 }
 
 func (r *intervalHistogramStream) IncIterations(val int64) {
 	r.Lock()
-	r.catcher.Add(r.point.Counters.Number.RecordValue(val))
+	r.catcher.Push(r.point.Counters.Number.RecordValue(val))
 	r.Unlock()
 }
 
 func (r *intervalHistogramStream) IncSize(val int64) {
 	r.Lock()
-	r.catcher.Add(r.point.Counters.Size.RecordValue(val))
+	r.catcher.Push(r.point.Counters.Size.RecordValue(val))
 	r.Unlock()
 }
 
 func (r *intervalHistogramStream) IncError(val int64) {
 	r.Lock()
-	r.catcher.Add(r.point.Counters.Errors.RecordValue(val))
+	r.catcher.Push(r.point.Counters.Errors.RecordValue(val))
 	r.Unlock()
 }
 

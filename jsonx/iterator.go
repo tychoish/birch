@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/tychoish/fun"
+	"github.com/tychoish/fun/fnx"
 )
 
 type documentIterImpl struct {
@@ -17,7 +17,7 @@ type documentIterImpl struct {
 func legacyIteratorConverter[V any, T interface {
 	Next(context.Context) bool
 	Value() V
-}](iter T) fun.Generator[V] {
+}](iter T) fnx.Future[V] {
 	var hasNext bool = true
 	var zero V
 

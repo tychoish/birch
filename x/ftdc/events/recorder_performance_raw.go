@@ -46,13 +46,13 @@ func (r *rawStream) EndIteration(dur time.Duration) {
 
 	r.point.setTimestamp(r.started)
 	r.point.Timers.Duration += dur
-	r.catcher.Add(r.collector.Add(r.point))
+	r.catcher.Push(r.collector.Add(r.point))
 	r.started = time.Time{}
 }
 
 func (r *rawStream) EndTest() error {
 	if !r.point.Timestamp.IsZero() {
-		r.catcher.Add(r.collector.Add(r.point))
+		r.catcher.Push(r.collector.Add(r.point))
 	}
 	err := r.catcher.Resolve()
 	r.Reset()

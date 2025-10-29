@@ -31,7 +31,7 @@ type Document struct {
 // ReadDocument will create a Document using the provided slice of bytes. If the
 // slice of bytes is not a valid BSON document, this method will return an error.
 func ReadDocument(b []byte) (*Document, error) {
-	var doc = new(Document)
+	doc := new(Document)
 
 	if err := doc.UnmarshalBSON(b); err != nil {
 		return nil, err
@@ -142,7 +142,7 @@ func (d *Document) ElementAtOK(index uint) (*Element, bool) {
 
 // Iterator creates an Iterator for this document and returns it.
 func (d *Document) Iterator() *fun.Stream[*Element] {
-	return legacyIteratorConverter[*Element, *elementIterator](&elementIterator{d: d}).Stream()
+	return fun.MakeStream(legacyIteratorConverter[*Element, *elementIterator](&elementIterator{d: d}))
 }
 
 // Extend merges a second document into the document. It may produce a
@@ -272,14 +272,12 @@ func (d *Document) writeByteSlice(start uint, size uint32, b []byte) (int64, err
 // MarshalBSON implements the Marshaler interface.
 func (d *Document) MarshalBSON() ([]byte, error) {
 	size, err := d.Validate()
-
 	if err != nil {
 		return nil, err
 	}
 
 	b := make([]byte, size)
 	_, err = d.writeByteSlice(0, size, b)
-
 	if err != nil {
 		return nil, err
 	}

@@ -8,10 +8,9 @@ package birch
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
-
-	"errors"
 
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/fun"
@@ -188,7 +187,7 @@ func (r Reader) Iterator() (*fun.Stream[*Element], error) {
 		return nil, err
 	}
 
-	return legacyIteratorConverter[*Element](iter).Stream(), nil
+	return fun.MakeStream(legacyIteratorConverter[*Element](iter)), nil
 }
 
 // String implements the fmt.Stringer interface.

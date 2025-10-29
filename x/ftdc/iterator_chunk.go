@@ -8,6 +8,7 @@ import (
 	"github.com/tychoish/birch"
 	"github.com/tychoish/fun"
 	"github.com/tychoish/fun/erc"
+	"github.com/tychoish/fun/fnx"
 )
 
 // ChunkIterator is a simple iterator for reading off of an FTDC data
@@ -48,20 +49,20 @@ func ReadChunks(r io.Reader) *fun.Stream[*Chunk] {
 	ipc := make(chan *birch.Document)
 
 	ec := &erc.Collector{}
-	wg := &fun.WaitGroup{}
+	wg := &fnx.WaitGroup{}
 	ch := fun.Blocking(pipe)
 
-	return ch.Generator().
-		PreHook(fun.Operation(func(ctx context.Context) {
+	return fun.MakeStream(fnx.NewFuture(ch.Receive().Stream().Read).
+		PreHook(fnx.Operation(func(ctx context.Context) {
 			wg.Launch(ctx, func(ctx context.Context) {
-				ec.Add(readChunks(ctx, ipc, pipe))
+				ec.Push(readChunks(ctx, ipc, pipe))
 			})
 			wg.Launch(ctx, func(ctx context.Context) {
-				ec.Add(readDiagnostic(ctx, r, ipc))
+				ec.Push(readDiagnostic(ctx, r, ipc))
 			})
 
 			wg.Operation().Background(ctx)
-		}).Once()).Stream().WithHook(func(st *fun.Stream[*Chunk]) { st.AddError(ec.Resolve()) })
+		}).Once())).WithHook(func(st *fun.Stream[*Chunk]) { st.AddError(ec.Resolve()) })
 }
 
 // Close releases resources of the iterator. Use this method to

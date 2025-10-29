@@ -2,11 +2,10 @@ package ftdc
 
 import (
 	"context"
+	"errors"
 	"io"
 	"sync"
 	"time"
-
-	"errors"
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
@@ -93,9 +92,9 @@ type matrixIterator struct {
 
 func (iter *matrixIterator) Close() error {
 	if iter.chunks != nil {
-		iter.catcher.Add(iter.chunks.Close())
+		iter.catcher.Push(iter.chunks.Close())
 	}
-	iter.catcher.Add(iter.Stream.Close())
+	iter.catcher.Push(iter.Stream.Close())
 	iter.wg.Wait()
 	return iter.catcher.Resolve()
 }
@@ -115,18 +114,18 @@ func (iter *matrixIterator) worker(ctx context.Context, pipe chan *birch.Documen
 		if iter.reflect {
 			payload, err = util.GlobalMarshaler()(chunk.exportMatrix())
 			if err != nil {
-				iter.catcher.Add(err)
+				iter.catcher.Push(err)
 				return
 			}
 			doc, err = birch.ReadDocument(payload)
 			if err != nil {
-				iter.catcher.Add(err)
+				iter.catcher.Push(err)
 				return
 			}
 		} else {
 			doc, err = chunk.export()
 			if err != nil {
-				iter.catcher.Add(err)
+				iter.catcher.Push(err)
 				return
 			}
 		}
@@ -135,7 +134,7 @@ func (iter *matrixIterator) worker(ctx context.Context, pipe chan *birch.Documen
 		case pipe <- doc:
 			continue
 		case <-ctx.Done():
-			iter.catcher.Add(errors.New("operation aborted"))
+			iter.catcher.Push(errors.New("operation aborted"))
 			return
 		}
 	}

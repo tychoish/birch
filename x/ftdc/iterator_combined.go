@@ -22,7 +22,7 @@ type combinedIterator struct {
 
 func (iter *combinedIterator) Close() error {
 	iter.closer()
-	iter.catcher.Add(iter.Stream.Close())
+	iter.catcher.Push(iter.Stream.Close())
 	iter.wg.Wait()
 	return iter.catcher.Resolve()
 }
@@ -56,12 +56,11 @@ func (iter *combinedIterator) worker(
 			case pipe <- sample.Value():
 				continue
 			case <-ctx.Done():
-				iter.catcher.Add(errors.New("operation aborted"))
+				iter.catcher.Push(errors.New("operation aborted"))
 				return
 			}
-
 		}
-		iter.catcher.Add(sample.Close())
+		iter.catcher.Push(sample.Close())
 	}
-	iter.catcher.Add(chunks.Close())
+	iter.catcher.Push(chunks.Close())
 }

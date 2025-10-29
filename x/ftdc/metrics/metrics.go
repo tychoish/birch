@@ -113,7 +113,7 @@ func (opts *CollectOptions) generate(ctx context.Context, id int) (*birch.Docume
 		go func() {
 			defer func() {
 				if p := recover(); p != nil {
-					catcher.Add(fmt.Errorf("ftdc metrics collector panic: %v", p))
+					catcher.Push(fmt.Errorf("ftdc metrics collector panic: %v", p))
 				}
 			}()
 			defer wg.Done()

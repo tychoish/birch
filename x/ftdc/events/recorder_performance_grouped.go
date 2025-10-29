@@ -52,7 +52,7 @@ func (r *groupStream) EndIteration(dur time.Duration) {
 
 	if time.Since(r.lastCollected) >= r.interval {
 		r.point.setTimestamp(r.started)
-		r.catcher.Add(r.collector.Add(r.point))
+		r.catcher.Push(r.collector.Add(r.point))
 		r.lastCollected = time.Now()
 		r.point.Timestamp = time.Time{}
 	}
@@ -61,7 +61,7 @@ func (r *groupStream) EndIteration(dur time.Duration) {
 
 func (r *groupStream) EndTest() error {
 	if !r.point.Timestamp.IsZero() {
-		r.catcher.Add(r.collector.Add(r.point))
+		r.catcher.Push(r.collector.Add(r.point))
 	}
 	err := r.catcher.Resolve()
 	r.Reset()
