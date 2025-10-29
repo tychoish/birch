@@ -20,10 +20,10 @@ github.com/tklauser/go-sysconf v0.3.11 h1:89WgdJhk5SNwJfu+GKyYveZ4IaJ7xAkecBo+Kd
 github.com/tklauser/go-sysconf v0.3.11/go.mod h1:GqXfhXY3kiPa0nAXPDIQIWzJbMCB7AmcWpGR8lSZfqI=
 github.com/tklauser/numcpus v0.6.0 h1:kebhY2Qt+3U6RNK7UqpYNA+tJ23IBEGKkB7JQBfDYms=
 github.com/tklauser/numcpus v0.6.0/go.mod h1:FEZLMke0lhOUG6w2JadTzp0a+Nl8PF/GFkQ5UVIcaL4=
-github.com/tychoish/birch v0.2.1 h1:LJVVbBrLeYhkOjgWY1/ASP6jeTcSMniAv03pSWEkqy0=
-github.com/tychoish/birch v0.2.1/go.mod h1:pxfPHWUyvLf7fkcjQeDYup2c5HwDyOjdOt/7dA9Zq7s=
-github.com/tychoish/fun v0.12.0 h1:YxYyCTfKL+3Q4wtcPFZsRVOWF12llUCbqkkK53MdwNs=
-github.com/tychoish/fun v0.12.0/go.mod h1:ghjR/9EyWh8h8oBg2+WJhsEcF/W4JXMWpo6btMRNusE=
+github.com/tychoish/birch v0.3.1 h1:nDetHoK/sewY2UCPLaVk82Kzh7IP4x4iyQy6C0Qq21s=
+github.com/tychoish/birch v0.3.1/go.mod h1:AT+ZmO/hLE8R374kBbi8AUFKd7/ToXouXmvM/o/qqnA=
+github.com/tychoish/fun v0.13.0 h1:gH4QIeLJkYsNa1Zu/g4MgmUAhWoGN4PEMu4hj/GqkOU=
+github.com/tychoish/fun v0.13.0/go.mod h1:ghjR/9EyWh8h8oBg2+WJhsEcF/W4JXMWpo6btMRNusE=
 github.com/tychoish/grip v0.3.6 h1:DnraGQGg8f7rVgZZirLWnZjBSYMsMvruwtmGurXH6fc=
 github.com/tychoish/grip v0.3.6/go.mod h1:KNReR43GI+rvv3BiBvlQ0KH8uJ2jHl4bg9gZPtm2g6U=
 github.com/tychoish/grip/x/metrics v0.0.0-20230408192639-ef555fcdf0fd h1:9MnZ1AzXArLf8o5OqLTSZMeqlXaz9AW+EVpW78t2ECs=
