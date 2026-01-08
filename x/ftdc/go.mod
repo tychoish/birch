@@ -7,7 +7,7 @@ toolchain go1.24.0
 require (
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/tychoish/birch v0.3.1
-	github.com/tychoish/fun v0.13.0
+	github.com/tychoish/fun v0.14.0
 	github.com/tychoish/grip/x/metrics v0.0.0-20230408192639-ef555fcdf0fd
 )
 
