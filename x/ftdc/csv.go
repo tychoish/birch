@@ -3,17 +3,16 @@ package ftdc
 import (
 	"context"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
+	"iter"
 	"os"
 	"strconv"
 	"time"
 
-	"errors"
-
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
-	"github.com/tychoish/fun"
 )
 
 func (c *Chunk) getFieldNames() []string {
@@ -40,14 +39,10 @@ func (c *Chunk) getRecord(i int) []string {
 // WriteCSV exports the contents of a stream of chunks as CSV. Returns
 // an error if the number of metrics changes between points, or if
 // there are any errors writing data.
-func WriteCSV(ctx context.Context, iter *fun.Stream[*Chunk], writer io.Writer) error {
+func WriteCSV(seq iter.Seq[*Chunk], writer io.Writer) error {
 	var numFields int
 	csvw := csv.NewWriter(writer)
-	for iter.Next(ctx) {
-		if ctx.Err() != nil {
-			return errors.New("operation aborted")
-		}
-		chunk := iter.Value()
+	for chunk := range seq {
 		if numFields == 0 {
 			fieldNames := chunk.getFieldNames()
 			if err := csvw.Write(fieldNames); err != nil {
@@ -69,10 +64,6 @@ func WriteCSV(ctx context.Context, iter *fun.Stream[*Chunk], writer io.Writer) e
 			return fmt.Errorf("problem flushing csv data: %w", err)
 		}
 	}
-	if err := iter.Close(); err != nil {
-		return fmt.Errorf("problem reading chunks: %w", err)
-	}
-
 	return nil
 }
 
@@ -91,7 +82,7 @@ func getCSVFile(prefix string, count int) (io.WriteCloser, error) {
 // writes a header row to each file.
 //
 // The file names are constructed as "prefix.<count>.csv".
-func DumpCSV(ctx context.Context, iter *fun.Stream[*Chunk], prefix string) error {
+func DumpCSV(seq iter.Seq[*Chunk], prefix string) error {
 	var (
 		err       error
 		writer    io.WriteCloser
@@ -99,11 +90,7 @@ func DumpCSV(ctx context.Context, iter *fun.Stream[*Chunk], prefix string) error
 		fileCount int
 		csvw      *csv.Writer
 	)
-	for iter.Next(ctx) {
-		if ctx.Err() != nil {
-			return errors.New("operation aborted")
-		}
-
+	for chunk := range seq {
 		if writer == nil {
 			writer, err = getCSVFile(prefix, fileCount)
 			if err != nil {
@@ -113,7 +100,6 @@ func DumpCSV(ctx context.Context, iter *fun.Stream[*Chunk], prefix string) error
 			fileCount++
 		}
 
-		chunk := iter.Value()
 		if numFields == 0 {
 			fieldNames := chunk.getFieldNames()
 			if err = csvw.Write(fieldNames); err != nil {
@@ -152,16 +138,11 @@ func DumpCSV(ctx context.Context, iter *fun.Stream[*Chunk], prefix string) error
 			return fmt.Errorf("problem flushing csv data: %w", err)
 		}
 	}
-	if err := iter.Close(); err != nil {
-		return fmt.Errorf("problem reading chunks: %w", err)
-	}
-
 	if writer == nil {
 		return nil
 	}
 	if err := writer.Close(); err != nil {
 		return fmt.Errorf("problem writing files to disk: %w", err)
-
 	}
 	return nil
 }
@@ -172,7 +153,7 @@ func DumpCSV(ctx context.Context, iter *fun.Stream[*Chunk], prefix string) error
 // If the number of fields changes in the CSV fields, the first field
 // with the changed number of fields becomes the header for the
 // subsequent documents in the stream.
-func ConvertFromCSV(ctx context.Context, bucketSize int, input io.Reader, output io.Writer) error {
+func ConvertFromCSV(bucketSize int, input io.Reader, output io.Writer) error {
 	csvr := csv.NewReader(input)
 
 	header, err := csvr.Read()
@@ -191,12 +172,6 @@ func ConvertFromCSV(ctx context.Context, bucketSize int, input io.Reader, output
 
 	var record []string
 	for {
-		if ctx.Err() != nil {
-			// this is weird so that the defer can work
-			err = fmt.Errorf("operation aborted: %w", err)
-			return err
-		}
-
 		record, err = csvr.Read()
 		if err == io.EOF {
 			// this is weird so that the defer can work

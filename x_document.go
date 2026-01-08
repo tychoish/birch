@@ -5,6 +5,7 @@ import (
 
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/birch/bsontype"
+	"github.com/tychoish/fun/irt"
 )
 
 // MarshalDocument satisfies the DocumentMarshaler interface, and
@@ -16,24 +17,15 @@ func (d *Document) MarshalDocument() (*Document, error) { return d, nil }
 // document. If the document is populated this could result in a
 // document that has multiple identical keys.
 func (d *Document) UnmarshalDocument(in *Document) error {
-	iter := in.Iterator()
-
-	for iter.Next(iterCtx) {
-		d.Append(iter.Value())
-	}
-
-	return iter.Close()
+	irt.Apply(in.Iterator(), func(e *Element) { d.Append(e) })
+	return nil
 }
 
 // ExportMap converts the values of the document to a map of strings
 // to interfaces, recursively, using the Value.Interface() method.
 func (d *Document) ExportMap() map[string]any {
 	out := make(map[string]any, d.Len())
-
-	iter := d.Iterator()
-
-	for iter.Next(iterCtx) {
-		elem := iter.Value()
+	for elem := range d.Iterator() {
 		out[elem.Key()] = elem.Value().Interface()
 	}
 
@@ -112,11 +104,7 @@ func (d *Document) Sorted() *Document {
 // recursive. When the element is not defined, the return value
 // is nil.
 func (d *Document) LookupElement(key string) *Element {
-	iter := d.Iterator()
-
-	for iter.Next(iterCtx) {
-		elem := iter.Value()
-
+	for elem := range d.Iterator() {
 		if elem.Key() == key {
 			return elem
 		}

@@ -1,59 +1,68 @@
 package ftdc
 
 import (
-	"context"
 	"io"
+	"iter"
 
 	"github.com/tychoish/birch"
-	"github.com/tychoish/fun"
+	"github.com/tychoish/birch/x/ftdc/util"
+	"github.com/tychoish/fun/adt"
 	"github.com/tychoish/fun/erc"
 )
 
-type Iterator struct {
-	*fun.Stream[*birch.Document]
-	state interface {
+type Iterator[T any] struct {
+	iterator   func() iter.Seq[T]
+	catcher    erc.Collector
+	metasource interface {
 		Metadata() *birch.Document
-		Close() error
 	}
 }
 
-func (iter *Iterator) Metadata() *birch.Document { return iter.state.Metadata() }
-func (iter *Iterator) Close() error              { return erc.Join(iter.Stream.Close(), iter.state.Close()) }
+func (iter *Iterator[T]) Iterator() iter.Seq[T]     { return iter.iterator() }
+func (iter *Iterator[T]) Metadata() *birch.Document { return iter.metasource.Metadata() }
+func (iter *Iterator[T]) Close() error              { return iter.catcher.Resolve() }
 
 // ReadMetrics returns a standard document iterator that reads FTDC
 // chunks. The Documents returned by the iterator are flattened.
-func ReadMetrics(ctx context.Context, r io.Reader) *Iterator {
-	pipe := make(chan *birch.Document)
-	iterctx, cancel := context.WithCancel(ctx)
-	pipeIter := fun.Blocking(pipe).Receive().Stream()
-	citer := &combinedIterator{
-		Stream:  pipeIter,
-		closer:  cancel,
-		flatten: true,
+func ReadMetrics(r io.Reader) *Iterator[*birch.Document] {
+	chunks := ReadChunks(r)
+	out := &Iterator[*birch.Document]{}
+	out.metasource = chunks
+	out.iterator = func() iter.Seq[*birch.Document] {
+		return func(yield func(*birch.Document) bool) {
+			defer func() { out.catcher.Push(chunks.Close()) }()
+			for chunk := range chunks.Iterator() {
+				for doc := range chunk.iteratorFlattened() {
+					if !yield(doc) {
+						return
+					}
+				}
+			}
+		}
 	}
-
-	citer.wg.Add(1)
-	go citer.worker(iterctx, ReadChunks(r), pipe)
-	return &Iterator{Stream: pipeIter, state: citer}
+	return out
 }
 
 // ReadStructuredMetrics returns a standard document iterator that reads FTDC
 // chunks. The Documents returned by the iterator retain the structure
 // of the input documents.
-func ReadStructuredMetrics(ctx context.Context, r io.Reader) *Iterator {
-	pipe := make(chan *birch.Document)
-	iterctx, cancel := context.WithCancel(ctx)
-
-	pipeIter := fun.ChannelStream(pipe)
-	citer := &combinedIterator{
-		Stream:  pipeIter,
-		closer:  cancel,
-		flatten: false,
+func ReadStructuredMetrics(r io.Reader) *Iterator[*birch.Document] {
+	chunks := ReadChunks(r)
+	out := &Iterator[*birch.Document]{}
+	out.metasource = chunks
+	out.iterator = func() iter.Seq[*birch.Document] {
+		return func(yield func(*birch.Document) bool) {
+			defer func() { out.catcher.Push(chunks.Close()) }()
+			for chunk := range chunks.Iterator() {
+				for doc := range chunk.iterator() {
+					if !yield(doc) {
+						return
+					}
+				}
+			}
+		}
 	}
-
-	citer.wg.Add(1)
-	go citer.worker(iterctx, ReadChunks(r), pipe)
-	return &Iterator{Stream: citer.Stream, state: citer}
+	return out
 }
 
 // ReadMatrix returns a "matrix format" for the data in a chunk. The
@@ -63,18 +72,28 @@ func ReadStructuredMetrics(ctx context.Context, r io.Reader) *Iterator {
 //
 // The matrix documents have full type fidelity, but are not
 // substantially less expensive to produce than full iteration.
-func ReadMatrix(ctx context.Context, r io.Reader) *Iterator {
-	pipe := make(chan *birch.Document)
-	iterctx, cancel := context.WithCancel(ctx)
+func ReadMatrix(r io.Reader) *Iterator[*birch.Document] {
+	chunks := ReadChunks(r)
+	out := &Iterator[*birch.Document]{}
+	out.metasource = chunks
 
-	miter := &matrixIterator{
-		Stream: fun.ChannelStream(pipe),
-		closer: cancel,
-		chunks: ReadChunks(r),
+	out.iterator = func() iter.Seq[*birch.Document] {
+		return func(yield func(*birch.Document) bool) {
+			defer func() { out.catcher.Push(chunks.Close()) }()
+			for chunk := range chunks.Iterator() {
+				doc, err := chunk.export()
+				if err != nil {
+					out.catcher.Push(err)
+					continue
+				}
+
+				if !yield(doc) {
+					return
+				}
+			}
+		}
 	}
-	miter.wg.Add(1)
-	go miter.worker(iterctx, pipe)
-	return &Iterator{Stream: miter.Stream, state: miter}
+	return out
 }
 
 // ReadSeries is similar to the ReadMatrix format, and produces a
@@ -101,17 +120,36 @@ func ReadMatrix(ctx context.Context, r io.Reader) *Iterator {
 //	}
 //
 // Although the *birch.Document type does support iteration directly.
-func ReadSeries(ctx context.Context, r io.Reader) *Iterator {
-	pipe := make(chan *birch.Document, 25)
-	iterctx, cancel := context.WithCancel(ctx)
-	iter := &matrixIterator{
-		Stream:  fun.ChannelStream(pipe),
-		closer:  cancel,
-		chunks:  ReadChunks(r),
-		reflect: true,
-	}
+func ReadSeries(r io.Reader) *Iterator[*birch.Document] {
+	chunks := ReadChunks(r)
+	out := &Iterator[*birch.Document]{}
+	out.metasource = chunks
 
-	iter.wg.Add(1)
-	go iter.worker(iterctx, pipe)
-	return &Iterator{Stream: iter.Stream, state: iter}
+	out.iterator = func() iter.Seq[*birch.Document] {
+		return func(yield func(*birch.Document) bool) {
+			defer func() { out.catcher.Push(chunks.Close()) }()
+			for chunk := range chunks.Iterator() {
+				payload, err := util.GlobalMarshaler()(chunk.exportMatrix())
+				if err != nil {
+					out.catcher.Push(err)
+					continue
+				}
+				doc, err := birch.ReadDocument(payload)
+				if err != nil {
+					out.catcher.Push(err)
+					continue
+				}
+				if !yield(doc) {
+					return
+				}
+			}
+		}
+	}
+	return out
 }
+
+type metasourceImpl struct {
+	inner adt.Atomic[*birch.Document]
+}
+
+func (msi *metasourceImpl) Metadata() *birch.Document { return msi.inner.Load() }

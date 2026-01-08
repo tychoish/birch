@@ -1,7 +1,6 @@
 package ftdc
 
 import (
-	"context"
 	"fmt"
 	"hash"
 	"hash/fnv"
@@ -17,14 +16,9 @@ func metricKeyHash(doc *birch.Document) (string, int) {
 }
 
 func metricKeyHashDocument(checksum hash.Hash, key string, doc *birch.Document) int {
-	iter := doc.Iterator()
 	seen := 0
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
-		elem := iter.Value()
+	for elem := range doc.Iterator() {
 		seen += metricKeyHashValue(checksum, fmt.Sprintf("%s.%s", key, elem.Key()), elem.Value())
 	}
 
@@ -33,13 +27,10 @@ func metricKeyHashDocument(checksum hash.Hash, key string, doc *birch.Document) 
 
 func metricKeyHashArray(checksum hash.Hash, key string, array *birch.Array) int {
 	seen := 0
-	iter := array.Iterator()
 	idx := 0
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
-	for iter.Next(ctx) {
-		seen += metricKeyHashValue(checksum, fmt.Sprintf("%s.%d", key, idx), iter.Value())
+	for value := range array.Iterator() {
+		seen += metricKeyHashValue(checksum, fmt.Sprintf("%s.%d", key, idx), value)
 		idx++
 	}
 

@@ -133,13 +133,10 @@ func TestCollectorInterface(t *testing.T) {
 						}
 						buf := bytes.NewBuffer(out)
 
-						iter := ReadStructuredMetrics(ctx, buf)
 						idx := -1
-						for iter.Next(ctx) {
+						for s := range ReadStructuredMetrics(buf).Iterator() {
 							idx++
 							t.Run(fmt.Sprintf("DocumentNumber_%d", idx), func(t *testing.T) {
-								s := iter.Value()
-
 								if fmt.Sprint(s) != fmt.Sprint(docs[idx]) {
 									t.Error("---", idx)
 									t.Error("in: ", docs[idx])
@@ -150,10 +147,6 @@ func TestCollectorInterface(t *testing.T) {
 						if len(docs)-1 != idx {
 							t.Error("values should be equal", len(docs)-1, idx)
 						} // zero index
-						if err := iter.Close(); err != nil {
-							t.Fatal("close err", err)
-						}
-
 					})
 				}
 			})
@@ -162,9 +155,6 @@ func TestCollectorInterface(t *testing.T) {
 }
 
 func TestStreamingEncoding(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	for _, impl := range []struct {
 		name    string
 		factory func() (Collector, *bytes.Buffer)
@@ -199,11 +189,9 @@ func TestStreamingEncoding(t *testing.T) {
 						}
 						payload := buf.Bytes()
 
-						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
 						idx := 0
-						for iter.Next(ctx) {
-							doc := iter.Value()
+						for doc := range ReadMetrics(bytes.NewBuffer(payload)).Iterator() {
 							if doc == nil {
 								t.Fatalf("%T value is nil", doc)
 							}
@@ -213,9 +201,6 @@ func TestStreamingEncoding(t *testing.T) {
 								t.Error("values should be equal")
 							}
 							idx++
-						}
-						if err := iter.Close(); err != nil {
-							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
@@ -247,10 +232,8 @@ func TestStreamingEncoding(t *testing.T) {
 						}
 						payload := buf.Bytes()
 
-						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
-						for iter.Next(ctx) {
-							doc := iter.Value()
+						for doc := range ReadMetrics(bytes.NewBuffer(payload)).Iterator() {
 							if doc == nil {
 								t.Fatalf("%T value is nil", doc)
 							}
@@ -263,9 +246,6 @@ func TestStreamingEncoding(t *testing.T) {
 							}
 						}
 
-						if err := iter.Close(); err != nil {
-							t.Fatal(err)
-						}
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
 						}
@@ -306,10 +286,8 @@ func TestStreamingEncoding(t *testing.T) {
 						}
 						payload := buf.Bytes()
 
-						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
-						for iter.Next(ctx) {
-							doc := iter.Value()
+						for doc := range ReadMetrics(bytes.NewBuffer(payload)).Iterator() {
 							if doc == nil {
 								t.Fatalf("%T value is nil", doc)
 							}
@@ -320,10 +298,6 @@ func TestStreamingEncoding(t *testing.T) {
 							if fmt.Sprint(doc) != fmt.Sprint(docs[idx]) {
 								t.Error("values should be equal")
 							}
-						}
-
-						if err := iter.Close(); err != nil {
-							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
@@ -367,10 +341,8 @@ func TestStreamingEncoding(t *testing.T) {
 						}
 						payload := buf.Bytes()
 
-						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
-						for iter.Next(ctx) {
-							doc := iter.Value()
+						for doc := range ReadMetrics(bytes.NewBuffer(payload)).Iterator() {
 							if doc == nil {
 								t.Fatalf("%T value is nil", doc)
 							}
@@ -381,9 +353,6 @@ func TestStreamingEncoding(t *testing.T) {
 							if fmt.Sprint(doc) != fmt.Sprint(docs[idx]) {
 								t.Error("values should be equal")
 							}
-						}
-						if err := iter.Close(); err != nil {
-							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
@@ -396,9 +365,6 @@ func TestStreamingEncoding(t *testing.T) {
 }
 
 func TestFixedEncoding(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	for _, impl := range []struct {
 		name    string
 		factory func() Collector
@@ -431,11 +397,9 @@ func TestFixedEncoding(t *testing.T) {
 						if err != nil {
 							t.Fatal(err)
 						}
-						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
 						idx := 0
-						for iter.Next(ctx) {
-							doc := iter.Value()
+						for doc := range ReadMetrics(bytes.NewBuffer(payload)).Iterator() {
 							if doc == nil {
 								t.Fatalf("%T value is nil", doc)
 							}
@@ -445,9 +409,6 @@ func TestFixedEncoding(t *testing.T) {
 								t.Error("values should be equal")
 							}
 							idx++
-						}
-						if err := iter.Close(); err != nil {
-							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
@@ -478,10 +439,8 @@ func TestFixedEncoding(t *testing.T) {
 						if err != nil {
 							t.Fatal(err)
 						}
-						iter := ReadMetrics(ctx, bytes.NewBuffer(payload))
 						res := []int64{}
-						for iter.Next(ctx) {
-							doc := iter.Value()
+						for doc := range ReadMetrics(bytes.NewBuffer(payload)).Iterator() {
 							if doc == nil {
 								t.Fatalf("%T value is nil", doc)
 							}
@@ -492,10 +451,6 @@ func TestFixedEncoding(t *testing.T) {
 							if fmt.Sprint(doc) != fmt.Sprint(docs[idx]) {
 								t.Error("values should be equal")
 							}
-						}
-
-						if err := iter.Close(); err != nil {
-							t.Fatal(err)
 						}
 						if len(test.dataset) != len(res) {
 							t.Fatalf("unqueal %v and %v", len(test.dataset), len(res))
@@ -603,8 +558,6 @@ func TestWriter(t *testing.T) {
 
 func TestTimestampHandling(t *testing.T) {
 	start := time.Now().Round(time.Millisecond)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	for _, test := range []struct {
 		Name   string
@@ -670,11 +623,8 @@ func TestTimestampHandling(t *testing.T) {
 					t.Fatal(err)
 				}
 				t.Run("Structured", func(t *testing.T) {
-					iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(out))
 					idx := 0
-					for iter.Next(ctx) {
-						doc := iter.Value()
-
+					for doc := range ReadStructuredMetrics(bytes.NewBuffer(out)).Iterator() {
 						val, ok := doc.Lookup("ts").TimeOK()
 						if !ok {
 							t.Error("expected true")
@@ -684,15 +634,10 @@ func TestTimestampHandling(t *testing.T) {
 
 						idx++
 					}
-					if err := iter.Close(); err != nil {
-						t.Fatal(err)
-					}
 				})
 				t.Run("Flattened", func(t *testing.T) {
-					iter := ReadMetrics(ctx, bytes.NewBuffer(out))
 					idx := 0
-					for iter.Next(ctx) {
-						doc := iter.Value()
+					for doc := range ReadMetrics(bytes.NewBuffer(out)).Iterator() {
 						val, ok := doc.Lookup("ts").TimeOK()
 						if !ok {
 							t.Error("expected true")
@@ -701,15 +646,10 @@ func TestTimestampHandling(t *testing.T) {
 						}
 						idx++
 					}
-					if err := iter.Close(); err != nil {
-						t.Fatal(err)
-					}
 				})
 				t.Run("Chunks", func(t *testing.T) {
-					chunks := ReadChunks(bytes.NewBuffer(out))
 					idx := 0
-					for chunks.Next(ctx) {
-						chunk := chunks.Value()
+					for chunk := range ReadChunks(bytes.NewBuffer(out)).Iterator() {
 						if chunk == nil {
 							t.Fatal("'chunk' should not be nil")
 						}
@@ -718,11 +658,7 @@ func TestTimestampHandling(t *testing.T) {
 						}
 						idx++
 					}
-					if err := chunks.Close(); err != nil {
-						t.Fatal(err)
-					}
 				})
-
 			})
 			t.Run("UnixSecond", func(t *testing.T) {
 				collector := NewBaseCollector(100)
@@ -737,11 +673,8 @@ func TestTimestampHandling(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				iter := ReadMetrics(ctx, bytes.NewBuffer(out))
 				idx := 0
-				for iter.Next(ctx) {
-					doc := iter.Value()
-
+				for doc := range ReadMetrics(bytes.NewBuffer(out)).Iterator() {
 					val, ok := doc.Lookup("ts").Int64OK()
 					if !ok {
 						t.Error("expected true")
@@ -749,9 +682,6 @@ func TestTimestampHandling(t *testing.T) {
 						t.Error("values should be equal")
 					}
 					idx++
-				}
-				if err := iter.Close(); err != nil {
-					t.Fatal(err)
 				}
 			})
 			t.Run("UnixNano", func(t *testing.T) {
@@ -767,11 +697,8 @@ func TestTimestampHandling(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				iter := ReadMetrics(ctx, bytes.NewBuffer(out))
 				idx := 0
-				for iter.Next(ctx) {
-					doc := iter.Value()
-
+				for doc := range ReadMetrics(bytes.NewBuffer(out)).Iterator() {
 					val, ok := doc.Lookup("ts").Int64OK()
 					if !ok {
 						t.Error("expected true")
@@ -780,9 +707,6 @@ func TestTimestampHandling(t *testing.T) {
 					}
 
 					idx++
-				}
-				if err := iter.Close(); err != nil {
-					t.Fatal(err)
 				}
 			})
 		})

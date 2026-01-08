@@ -9,10 +9,11 @@ package birch
 import (
 	"context"
 	"io"
+	"iter"
 
 	"github.com/tychoish/birch/bsonerr"
-	"github.com/tychoish/fun"
 	"github.com/tychoish/fun/fnx"
+	"github.com/tychoish/fun/irt"
 )
 
 // ElementIterator facilitates iterating over a bson.Document.
@@ -26,8 +27,8 @@ type elementIterator struct {
 // Next fetches the next element of the document, returning whether or not the next element was able
 // to be fetched. If true is returned, then call Element to get the element. If false is returned,
 // call Err to check if an error occurred.
-func (itr *elementIterator) Next(ctx context.Context) bool {
-	if itr.index >= len(itr.d.elems) || ctx.Err() != nil {
+func (itr *elementIterator) Next() bool {
+	if itr.index >= len(itr.d.elems) {
 		return false
 	}
 
@@ -82,16 +83,13 @@ func newReaderIterator(r Reader) (*readerIterator, error) {
 // Next fetches the next element of the Reader, returning whether or not the next element was able
 // to be fetched. If true is returned, then call Element to get the element. If false is returned,
 // call Err to check if an error occurred.
-func (itr *readerIterator) Next(ctx context.Context) bool {
+func (itr *readerIterator) Next() bool {
 	if itr.pos >= itr.end {
 		itr.err = bsonerr.InvalidReadOnlyDocument
 		return false
 	}
 
 	if itr.r[itr.pos] == '\x00' {
-		return false
-	}
-	if ctx.Err() != nil {
 		return false
 	}
 
@@ -137,17 +135,13 @@ type arrayIterator struct {
 	err   error
 }
 
-func newArrayIterator(a *Array) *fun.Stream[*Value] {
-	return fun.MakeStream(legacyIteratorConverter[*Value, *arrayIterator](&arrayIterator{array: a}))
+func newArrayIterator(a *Array) iter.Seq[*Value] {
+	return irt.Convert(a.doc.Iterator(), func(e *Element) *Value { return e.Value() })
 }
 
 // Next fetches the next value in the Array, returning whether or not it could be fetched successfully. If true is
 // returned, call Value to get the value. If false is returned, call Err to check if an error occurred.
-func (iter *arrayIterator) Next(ctx context.Context) bool {
-	if ctx.Err() != nil {
-		return false
-	}
-
+func (iter *arrayIterator) Next() bool {
 	val, err := iter.array.Lookup(iter.pos)
 	if err != nil {
 		// error if out of bounds

@@ -2,7 +2,6 @@ package birch
 
 import (
 	"github.com/tychoish/fun/erc"
-	"github.com/tychoish/fun/ft"
 )
 
 // DocumentMap is a map-based view of a document, used for
@@ -27,8 +26,8 @@ func (dm DocumentMap) Validate() error {
 	for key := range dm {
 		elem := dm[key]
 		ekey := elem.Key()
-
-		ec.Wrapf(ft.IgnoreFirst(elem.Validate()), "for mapKey=%q, invalid element", ekey)
+		_, err := elem.Validate()
+		ec.Wrapf(err, "for mapKey=%q, invalid element", ekey)
 	}
 
 	return ec.Resolve()
@@ -47,15 +46,13 @@ func (dm DocumentMap) MarshalDocument() (*Document, error) {
 }
 
 func (dm DocumentMap) UnmarshalDocument(in *Document) error {
-	iter := in.Iterator()
-	for iter.Next(iterCtx) {
-		elem := iter.Value()
+	for elem := range in.Iterator() {
 		if _, err := elem.Validate(); err != nil {
 			return err
 		}
 		dm[elem.Key()] = elem
 	}
-	return iter.Close()
+	return nil
 }
 
 func (dm DocumentMap) MarshalBSON() ([]byte, error) {
@@ -64,20 +61,16 @@ func (dm DocumentMap) MarshalBSON() ([]byte, error) {
 		return nil, err
 	}
 	return doc.MarshalBSON()
-
 }
 
-func (dm DocumentMap) UnmarshalBSON(in []byte) error {
-	iter, err := Reader(in).Iterator()
-	if err != nil {
-		return err
+func (dm DocumentMap) UnmarshalBSON(b []byte) error {
+	seq := Reader(b).Iterator()
 
-	}
-	for iter.Next(iterCtx) {
-		elem := iter.Value()
-		if _, err := elem.Validate(); err != nil {
+	for elem, err := range seq {
+		if err != nil {
 			return err
 		}
+
 		dm[elem.Key()] = elem
 	}
 

@@ -2,14 +2,13 @@ package birch
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
-	"errors"
-
 	"github.com/tychoish/birch/jsonx"
 	"github.com/tychoish/birch/types"
-	"github.com/tychoish/fun/ft"
+	"github.com/tychoish/fun/erc"
 )
 
 // UnmarshalJSON converts the contents of a document to JSON
@@ -25,10 +24,8 @@ func (d *Document) UnmarshalJSON(in []byte) error {
 		return err
 	}
 
-	iter := jdoc.Iterator()
-
-	for iter.Next(iterCtx) {
-		elem, err := convertJSONElements(iterCtx, iter.Value())
+	for val := range jdoc.Iterator() {
+		elem, err := convertJSONElements(iterCtx, val)
 		if err != nil {
 			return err
 		}
@@ -45,10 +42,8 @@ func (a *Array) UnmarshalJSON(in []byte) error {
 		return err
 	}
 
-	iter := ja.Iterator()
-
-	for iter.Next(iterCtx) {
-		elem, err := convertJSONElements(iterCtx, jsonx.EC.Value("", iter.Value()))
+	for val := range ja.Iterator() {
+		elem, err := convertJSONElements(iterCtx, jsonx.EC.Value("", val))
 		if err != nil {
 			return err
 		}
@@ -66,7 +61,6 @@ func (v *Value) UnmarshalJSON(in []byte) error {
 	}
 
 	elem, err := convertJSONElements(iterCtx, jsonx.EC.Value("", va))
-
 	if err != nil {
 		return err
 	}
@@ -79,10 +73,8 @@ func (v *Value) UnmarshalJSON(in []byte) error {
 func (DocumentConstructorError) JSONX(jd *jsonx.Document) (*Document, error) {
 	d := DC.Make(jd.Len())
 
-	iter := jd.Iterator()
-
-	for iter.Next(iterCtx) {
-		elem, err := convertJSONElements(iterCtx, iter.Value())
+	for val := range jd.Iterator() {
+		elem, err := convertJSONElements(iterCtx, val)
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +85,7 @@ func (DocumentConstructorError) JSONX(jd *jsonx.Document) (*Document, error) {
 	return d, nil
 }
 
-func (DocumentConstructor) JSONX(jd *jsonx.Document) *Document { return ft.Must(DCE.JSONX(jd)) }
+func (DocumentConstructor) JSONX(jd *jsonx.Document) *Document { return erc.Must(DCE.JSONX(jd)) }
 
 func convertJSONElements(ctx context.Context, in *jsonx.Element) (*Element, error) {
 	inv := in.Value()
@@ -149,13 +141,11 @@ func convertJSONElements(ctx context.Context, in *jsonx.Element) (*Element, erro
 			)
 
 			tsDoc := indoc.ElementAtIndex(0).Value().Document()
-			iter := tsDoc.Iterator()
 			count := 0
-			for iter.Next(ctx) {
+			for elem := range tsDoc.Iterator() {
 				if count >= 3 {
 					break
 				}
-				elem := iter.Value()
 
 				switch elem.Key() {
 				case "t":
@@ -202,13 +192,11 @@ func convertJSONElements(ctx context.Context, in *jsonx.Element) (*Element, erro
 				ok  bool
 			)
 			debref := indoc.ElementAtIndex(0).Value().Document()
-			iter := debref.Iterator()
 			count := 0
-			for iter.Next(ctx) {
+			for elem := range debref.Iterator() {
 				if count >= 2 {
 					break
 				}
-				elem := iter.Value()
 
 				switch elem.Key() {
 				case "$ref":
@@ -241,13 +229,12 @@ func convertJSONElements(ctx context.Context, in *jsonx.Element) (*Element, erro
 				ok      bool
 			)
 			rex := indoc.ElementAtIndex(0).Value().Document()
-			iter := rex.Iterator()
+
 			count := 0
-			for iter.Next(ctx) {
+			for elem := range rex.Iterator() {
 				if count >= 2 {
 					break
 				}
-				elem := iter.Value()
 
 				switch elem.Key() {
 				case "pattern":
@@ -283,12 +270,10 @@ func convertJSONElements(ctx context.Context, in *jsonx.Element) (*Element, erro
 		case "$binary":
 			return EC.Binary(in.Key(), []byte(indoc.ElementAtIndex(0).Value().StringValue())), nil
 		default:
-			iter := indoc.Iterator()
-
 			doc := DC.Make(indoc.Len())
 
-			for iter.Next(ctx) {
-				elem, err := convertJSONElements(ctx, iter.Value())
+			for val := range indoc.Iterator() {
+				elem, err := convertJSONElements(ctx, val)
 				if err != nil {
 					return nil, err
 				}
@@ -300,12 +285,11 @@ func convertJSONElements(ctx context.Context, in *jsonx.Element) (*Element, erro
 		}
 	case jsonx.ArrayValue:
 		ina := inv.Array()
-		iter := ina.Iterator()
 
 		array := MakeArray(ina.Len())
 
-		for iter.Next(ctx) {
-			elem, err := convertJSONElements(ctx, jsonx.EC.Value("", iter.Value()))
+		for val := range ina.Iterator() {
+			elem, err := convertJSONElements(ctx, jsonx.EC.Value("", val))
 			if err != nil {
 				return nil, err
 			}

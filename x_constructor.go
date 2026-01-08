@@ -6,7 +6,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/tychoish/fun/ft"
+	"github.com/tychoish/fun/erc"
 )
 
 // DC is a convenience variable provided for access to the DocumentConstructor methods.
@@ -48,7 +48,7 @@ func (DocumentConstructor) ElementsOmitEmpty(elems ...*Element) *Document {
 // around a byte slice representation of a bson document. Reader
 // panics if there is a problem reading the document.
 func (DocumentConstructor) Reader(r Reader) *Document {
-	return ft.Must(DCE.Reader(r))
+	return erc.Must(DCE.Reader(r))
 }
 
 // ReaderErr constructs a document from a bson reader, which is a wrapper
@@ -92,7 +92,7 @@ func (DocumentConstructorError) ReadFrom(in io.Reader) (*Document, error) {
 }
 
 func (DocumentConstructor) Marshaler(in Marshaler) *Document {
-	return ft.Must(DCE.Marshaler(in))
+	return erc.Must(DCE.Marshaler(in))
 }
 
 func (DocumentConstructorError) Marshaler(in Marshaler) (*Document, error) {
@@ -245,7 +245,7 @@ func (ElementConstructorError) Marshaler(key string, val Marshaler) (*Element, e
 }
 
 func (ElementConstructor) DocumentMarshaler(key string, val DocumentMarshaler) *Element {
-	return EC.SubDocument(key, ft.Must(val.MarshalDocument()))
+	return EC.SubDocument(key, erc.Must(val.MarshalDocument()))
 }
 
 func (ElementConstructorError) DocumentMarshaler(key string, val DocumentMarshaler) (*Element, error) {
@@ -454,6 +454,7 @@ func (ValueConstructor) SliceTime(in []time.Time) *Value  { return EC.SliceTime(
 func (ValueConstructor) SliceDuration(in []time.Duration) *Value {
 	return EC.SliceDuration("", in).value
 }
+
 func (ValueConstructor) SliceInterface(in []any) *Value {
 	return EC.SliceInterface("", in).value
 }

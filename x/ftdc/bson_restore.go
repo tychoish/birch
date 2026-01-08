@@ -1,7 +1,6 @@
 package ftdc
 
 import (
-	"context"
 	"math"
 
 	"github.com/tychoish/birch"
@@ -13,7 +12,7 @@ import (
 // Processores use to return rich (i.e. non-flat) structures from
 // metrics slices
 
-func restoreDocument(ctx context.Context, ref *birch.Document, sample int, metrics []Metric, idx int) (*birch.Document, int) {
+func restoreDocument(ref *birch.Document, sample int, metrics []Metric, idx int) (*birch.Document, int) {
 	if ref == nil {
 		return nil, 0
 	}
@@ -23,10 +22,8 @@ func restoreDocument(ctx context.Context, ref *birch.Document, sample int, metri
 
 	var elem *birch.Element
 
-	for iter.Next(ctx) {
-		refElem := iter.Value()
-
-		elem, idx = restoreElement(ctx, refElem, sample, metrics, idx)
+	for refElem := range iter {
+		elem, idx = restoreElement(refElem, sample, metrics, idx)
 		if elem == nil {
 			continue
 		}
@@ -36,7 +33,7 @@ func restoreDocument(ctx context.Context, ref *birch.Document, sample int, metri
 	return doc, idx
 }
 
-func restoreElement(ctx context.Context, ref *birch.Element, sample int, metrics []Metric, idx int) (*birch.Element, int) {
+func restoreElement(ref *birch.Element, sample int, metrics []Metric, idx int) (*birch.Element, int) {
 	switch ref.Value().Type() {
 	case bsontype.ObjectID:
 		return nil, idx
@@ -47,35 +44,24 @@ func restoreElement(ctx context.Context, ref *birch.Element, sample int, metrics
 	case bsontype.Array:
 		array := ref.Value().MutableArray()
 
-		elems := make([]*birch.Element, 0, array.Len())
+		elems := make([]*birch.Value, 0, array.Len())
 
-		iter := array.Iterator()
-		for iter.Next(ctx) {
+		for val := range array.Iterator() {
 			var item *birch.Element
 			// TODO avoid Interface
-			item, idx = restoreElement(ctx, birch.EC.Interface("", iter.Value()), sample, metrics, idx)
+			item, idx = restoreElement(birch.EC.Interface("", val), sample, metrics, idx)
 			if item == nil {
 				continue
 			}
 
-			elems = append(elems, item)
+			elems = append(elems, item.Value())
 		}
 
-		if iter.Close() != nil {
-			return nil, 0
-		}
-
-		out := make([]*birch.Value, len(elems))
-
-		for idx := range elems {
-			out[idx] = elems[idx].Value()
-		}
-
-		return birch.EC.ArrayFromElements(ref.Key(), out...), idx
+		return birch.EC.ArrayFromElements(ref.Key(), elems...), idx
 	case bsontype.EmbeddedDocument:
 		var doc *birch.Document
 
-		doc, idx = restoreDocument(ctx, ref.Value().MutableDocument(), sample, metrics, idx)
+		doc, idx = restoreDocument(ref.Value().MutableDocument(), sample, metrics, idx)
 		return birch.EC.SubDocument(ref.Key(), doc), idx
 	case bsontype.Boolean:
 		value := metrics[idx].Values[sample]

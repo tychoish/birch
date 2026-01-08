@@ -14,16 +14,10 @@ import (
 func (d *Document) MarshalJSON() ([]byte, error) { return d.toJSON().MarshalJSON() }
 
 func (d *Document) toJSON() *jsonx.Document {
-	iter := d.Iterator()
 	out := jsonx.DC.Make(d.Len())
 
-	for iter.Next(iterCtx) {
-		elem := iter.Value()
+	for elem := range d.Iterator() {
 		out.Append(jsonx.EC.Value(elem.Key(), elem.Value().toJSON()))
-	}
-
-	if err := iter.Close(); err != nil {
-		panic(err)
 	}
 
 	return out
@@ -35,14 +29,10 @@ func (d *Document) toJSON() *jsonx.Document {
 func (a *Array) MarshalJSON() ([]byte, error) { return a.toJSON().MarshalJSON() }
 
 func (a *Array) toJSON() *jsonx.Array {
-	iter := a.Iterator()
 	out := jsonx.AC.Make(a.Len())
 
-	for iter.Next(iterCtx) {
-		out.Append(iter.Value().toJSON())
-	}
-	if err := iter.Close(); err != nil {
-		panic(err)
+	for val := range a.Iterator() {
+		out.Append(val.toJSON())
 	}
 
 	return out

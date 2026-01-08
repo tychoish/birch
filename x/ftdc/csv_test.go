@@ -2,7 +2,6 @@ package ftdc
 
 import (
 	"bytes"
-	"context"
 	"encoding/csv"
 	"path/filepath"
 	"strings"
@@ -10,18 +9,15 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/x/ftdc/testutil"
-	"github.com/tychoish/fun"
 )
 
 func TestWriteCSVIntegration(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	tmp := t.TempDir()
 
 	t.Run("Write", func(t *testing.T) {
 		iter := ReadChunks(bytes.NewBuffer(newChunk(10)))
 		out := &bytes.Buffer{}
-		err := WriteCSV(ctx, iter, out)
+		err := WriteCSV(iter.Iterator(), out)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -33,25 +29,25 @@ func TestWriteCSVIntegration(t *testing.T) {
 	})
 	t.Run("ResuseIterPass", func(t *testing.T) {
 		iter := ReadChunks(bytes.NewBuffer(newChunk(10)))
-		err := DumpCSV(ctx, iter, filepath.Join(tmp, "dump"))
+		err := DumpCSV(iter.Iterator(), filepath.Join(tmp, "dump"))
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = DumpCSV(ctx, iter, filepath.Join(tmp, "dump"))
+		err = DumpCSV(iter.Iterator(), filepath.Join(tmp, "dump"))
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 	t.Run("Dump", func(t *testing.T) {
 		iter := ReadChunks(bytes.NewBuffer(newChunk(10)))
-		err := DumpCSV(ctx, iter, filepath.Join(tmp, "dump"))
+		err := DumpCSV(iter.Iterator(), filepath.Join(tmp, "dump"))
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 	t.Run("DumpMixed", func(t *testing.T) {
 		iter := ReadChunks(bytes.NewBuffer(newMixedChunk(10)))
-		err := DumpCSV(ctx, iter, filepath.Join(tmp, "dump"))
+		err := DumpCSV(iter.Iterator(), filepath.Join(tmp, "dump"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -59,7 +55,7 @@ func TestWriteCSVIntegration(t *testing.T) {
 	t.Run("WriteWithSchemaChange", func(t *testing.T) {
 		iter := ReadChunks(bytes.NewBuffer(newMixedChunk(10)))
 		out := &bytes.Buffer{}
-		err := WriteCSV(ctx, iter, out)
+		err := WriteCSV(iter.Iterator(), out)
 
 		if err == nil {
 			t.Fatal("error should not be nill")
@@ -68,58 +64,54 @@ func TestWriteCSVIntegration(t *testing.T) {
 }
 
 func TestReadCSVIntegration(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	for _, test := range []struct {
 		Name   string
-		Iter   *fun.Stream[*Chunk]
+		Iter   *Iterator[*Chunk]
 		Rows   int
 		Fields int
 	}{
 		{
 			Name:   "SimpleFlat",
-			Iter:   produceMockChunkIter(ctx, 1000, func() *birch.Document { return testutil.RandFlatDocument(15) }),
+			Iter:   produceMockChunkIter(1000, func() *birch.Document { return testutil.RandFlatDocument(15) }),
 			Rows:   1000,
 			Fields: 15,
 		},
 		{
 			Name:   "LargerFlat",
-			Iter:   produceMockChunkIter(ctx, 1000, func() *birch.Document { return testutil.RandFlatDocument(50) }),
+			Iter:   produceMockChunkIter(1000, func() *birch.Document { return testutil.RandFlatDocument(50) }),
 			Rows:   1000,
 			Fields: 50,
 		},
 		{
 			Name:   "Complex",
-			Iter:   produceMockChunkIter(ctx, 1000, func() *birch.Document { return testutil.RandComplexDocument(20, 3) }),
+			Iter:   produceMockChunkIter(1000, func() *birch.Document { return testutil.RandComplexDocument(20, 3) }),
 			Rows:   1000,
 			Fields: 100,
 		},
 		{
 			Name:   "LargComplex",
-			Iter:   produceMockChunkIter(ctx, 1000, func() *birch.Document { return testutil.RandComplexDocument(100, 10) }),
+			Iter:   produceMockChunkIter(1000, func() *birch.Document { return testutil.RandComplexDocument(100, 10) }),
 			Rows:   1000,
 			Fields: 190,
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			buf := &bytes.Buffer{}
-			err := WriteCSV(ctx, test.Iter, buf)
+			err := WriteCSV(test.Iter.Iterator(), buf)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			out := &bytes.Buffer{}
-			err = ConvertFromCSV(ctx, test.Rows, buf, out)
+			err = ConvertFromCSV(test.Rows, buf, out)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			iter := ReadMetrics(ctx, out)
+			iter := ReadMetrics(out)
 			count := 0
-			for iter.Next(ctx) {
+			for doc := range iter.Iterator() {
 				count++
-				doc := iter.Value()
 				if test.Fields != doc.Len() {
 					t.Error("values should be equal")
 				}
@@ -147,7 +139,7 @@ func TestReadCSVIntegration(t *testing.T) {
 		}
 		csvw.Flush()
 
-		if err := ConvertFromCSV(ctx, 1000, buf, &bytes.Buffer{}); err == nil {
+		if err := ConvertFromCSV(1000, buf, &bytes.Buffer{}); err == nil {
 			t.Error("error should be nil")
 		}
 	})
@@ -169,7 +161,7 @@ func TestReadCSVIntegration(t *testing.T) {
 		}
 		csvw.Flush()
 
-		if err := ConvertFromCSV(ctx, 1000, buf, &bytes.Buffer{}); err == nil {
+		if err := ConvertFromCSV(1000, buf, &bytes.Buffer{}); err == nil {
 			t.Error("error should be nil")
 		}
 	})

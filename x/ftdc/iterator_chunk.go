@@ -3,75 +3,119 @@ package ftdc
 import (
 	"context"
 	"io"
-	"sync"
+	"iter"
 
 	"github.com/tychoish/birch"
-	"github.com/tychoish/fun"
-	"github.com/tychoish/fun/erc"
 	"github.com/tychoish/fun/fnx"
+	"github.com/tychoish/fun/stw"
 )
-
-// ChunkIterator is a simple iterator for reading off of an FTDC data
-// source (e.g. file). The iterator processes chunks batches of
-// metrics lazily, reading form the io.Reader every time the iterator
-// is advanced.
-//
-// Use the iterator as follows:
-//
-//	iter := ReadChunks(ctx, file)
-//
-//	for iter.Next(ctx) {
-//	    chunk := iter.Chunk()
-//
-//	    // <manipulate chunk>
-//
-//	}
-//
-//	if err := iter.Close(ctx); err != nil {
-//	    return err
-//	}
-//
-// You MUST call the Chunk() method no more than once per iteration.
-//
-// You shoule check the Err() method when iterator is complete to see
-// if there were any issues encountered when decoding chunks.
-type ChunkIterator struct {
-	*fun.Stream[*Chunk]
-	cancel  context.CancelFunc
-	catcher erc.Collector
-	wg      sync.WaitGroup
-}
 
 // ReadChunks creates a ChunkIterator from an underlying FTDC data
 // source.
-func ReadChunks(r io.Reader) *fun.Stream[*Chunk] {
+func ReadChunks(r io.Reader) *Iterator[*Chunk] {
 	pipe := make(chan *Chunk)
 	ipc := make(chan *birch.Document)
 
-	ec := &erc.Collector{}
-	wg := &fnx.WaitGroup{}
-	ch := fun.Blocking(pipe)
+	out := &Iterator[*Chunk]{}
 
-	return fun.MakeStream(fnx.NewFuture(ch.Receive().Stream().Read).
-		PreHook(fnx.Operation(func(ctx context.Context) {
-			wg.Launch(ctx, func(ctx context.Context) {
-				ec.Push(readChunks(ctx, ipc, pipe))
-			})
-			wg.Launch(ctx, func(ctx context.Context) {
-				ec.Push(readDiagnostic(ctx, r, ipc))
-			})
+	ch := stw.ChanBlocking(pipe)
+	msi := &metasourceImpl{}
+	out.metasource = msi
+	out.iterator = func() iter.Seq[*Chunk] {
+		wg := &fnx.WaitGroup{}
 
+		setup := fnx.Operation(func(ctx context.Context) {
+			wg.Launch(ctx, func(ctx context.Context) { out.catcher.Push(readChunks(ctx, ipc, pipe)) })
+			wg.Launch(ctx, func(ctx context.Context) { out.catcher.Push(readDiagnostic(ctx, r, ipc)) })
 			wg.Operation().Background(ctx)
-		}).Once())).WithHook(func(st *fun.Stream[*Chunk]) { st.AddError(ec.Resolve()) })
+			wg.Launch(ctx, func(ctx context.Context) {
+				for {
+					select {
+					case <-ctx.Done():
+					case meta := <-ipc:
+						msi.inner.Store(meta)
+					}
+				}
+			})
+		}).Once()
+
+		return func(yield func(*Chunk) bool) {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			setup(ctx)
+
+			for elem := range ch.Receive().Iterator(ctx) {
+				if !yield(elem) {
+					return
+				}
+			}
+		}
+	}
+	return out
 }
 
-// Close releases resources of the iterator. Use this method to
-// release those resources if you stop iterating before the iterator
-// is exhausted. Canceling the context that you used to create the
-// iterator has the same effect. Close returns a non-nil error if the
-// iterator encountered any errors during iteration.
-func (iter *ChunkIterator) Close() error {
-	iter.cancel()
-	iter.wg.Wait()
-	return iter.catcher.Resolve()
+func (c *Chunk) iterator() iter.Seq[*birch.Document] {
+	return func(yield func(*birch.Document) bool) {
+		for i := 0; i < c.nPoints; i++ {
+			doc, _ := restoreDocument(c.reference, i, c.Metrics, 0)
+			if !yield(doc) {
+				return
+			}
+		}
+	}
+}
+
+func (c *Chunk) iteratorFlattened() iter.Seq[*birch.Document] {
+	return func(yield func(*birch.Document) bool) {
+		for i := 0; i < c.nPoints; i++ {
+
+			doc := birch.DC.Make(len(c.Metrics))
+			for _, m := range c.Metrics {
+				elem, ok := restoreFlat(m.originalType, m.Key(), m.Values[i])
+				if !ok {
+					continue
+				}
+
+				doc.Append(elem)
+			}
+
+			if !yield(doc) {
+				return
+			}
+		}
+	}
+}
+
+func (c *Chunk) streamFlattenedDocuments(ctx context.Context, out chan *birch.Document) {
+	for i := 0; i < c.nPoints; i++ {
+
+		doc := birch.DC.Make(len(c.Metrics))
+		for _, m := range c.Metrics {
+			elem, ok := restoreFlat(m.originalType, m.Key(), m.Values[i])
+			if !ok {
+				continue
+			}
+
+			doc.Append(elem)
+		}
+
+		select {
+		case out <- doc:
+			continue
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (c *Chunk) streamDocuments(ctx context.Context, out chan *birch.Document) {
+	for i := 0; i < c.nPoints; i++ {
+		doc, _ := restoreDocument(c.reference, i, c.Metrics, 0)
+		select {
+		case <-ctx.Done():
+			return
+		case out <- doc:
+			continue
+		}
+	}
 }

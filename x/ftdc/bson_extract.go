@@ -1,7 +1,6 @@
 package ftdc
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -22,7 +21,6 @@ type extractedMetrics struct {
 
 func extractMetricsFromDocument(doc *birch.Document) (extractedMetrics, error) {
 	metrics := extractedMetrics{}
-	iter := doc.Iterator()
 
 	var (
 		err  error
@@ -31,10 +29,8 @@ func extractMetricsFromDocument(doc *birch.Document) (extractedMetrics, error) {
 
 	catcher := &erc.Collector{}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	for iter.Next(ctx) {
-		data, err = extractMetricsFromValue(iter.Value().Value())
+	for value := range doc.Iterator() {
+		data, err = extractMetricsFromValue(value.Value())
 		catcher.Push(err)
 		metrics.values = append(metrics.values, data.values...)
 		metrics.types = append(metrics.types, data.types...)
@@ -43,8 +39,6 @@ func extractMetricsFromDocument(doc *birch.Document) (extractedMetrics, error) {
 			metrics.ts = data.ts
 		}
 	}
-
-	catcher.Push(iter.Close())
 
 	if metrics.ts.IsZero() {
 		metrics.ts = time.Now()
@@ -62,13 +56,9 @@ func extractMetricsFromArray(array *birch.Array) (extractedMetrics, error) {
 	)
 
 	catcher := &erc.Collector{}
-	iter := array.Iterator()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
-		data, err = extractMetricsFromValue(iter.Value())
+	for value := range array.Iterator() {
+		data, err = extractMetricsFromValue(value)
 		catcher.Push(err)
 		metrics.values = append(metrics.values, data.values...)
 		metrics.types = append(metrics.types, data.types...)
@@ -77,8 +67,6 @@ func extractMetricsFromArray(array *birch.Array) (extractedMetrics, error) {
 			metrics.ts = data.ts
 		}
 	}
-
-	catcher.Push(iter.Close())
 
 	return metrics, catcher.Resolve()
 }

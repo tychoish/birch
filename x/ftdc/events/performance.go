@@ -13,7 +13,6 @@
 package events
 
 import (
-	"context"
 	"time"
 
 	"github.com/tychoish/birch"
@@ -87,12 +86,7 @@ func (p *Performance) MarshalDocument() (*birch.Document, error) {
 }
 
 func (p *Performance) UnmarshalDocument(doc *birch.Document) error {
-	iter := doc.Iterator()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
-		elem := iter.Value()
+	for elem := range doc.Iterator() {
 		switch elem.Key() {
 		case "ts":
 			p.Timestamp = elem.Value().Time()
@@ -112,17 +106,11 @@ func (p *Performance) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return iter.Close()
+	return nil
 }
 
 func (p *PerformanceCounters) UnmarshalDocument(doc *birch.Document) error {
-	iter := doc.Iterator()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
-		elem := iter.Value()
+	for elem := range doc.Iterator() {
 		switch elem.Key() {
 		case "n":
 			p.Number = elem.Value().Int64()
@@ -135,16 +123,11 @@ func (p *PerformanceCounters) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return iter.Close()
+	return nil
 }
 
 func (p *PerformanceTimers) UnmarshalDocument(doc *birch.Document) error {
-	iter := doc.Iterator()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
-		elem := iter.Value()
+	for elem := range doc.Iterator() {
 		switch elem.Key() {
 		case "dur":
 			p.Duration = time.Duration(elem.Value().Int64())
@@ -153,17 +136,11 @@ func (p *PerformanceTimers) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return iter.Close()
+	return nil
 }
 
 func (p *PerformanceGauges) UnmarshalDocument(doc *birch.Document) error {
-	iter := doc.Iterator()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
-		elem := iter.Value()
+	for elem := range doc.Iterator() {
 		switch elem.Key() {
 		case "state":
 			p.State = elem.Value().Int64()
@@ -174,7 +151,7 @@ func (p *PerformanceGauges) UnmarshalDocument(doc *birch.Document) error {
 		}
 	}
 
-	return iter.Close()
+	return nil
 }
 
 // Add combines the values of the input Performance struct into this struct,

@@ -2,12 +2,10 @@ package testutil
 
 import (
 	"bytes"
-	"context"
+	"errors"
 	"fmt"
 	"math/rand"
 	"strconv"
-
-	"errors"
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
@@ -68,15 +66,10 @@ func RandComplexDocument(numKeys, otherNum int) *birch.Document {
 }
 
 func IsMetricsDocument(key string, doc *birch.Document) ([]string, int) {
-	iter := doc.Iterator()
 	keys := []string{}
 	seen := 0
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	for iter.Next(ctx) {
-		elem := iter.Value()
-
+	for elem := range doc.Iterator() {
 		k, num := IsMetricsValue(fmt.Sprintf("%s/%s", key, elem.Key()), elem.Value())
 
 		if num > 0 {
@@ -93,12 +86,9 @@ func IsMetricsArray(key string, array *birch.Array) ([]string, int) {
 	idx := 0
 	numKeys := 0
 	keys := []string{}
-	iter := array.Iterator()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	for iter.Next(ctx) {
-		ks, num := IsMetricsValue(key+strconv.Itoa(idx), iter.Value())
+	for value := range array.Iterator() {
+		ks, num := IsMetricsValue(key+strconv.Itoa(idx), value)
 
 		if num > 0 {
 			numKeys += num

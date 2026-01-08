@@ -3,14 +3,12 @@ package ftdc
 import (
 	"bytes"
 	"context"
+	"errors"
 	"math/rand"
 	"time"
 
-	"errors"
-
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/x/ftdc/testutil"
-	"github.com/tychoish/fun"
 )
 
 type customCollector struct {
@@ -70,10 +68,9 @@ func newMixedChunk(num int64) []byte {
 	panicIfError(err)
 
 	return out
-
 }
 
-func produceMockChunkIter(ctx context.Context, samples int, newDoc func() *birch.Document) *fun.Stream[*Chunk] {
+func produceMockChunkIter(samples int, newDoc func() *birch.Document) *Iterator[*Chunk] {
 	collector := NewBaseCollector(samples)
 	for i := 0; i < samples; i++ {
 		panicIfError(collector.Add(newDoc()))
@@ -82,19 +79,13 @@ func produceMockChunkIter(ctx context.Context, samples int, newDoc func() *birch
 	panicIfError(err)
 
 	return ReadChunks(bytes.NewBuffer(payload))
-
 }
 
-func produceMockMetrics(ctx context.Context, samples int, newDoc func() *birch.Document) []Metric {
-	iter := produceMockChunkIter(ctx, samples, newDoc)
-
-	if !iter.Next(ctx) {
-		panic("could not iterate")
+func produceMockMetrics(samples int, newDoc func() *birch.Document) []Metric {
+	for chunk := range produceMockChunkIter(samples, newDoc).Iterator() {
+		return chunk.Metrics
 	}
-
-	metrics := iter.Value().Metrics
-	_ = iter.Close()
-	return metrics
+	panic("could not iterate")
 }
 
 func createCollectors(ctx context.Context) []*customCollector {

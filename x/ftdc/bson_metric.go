@@ -1,7 +1,6 @@
 package ftdc
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/tychoish/birch"
@@ -12,37 +11,33 @@ import (
 //
 // Helpers for parsing the timeseries data from a metrics payload
 
-func metricForDocument(ctx context.Context, path []string, d *birch.Document) []Metric {
-	iter := d.Iterator()
+func metricForDocument(path []string, d *birch.Document) []Metric {
 	o := []Metric{}
 
-	for iter.Next(ctx) {
-		e := iter.Value()
-
-		o = append(o, metricForType(ctx, e.Key(), path, e.Value())...)
+	for e := range d.Iterator() {
+		o = append(o, metricForType(e.Key(), path, e.Value())...)
 	}
 
 	return o
 }
 
-func metricForArray(ctx context.Context, key string, path []string, a *birch.Array) []Metric {
+func metricForArray(key string, path []string, a *birch.Array) []Metric {
 	if a == nil {
 		return []Metric{}
 	}
 
-	iter := a.Iterator() // ignore the error which can never be non-nil
 	o := []Metric{}
 	idx := 0
 
-	for iter.Next(ctx) {
-		o = append(o, metricForType(ctx, fmt.Sprintf("%s.%d", key, idx), path, iter.Value())...)
+	for value := range a.Iterator() {
+		o = append(o, metricForType(fmt.Sprintf("%s.%d", key, idx), path, value)...)
 		idx++
 	}
 
 	return o
 }
 
-func metricForType(ctx context.Context, key string, path []string, val *birch.Value) []Metric {
+func metricForType(key string, path []string, val *birch.Value) []Metric {
 	switch val.Type() {
 	case bsontype.ObjectID:
 		return []Metric{}
@@ -51,12 +46,12 @@ func metricForType(ctx context.Context, key string, path []string, val *birch.Va
 	case bsontype.Decimal128:
 		return []Metric{}
 	case bsontype.Array:
-		return metricForArray(ctx, key, path, val.MutableArray())
+		return metricForArray(key, path, val.MutableArray())
 	case bsontype.EmbeddedDocument:
 		path = append(path, key)
 
 		o := []Metric{}
-		for _, ne := range metricForDocument(ctx, path, val.MutableDocument()) {
+		for _, ne := range metricForDocument(path, val.MutableDocument()) {
 			o = append(o, Metric{
 				ParentPath:    path,
 				KeyName:       ne.KeyName,

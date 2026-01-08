@@ -10,12 +10,13 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"iter"
 
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/birch/elements"
-	"github.com/tychoish/fun"
 	"github.com/tychoish/fun/adt"
-	"github.com/tychoish/fun/dt"
+	"github.com/tychoish/fun/irt"
+	"github.com/tychoish/fun/stw"
 )
 
 var bufpool = adt.DefaultBufferPool()
@@ -141,9 +142,7 @@ func (d *Document) ElementAtOK(index uint) (*Element, bool) {
 }
 
 // Iterator creates an Iterator for this document and returns it.
-func (d *Document) Iterator() *fun.Stream[*Element] {
-	return fun.MakeStream(legacyIteratorConverter[*Element, *elementIterator](&elementIterator{d: d}))
-}
+func (d *Document) Iterator() iter.Seq[*Element] { return irt.Slice(d.elems) }
 
 // Extend merges a second document into the document. It may produce a
 // document with duplicate keys.
@@ -287,25 +286,26 @@ func (d *Document) MarshalBSON() ([]byte, error) {
 
 // UnmarshalBSON implements the Unmarshaler interface.
 func (d *Document) UnmarshalBSON(b []byte) error {
-	iter, err := Reader(b).Iterator()
-	if err != nil {
-		return err
-	}
+	seq := Reader(b).Iterator()
 
 	d.elems = make([]*Element, 0, 128)
 
-	for iter.Next(iterCtx) {
-		d.elems = append(d.elems, iter.Value())
+	for value, err := range seq {
+		if err != nil {
+			return err
+		}
+
+		d.elems = append(d.elems, value)
 	}
 
-	return iter.Close()
+	return nil
 }
 
 // ReadFrom will read one BSON document from the given io.Reader.
 func (d *Document) ReadFrom(r io.Reader) (int64, error) {
 	var total int64
 
-	sizeBuf := dt.NewSlice(bufpool.Get())
+	sizeBuf := stw.NewSlice(bufpool.Get())
 	sizeBuf.Grow(4)
 	defer bufpool.Put(sizeBuf)
 
@@ -318,7 +318,7 @@ func (d *Document) ReadFrom(r io.Reader) (int64, error) {
 
 	givenLength := readi32(sizeBuf)
 
-	b := dt.NewSlice(bufpool.Make())
+	b := stw.NewSlice(bufpool.Make())
 	b.Grow(int(givenLength))
 
 	copy(b[0:4], sizeBuf)

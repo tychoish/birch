@@ -12,7 +12,6 @@
 package events
 
 import (
-	"context"
 	"fmt"
 	"sort"
 	"time"
@@ -78,21 +77,11 @@ func (ps *Custom) UnmarshalBSON(in []byte) error {
 		return fmt.Errorf("problem parsing bson document: %w", err)
 	}
 
-	iter := doc.Iterator()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
-		elem := iter.Value()
+	for elem := range doc.Iterator() {
 		*ps = append(*ps, CustomPoint{
 			Name:  elem.Key(),
 			Value: elem.Value().Interface(),
 		})
-	}
-
-	if err = iter.Close(); err != nil {
-		return fmt.Errorf("problem reading document: %w", err)
 	}
 
 	return nil

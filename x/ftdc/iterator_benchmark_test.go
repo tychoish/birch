@@ -2,7 +2,6 @@ package ftdc
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,9 +9,6 @@ import (
 )
 
 func BenchmarkIterator(b *testing.B) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	for _, test := range []struct {
 		Name string
 		Path string
@@ -47,124 +43,55 @@ func BenchmarkIterator(b *testing.B) {
 			b.ResetTimer()
 
 			b.Run("Chunk", func(b *testing.B) {
-				b.Run("Resolving", func(b *testing.B) {
+				for n := 0; n < b.N; n++ {
 					iter := ReadChunks(bytes.NewBuffer(data))
-					b.ResetTimer()
-					for n := 0; n < b.N; n++ {
-						if !iter.Next(ctx) {
-							break
-						}
-						if iter.Value() == nil {
-							b.Fatalf("%T value is nil", iter.Value())
+					for val := range iter.Iterator() {
+						if val == nil {
+							b.Fatalf("%T value is nil", val)
 						}
 					}
-				})
-				b.Run("Iterating", func(b *testing.B) {
-					for n := 0; n < b.N; n++ {
-						iter := ReadChunks(bytes.NewBuffer(data))
-						for iter.Next(ctx) {
-							if iter.Value() == nil {
-								b.Fatalf("%T value is nil", iter.Value())
-							}
-						}
-					}
-				})
+				}
 			})
 			b.Run("Series", func(b *testing.B) {
-				b.Run("Resolving", func(b *testing.B) {
-					iter := ReadSeries(ctx, bytes.NewBuffer(data))
-					b.ResetTimer()
-					for n := 0; n < b.N; n++ {
-						if !iter.Next(ctx) {
-							break
-						}
-						if iter.Value() == nil {
-							b.Fatalf("%T value is nil", iter.Value())
+				for n := 0; n < b.N; n++ {
+					iter := ReadSeries(bytes.NewBuffer(data))
+					for val := range iter.Iterator() {
+						if val == nil {
+							b.Fatalf("%T value is nil", val)
 						}
 					}
-				})
-				b.Run("Iterating", func(b *testing.B) {
-					for n := 0; n < b.N; n++ {
-						iter := ReadSeries(ctx, bytes.NewBuffer(data))
-						for iter.Next(ctx) {
-							if iter.Value() == nil {
-								b.Fatalf("%T value is nil", iter.Value())
-							}
-						}
-					}
-				})
+				}
 			})
 			b.Run("Matrix", func(b *testing.B) {
-				b.Run("Resolving", func(b *testing.B) {
-					iter := ReadMatrix(ctx, bytes.NewBuffer(data))
-					b.ResetTimer()
-					for n := 0; n < b.N; n++ {
-						if !iter.Next(ctx) {
-							break
-						}
-						if iter.Value() == nil {
-							b.Fatalf("%T value is nil", iter.Value())
+				for n := 0; n < b.N; n++ {
+					iter := ReadMatrix(bytes.NewBuffer(data))
+					for val := range iter.Iterator() {
+						if val == nil {
+							b.Fatalf("%T value is nil", val)
 						}
 					}
-				})
-				b.Run("Iterating", func(b *testing.B) {
-					for n := 0; n < b.N; n++ {
-						iter := ReadMatrix(ctx, bytes.NewBuffer(data))
-						for iter.Next(ctx) {
-							if iter.Value() == nil {
-								b.Fatalf("%T value is nil", iter.Value())
-							}
-						}
-					}
-				})
+				}
 			})
 			b.Run("Structured", func(b *testing.B) {
-				b.Run("Resolving", func(b *testing.B) {
-					iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
-					b.ResetTimer()
-					for n := 0; n < b.N; n++ {
-						if !iter.Next(ctx) {
-							break
-						}
-						if iter.Value() == nil {
-							b.Fatalf("%T value is nil", iter.Value())
+				for n := 0; n < b.N; n++ {
+					iter := ReadStructuredMetrics(bytes.NewBuffer(data))
+					for val := range iter.Iterator() {
+						if val == nil {
+							b.Fatalf("%T value is nil", val)
 						}
 					}
-				})
-				b.Run("Iterating", func(b *testing.B) {
-					for n := 0; n < b.N; n++ {
-						iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
-						for iter.Next(ctx) {
-							if iter.Value() == nil {
-								b.Fatalf("%T value is nil", iter.Value())
-							}
-						}
-					}
-				})
+				}
 			})
 			b.Run("Flattened", func(b *testing.B) {
-				b.Run("Resolving", func(b *testing.B) {
-					iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
-					b.ResetTimer()
-					for n := 0; n < b.N; n++ {
-						if !iter.Next(ctx) {
-							break
-						}
-						if iter.Value() == nil {
-							b.Fatalf("%T value is nil", iter.Value())
+				iter := ReadStructuredMetrics(bytes.NewBuffer(data))
+				b.ResetTimer()
+				for n := 0; n < b.N; n++ {
+					for val := range iter.Iterator() {
+						if val == nil {
+							b.Fatalf("%T value is nil", val)
 						}
 					}
-				})
-				b.Run("Iterating", func(b *testing.B) {
-					for n := 0; n < b.N; n++ {
-						iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
-						for iter.Next(ctx) {
-							if iter.Value() == nil {
-								b.Fatalf("%T value is nil", iter.Value())
-							}
-						}
-					}
-				})
+				}
 			})
 		})
 	}

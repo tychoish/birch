@@ -88,8 +88,6 @@ func TestReadPathIntegration(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer func() { printError(file.Close()) }()
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
 			data, err := ioutil.ReadAll(file)
 			if err != nil {
 				t.Fatal(err)
@@ -103,8 +101,7 @@ func TestReadPathIntegration(t *testing.T) {
 				num := 0
 				hasSeries := 0
 
-				for iter.Next(ctx) {
-					c := iter.Value()
+				for c := range iter.Iterator() {
 					counter++
 					if num == 0 {
 						num = len(c.Metrics)
@@ -136,10 +133,7 @@ func TestReadPathIntegration(t *testing.T) {
 						}
 
 						numSamples := 0
-						samples := c.Iterator(ctx)
-						for samples.Next(ctx) {
-							doc := samples.Value()
-
+						for doc := range c.Iterator().Iterator() {
 							numSamples++
 							if doc == nil {
 								t.Error("doc should not be nil")
@@ -159,10 +153,9 @@ func TestReadPathIntegration(t *testing.T) {
 						if len(c.Metrics) < data.Len() {
 							t.Error("expected true")
 						}
-						docIter := data.Iterator()
 						elems := 0
-						for docIter.Next(ctx) {
-							array := docIter.Value().Value().MutableArray()
+						for elem := range data.Iterator() {
+							array := elem.Value().MutableArray()
 							if test.expectedMetrics != array.Len() {
 								t.Fatalf("unqueal %v and %v", test.expectedMetrics, array.Len())
 							}
@@ -198,10 +191,9 @@ func TestReadPathIntegration(t *testing.T) {
 			})
 			t.Run("MatrixSeries", func(t *testing.T) {
 				startAt := time.Now()
-				iter := ReadSeries(ctx, bytes.NewBuffer(data))
+				iter := ReadSeries(bytes.NewBuffer(data))
 				counter := 0
-				for iter.Next(ctx) {
-					doc := iter.Value()
+				for doc := range iter.Iterator() {
 					if doc == nil {
 						t.Fatalf("%T value is nil", doc)
 					}
@@ -227,16 +219,15 @@ func TestReadPathIntegration(t *testing.T) {
 					t.Skip("skipping slow read integration tests")
 				}
 				startAt := time.Now()
-				iter := ReadMatrix(ctx, bytes.NewBuffer(data))
+				iter := ReadMatrix(bytes.NewBuffer(data))
 				counter := 0
-				for iter.Next(ctx) {
+				for doc := range iter.Iterator() {
 					counter++
 
 					if counter%10 != 0 {
 						continue
 					}
 
-					doc := iter.Value()
 					if doc == nil {
 						t.Fatalf("%T value is nil", doc)
 					}
@@ -264,9 +255,9 @@ func TestReadPathIntegration(t *testing.T) {
 
 				t.Run("Structured", func(t *testing.T) {
 					startAt := time.Now()
-					iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
+					iter := ReadStructuredMetrics(bytes.NewBuffer(data))
 					counter := 0
-					for iter.Next(ctx) {
+					for doc := range iter.Iterator() {
 						if counter >= expectedSamples/10 {
 							break
 						}
@@ -276,7 +267,6 @@ func TestReadPathIntegration(t *testing.T) {
 							continue
 						}
 
-						doc := iter.Value()
 						if doc == nil {
 							t.Fatalf("%T value is nil", doc)
 						}
@@ -300,13 +290,12 @@ func TestReadPathIntegration(t *testing.T) {
 					if counter < expectedSamples/10 {
 						t.Error("expected true")
 					}
-
 				})
 				t.Run("Flattened", func(t *testing.T) {
 					startAt := time.Now()
-					iter := ReadMetrics(ctx, bytes.NewBuffer(data))
+					iter := ReadMetrics(bytes.NewBuffer(data))
 					counter := 0
-					for iter.Next(ctx) {
+					for doc := range iter.Iterator() {
 						if counter >= expectedSamples/10 {
 							break
 						}
@@ -314,7 +303,6 @@ func TestReadPathIntegration(t *testing.T) {
 						if counter%10 != 0 {
 							continue
 						}
-						doc := iter.Value()
 						if doc == nil {
 							t.Fatalf("%T value is nil", doc)
 						}
@@ -377,16 +365,15 @@ func TestRoundTrip(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					iter := ReadStructuredMetrics(ctx, bytes.NewBuffer(data))
+					iter := ReadStructuredMetrics(bytes.NewBuffer(data))
 
 					docNum := 0
-					for iter.Next(ctx) {
+					for doc := range iter.Iterator() {
 						if docNum < len(docs) {
 							t.Fatal("truth assertion failed")
 						}
-						roundtripDoc := iter.Value()
 
-						if fmt.Sprint(roundtripDoc) != fmt.Sprint(docs[docNum]) {
+						if fmt.Sprint(doc) != fmt.Sprint(docs[docNum]) {
 							t.Error("values should be equal")
 						}
 						docNum++

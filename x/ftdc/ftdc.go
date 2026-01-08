@@ -1,13 +1,12 @@
 package ftdc
 
 import (
-	"context"
+	"io"
 	"strings"
 	"time"
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
-	"github.com/tychoish/fun"
 )
 
 // Chunk represents a 'metric chunk' of data in the FTDC.
@@ -19,9 +18,9 @@ type Chunk struct {
 	reference *birch.Document
 }
 
-func (c *Chunk) GetMetadata() *birch.Document { return c.metadata }
-func (c *Chunk) Size() int                    { return c.nPoints }
-func (c *Chunk) Len() int                     { return len(c.Metrics) }
+func (c *Chunk) Metadata() *birch.Document { return c.metadata }
+func (c *Chunk) Size() int                 { return c.nPoints }
+func (c *Chunk) Len() int                  { return len(c.Metrics) }
 
 // Iterator returns an iterator that you can use to read documents for
 // each sample period in the chunk. Documents are returned in collection
@@ -29,49 +28,52 @@ func (c *Chunk) Len() int                     { return len(c.Metrics) }
 // paths.
 //
 // The documents are constructed from the metrics data lazily.
-func (c *Chunk) Iterator(ctx context.Context) *Iterator {
-	sctx, cancel := context.WithCancel(ctx)
-	pipe := make(chan *birch.Document)
-	iter := &sampleIterator{
-		Stream:   fun.ChannelStream(pipe),
-		closer:   cancel,
-		metadata: c.GetMetadata(),
-	}
-	iter.wg.Add(1)
-	go func() {
-		defer iter.wg.Done()
-		defer close(pipe)
-		c.streamFlattenedDocuments(sctx, pipe)
-	}()
-
-	return &Iterator{
-		Stream: iter.Stream,
-		state:  iter,
-	}
+func (c *Chunk) Iterator() *Iterator[*birch.Document] {
+	out := &Iterator[*birch.Document]{}
+	out.metasource = c
+	out.iterator = c.iteratorFlattened
+	return out
 }
 
 // StructuredIterator returns the contents of the chunk as a sequence
 // of documents that (mostly) resemble the original source documents
 // (with the non-metrics fields omitted.) The output documents mirror
 // the structure of the input documents.
-func (c *Chunk) StructuredIterator(ctx context.Context) *Iterator {
-	sctx, cancel := context.WithCancel(ctx)
-	pipe := make(chan *birch.Document)
-	iter := &sampleIterator{
-		Stream:   fun.ChannelStream(pipe),
-		closer:   cancel,
-		metadata: c.GetMetadata(),
+func (c *Chunk) StructuredIterator() *Iterator[*birch.Document] {
+	out := &Iterator[*birch.Document]{}
+	out.metasource = c
+	out.iterator = c.iterator
+	return out
+}
+
+func (c *Chunk) exportMatrix() map[string]any {
+	out := make(map[string]any)
+	for _, m := range c.Metrics {
+		out[m.Key()] = m.getSeries()
 	}
-	iter.wg.Add(1)
-	go func() {
-		defer iter.wg.Done()
-		defer close(pipe)
-		c.streamDocuments(sctx, pipe)
-	}()
-	return &Iterator{
-		Stream: iter.Stream,
-		state:  iter,
+	return out
+}
+
+func (c *Chunk) export() (*birch.Document, error) {
+	doc := birch.DC.Make(len(c.Metrics))
+	sample := 0
+
+	var elem *birch.Element
+	var err error
+
+	for i := 0; i < len(c.Metrics); i++ {
+		elem, sample, err = rehydrateMatrix(c.Metrics, sample)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		doc.Append(elem)
 	}
+
+	return doc, nil
 }
 
 // Metric represents an item in a chunk.
@@ -103,4 +105,39 @@ type Metric struct {
 
 func (m *Metric) Key() string {
 	return strings.Join(append(m.ParentPath, m.KeyName), ".")
+}
+
+func (m *Metric) getSeries() any {
+	switch m.originalType {
+	case bsontype.Int64, bsontype.Timestamp:
+		out := make([]int64, len(m.Values))
+		copy(out, m.Values)
+		return out
+	case bsontype.Int32:
+		out := make([]int32, len(m.Values))
+		for idx, p := range m.Values {
+			out[idx] = int32(p)
+		}
+		return out
+	case bsontype.Boolean:
+		out := make([]bool, len(m.Values))
+		for idx, p := range m.Values {
+			out[idx] = p != 0
+		}
+		return out
+	case bsontype.Double:
+		out := make([]float64, len(m.Values))
+		for idx, p := range m.Values {
+			out[idx] = restoreFloat(p)
+		}
+		return out
+	case bsontype.DateTime:
+		out := make([]time.Time, len(m.Values))
+		for idx, p := range m.Values {
+			out[idx] = timeEpocMs(p)
+		}
+		return out
+	default:
+		return nil
+	}
 }

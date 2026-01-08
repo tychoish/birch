@@ -1,7 +1,6 @@
 package ftdc
 
 import (
-	"context"
 	"testing"
 
 	"github.com/tychoish/birch"
@@ -73,8 +72,6 @@ func BenchmarkHashBSON(b *testing.B) {
 }
 
 func BenchmarkDocumentCreation(b *testing.B) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	for _, test := range []struct {
 		Name      string
 		Samples   int
@@ -87,42 +84,42 @@ func BenchmarkDocumentCreation(b *testing.B) {
 			Samples:   1000,
 			Length:    15,
 			Reference: testutil.RandFlatDocument(15),
-			Metrics:   produceMockMetrics(ctx, 1000, func() *birch.Document { return testutil.RandFlatDocument(15) }),
+			Metrics:   produceMockMetrics(1000, func() *birch.Document { return testutil.RandFlatDocument(15) }),
 		},
 		{
 			Name:      "SmallFlat",
 			Samples:   1000,
 			Length:    5,
 			Reference: testutil.RandFlatDocument(5),
-			Metrics:   produceMockMetrics(ctx, 1000, func() *birch.Document { return testutil.RandFlatDocument(5) }),
+			Metrics:   produceMockMetrics(1000, func() *birch.Document { return testutil.RandFlatDocument(5) }),
 		},
 		{
 			Name:      "LargeFlat",
 			Samples:   1000,
 			Length:    15,
 			Reference: testutil.RandFlatDocument(15),
-			Metrics:   produceMockMetrics(ctx, 1000, func() *birch.Document { return testutil.RandFlatDocument(100) }),
+			Metrics:   produceMockMetrics(1000, func() *birch.Document { return testutil.RandFlatDocument(100) }),
 		},
 		{
 			Name:      "Complex",
 			Samples:   1000,
 			Length:    60,
 			Reference: testutil.RandComplexDocument(20, 3),
-			Metrics:   produceMockMetrics(ctx, 1000, func() *birch.Document { return testutil.RandComplexDocument(20, 3) }),
+			Metrics:   produceMockMetrics(1000, func() *birch.Document { return testutil.RandComplexDocument(20, 3) }),
 		},
 		{
 			Name:      "SmallComplex",
 			Samples:   1000,
 			Length:    10,
 			Reference: testutil.RandComplexDocument(5, 1),
-			Metrics:   produceMockMetrics(ctx, 1000, func() *birch.Document { return testutil.RandComplexDocument(5, 1) }),
+			Metrics:   produceMockMetrics(1000, func() *birch.Document { return testutil.RandComplexDocument(5, 1) }),
 		},
 	} {
 		var doc *birch.Document
 		b.Run(test.Name, func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
 				for i := 0; i < test.Samples; i++ {
-					doc, _ = restoreDocument(ctx, test.Reference, i, test.Metrics, 0)
+					doc, _ = restoreDocument(test.Reference, i, test.Metrics, 0)
 					if doc == nil {
 						b.Fatalf("%T value is nil", doc)
 					}

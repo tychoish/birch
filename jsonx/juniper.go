@@ -1,6 +1,10 @@
 package jsonx
 
-import "github.com/tychoish/fun"
+import (
+	"iter"
+
+	"github.com/tychoish/fun/irt"
+)
 
 type Document struct {
 	elems []*Element
@@ -8,9 +12,7 @@ type Document struct {
 
 func (d *Document) Append(elems ...*Element) *Document { d.elems = append(d.elems, elems...); return d }
 func (d *Document) Len() int                           { return len(d.elems) }
-func (d *Document) Iterator() *fun.Stream[*Element] {
-	return fun.MakeStream(legacyIteratorConverter[*Element, *documentIterImpl](&documentIterImpl{doc: d}))
-}
+func (d *Document) Iterator() iter.Seq[*Element]       { return irt.Slice(d.elems) }
 
 func (d *Document) Copy() *Document {
 	nd := DC.Make(d.Len())
@@ -44,9 +46,7 @@ type Array struct {
 
 func (a *Array) Append(vals ...*Value) *Array { a.elems = append(a.elems, vals...); return a }
 func (a *Array) Len() int                     { return len(a.elems) }
-func (a *Array) Iterator() *fun.Stream[*Value] {
-	return fun.MakeStream(legacyIteratorConverter[*Value, *arrayIterImpl](&arrayIterImpl{array: a}))
-}
+func (a *Array) Iterator() iter.Seq[*Value]   { return irt.Slice(a.elems) }
 
 func (a *Array) Copy() *Array {
 	na := AC.Make(a.Len())

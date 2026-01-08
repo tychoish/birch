@@ -9,13 +9,13 @@ package birch
 import (
 	"bytes"
 	"fmt"
+	"iter"
 	"strconv"
 
 	"github.com/tychoish/birch/bsonerr"
 	"github.com/tychoish/birch/bsontype"
 	"github.com/tychoish/birch/elements"
-	"github.com/tychoish/fun"
-	"github.com/tychoish/fun/dt"
+	"github.com/tychoish/fun/stw"
 )
 
 // Array represents an array in BSON. The methods of this type are more
@@ -199,7 +199,7 @@ func (a *Array) Delete(index uint) *Value {
 
 // String implements the fmt.Stringer interface.
 func (a *Array) String() string {
-	bufbuf := dt.NewSlice(bufpool.Get())
+	bufbuf := stw.NewSlice(bufpool.Get())
 	defer bufpool.Put(bufbuf)
 	buf := bytes.NewBuffer(bufbuf)
 
@@ -274,7 +274,7 @@ func (a *Array) MarshalBSON() ([]byte, error) {
 		return nil, err
 	}
 
-	b := dt.NewSlice(bufpool.Make())
+	b := stw.NewSlice(bufpool.Make())
 	b.Grow(int(size))
 
 	if _, err = a.writeByteSlice(0, size, b); err != nil {
@@ -286,6 +286,6 @@ func (a *Array) MarshalBSON() ([]byte, error) {
 
 // Iterator returns a ArrayIterator that can be used to iterate through the
 // elements of this Array.
-func (a *Array) Iterator() *fun.Stream[*Value] {
+func (a *Array) Iterator() iter.Seq[*Value] {
 	return newArrayIterator(a)
 }

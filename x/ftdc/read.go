@@ -6,10 +6,9 @@ import (
 	"compress/zlib"
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
-
-	"errors"
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
@@ -76,7 +75,7 @@ func readChunks(ctx context.Context, ch <-chan *birch.Document, o chan<- *Chunk)
 		// sample. This has the field and we use use it to
 		// create a slice of Metrics for each series. The
 		// deltas are not populated.
-		refDoc, metrics, err := readBufMetrics(ctx, buf)
+		refDoc, metrics, err := readBufMetrics(buf)
 		if err != nil {
 			return fmt.Errorf("problem reading metrics: %w", err)
 		}
@@ -157,11 +156,11 @@ func readBufBSON(buf *bufio.Reader) (*birch.Document, error) {
 	return doc, nil
 }
 
-func readBufMetrics(ctx context.Context, buf *bufio.Reader) (*birch.Document, []Metric, error) {
+func readBufMetrics(buf *bufio.Reader) (*birch.Document, []Metric, error) {
 	doc, err := readBufBSON(buf)
 	if err != nil {
 		return nil, nil, fmt.Errorf("problem reading reference doc: %w", err)
 	}
 
-	return doc, metricForDocument(ctx, []string{}, doc), nil
+	return doc, metricForDocument([]string{}, doc), nil
 }

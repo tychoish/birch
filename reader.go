@@ -11,10 +11,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"iter"
 
 	"github.com/tychoish/birch/bsonerr"
-	"github.com/tychoish/fun"
-	"github.com/tychoish/fun/dt"
+	"github.com/tychoish/fun/irt"
+	"github.com/tychoish/fun/stw"
 )
 
 var errValidateDone = errors.New("validation loop complete")
@@ -33,7 +34,7 @@ func NewFromIOReader(r io.Reader) (Reader, error) {
 		return nil, bsonerr.NilReader
 	}
 
-	lengthBytes := dt.NewSlice(bufpool.Get())
+	lengthBytes := stw.NewSlice(bufpool.Get())
 	lengthBytes.Grow(4)
 	defer bufpool.Put(lengthBytes)
 
@@ -181,13 +182,19 @@ func (r Reader) ElementAt(index uint) (*Element, error) {
 
 // Iterator returns a ReaderIterator that can be used to iterate through the
 // elements of this Reader.
-func (r Reader) Iterator() (*fun.Stream[*Element], error) {
+func (r Reader) Iterator() iter.Seq2[*Element, error] {
 	iter, err := newReaderIterator(r)
 	if err != nil {
-		return nil, err
+		return irt.Two[*Element](nil, err)
 	}
-
-	return fun.MakeStream(legacyIteratorConverter[*Element](iter)), nil
+	return func(yield func(*Element, error) bool) {
+		for iter.Next() && yield(iter.Value(), nil) {
+			continue
+		}
+		if err := iter.Close(); err != nil {
+			yield(nil, err)
+		}
+	}
 }
 
 // String implements the fmt.Stringer interface.
