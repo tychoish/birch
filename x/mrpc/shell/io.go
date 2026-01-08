@@ -1,10 +1,8 @@
 package shell
 
 import (
-	"context"
-	"fmt"
-
 	"errors"
+	"fmt"
 
 	"github.com/tychoish/birch"
 )
@@ -43,13 +41,8 @@ func (r ErrorResponse) MarshalDocument() (*birch.Document, error) {
 
 func (r *ErrorResponse) UnmarshalDocument(in *birch.Document) error {
 	var ok bool
-	iter := in.Iterator()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
-	for iter.Next(ctx) {
-		elem := iter.Value()
-
+	for elem := range in.Iterator() {
 		switch elem.Key() {
 		case "ok":
 			if r.OK, ok = elem.Value().IntOK(); !ok {
@@ -101,13 +94,8 @@ func (imr *isMasterResponse) UnmarshalDocument(in *birch.Document) error {
 	}
 
 	var ok bool
-	iter := in.Iterator()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
-	for iter.Next(ctx) {
-		elem := iter.Value()
-
+	for elem := range in.Iterator() {
 		switch elem.Key() {
 		case "minWireVersion":
 			if imr.MinWireVersion, ok = elem.Value().IntOK(); !ok {
@@ -150,14 +138,8 @@ func (resp *whatsMyURIResponse) UnmarshalDocument(in *birch.Document) error {
 	}
 
 	var ok bool
-	iter := in.Iterator()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
-		elem := iter.Value()
-
+	for elem := range in.Iterator() {
 		switch elem.Key() {
 		case "you":
 			if resp.You, ok = elem.Value().StringValueOK(); !ok {
@@ -192,14 +174,7 @@ func (resp *buildInfoResponse) UnmarshalDocument(in *birch.Document) error {
 	}
 
 	var ok bool
-	iter := in.Iterator()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
-		elem := iter.Value()
-
+	for elem := range in.Iterator() {
 		switch elem.Key() {
 		case "version":
 			if resp.Version, ok = elem.Value().StringValueOK(); !ok {
@@ -233,13 +208,7 @@ func (resp *getLogResponse) UnmarshalDocument(in *birch.Document) error {
 		return err
 	}
 
-	iter := in.Iterator()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	for iter.Next(ctx) {
-		elem := iter.Value()
-
+	for elem := range in.Iterator() {
 		switch elem.Key() {
 		case "version":
 			array, ok := elem.Value().MutableArrayOK()
@@ -249,13 +218,11 @@ func (resp *getLogResponse) UnmarshalDocument(in *birch.Document) error {
 			}
 
 			resp.Log = make([]string, 0, array.Len())
-			aiter := array.Iterator()
-
-			for aiter.Next(ctx) {
-				str, ok := aiter.Value().StringValueOK()
+			for value := range array.Iterator() {
+				str, ok := value.StringValueOK()
 				if !ok {
 					return fmt.Errorf("could not parse value of correct type [%s] in array",
-						aiter.Value().Type().String())
+						value.Type().String())
 				}
 
 				resp.Log = append(resp.Log, str)
