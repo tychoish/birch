@@ -1,5 +1,0 @@
-github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWoS4=
-github.com/tychoish/fun v0.10.4/go.mod h1:ZZfrwtsnHHV81ecZCBPp57DjjYY9Io39JH2QSXNpKn4=
-github.com/tychoish/grip v0.3.5-0.20230814212257-3ad44e121b2d h1:tfncuQUhcCwQyQjGclvYC1bsIiEg5JYwjBhF2MOUJF4=
-github.com/tychoish/grip v0.3.5-0.20230814212257-3ad44e121b2d/go.mod h1:yUxPpU6c/Z40pyHGlmdUXQyOIW9QooUsw9qB3y0NmBA=
-github.com/tychoish/grip/x/metrics v0.0.0-20221015140920-56f88dee6fc5 h1:h+eIhFfHniwkOKaTQWc6hU3JzcMct3QKILXlFeyMzBI=
