@@ -15,17 +15,16 @@ import (
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/x/ftdc"
 	"github.com/tychoish/fun/erc"
-	"github.com/tychoish/grip/x/metrics"
 )
 
 // Runtime provides an aggregated view for
 type Runtime struct {
-	ID        int                    `json:"id" bson:"id"`
-	Timestamp time.Time              `json:"ts" bson:"ts"`
-	PID       int                    `json:"pid" bson:"pid"`
-	Golang    *metrics.GoRuntimeInfo `json:"golang,omitempty" bson:"golang,omitempty"`
-	System    *metrics.SystemInfo    `json:"system,omitempty" bson:"system,omitempty"`
-	Process   *metrics.ProcessInfo   `json:"process,omitempty" bson:"process,omitempty"`
+	ID        int            `json:"id" bson:"id"`
+	Timestamp time.Time      `json:"ts" bson:"ts"`
+	PID       int            `json:"pid" bson:"pid"`
+	Golang    *GoRuntimeInfo `json:"golang,omitempty" bson:"golang,omitempty"`
+	System    *SystemInfo    `json:"system,omitempty" bson:"system,omitempty"`
+	Process   *ProcessInfo   `json:"process,omitempty" bson:"process,omitempty"`
 }
 
 // CollectOptions are the settings to provide the behavior of
@@ -62,15 +61,15 @@ func (opts *CollectOptions) generate(ctx context.Context, id int) (*birch.Docume
 	}
 
 	if !opts.SkipGolang {
-		out.Golang = metrics.CollectGoStatsTotals().(*metrics.GoRuntimeInfo)
+		out.Golang = CollectGoStatsTotals()
 	}
 
 	if !opts.SkipSystem {
-		out.System = metrics.CollectSystemInfo().(*metrics.SystemInfo)
+		out.System = CollectSystemInfo()
 	}
 
 	if !opts.SkipProcess {
-		out.Process = metrics.CollectProcessInfo(int32(pid)).(*metrics.ProcessInfo)
+		out.Process = CollectProcessInfo(int32(pid))
 	}
 
 	docb, err := out.MarshalDocument()
@@ -149,7 +148,7 @@ func validateCondition(ec *erc.Collector, cond bool, str string) {
 		return
 	}
 
-	ec.Add(errors.New(str))
+	ec.Push(errors.New(str))
 }
 
 // Validate checks the Collect option settings and ensures that all

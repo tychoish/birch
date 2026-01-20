@@ -22,10 +22,6 @@ github.com/tklauser/numcpus v0.6.0 h1:kebhY2Qt+3U6RNK7UqpYNA+tJ23IBEGKkB7JQBfDYm
 github.com/tklauser/numcpus v0.6.0/go.mod h1:FEZLMke0lhOUG6w2JadTzp0a+Nl8PF/GFkQ5UVIcaL4=
 github.com/tychoish/fun v0.14.1 h1:fMeLxEPUjiFa13KyPtf/JZb8m7KXJrB5sHipyMEFJIk=
 github.com/tychoish/fun v0.14.1/go.mod h1:ghjR/9EyWh8h8oBg2+WJhsEcF/W4JXMWpo6btMRNusE=
-github.com/tychoish/grip v0.4.3 h1:EoEQokYw6Q237PPGvg3z/tpO58kOnhPG1u53XVn7wu0=
-github.com/tychoish/grip v0.4.3/go.mod h1:XgcJowQHu1d92E95C6aQfpc/x4fskoxuv7KrCdaYd8Q=
-github.com/tychoish/grip/x/metrics v0.0.0-20230408192639-ef555fcdf0fd h1:9MnZ1AzXArLf8o5OqLTSZMeqlXaz9AW+EVpW78t2ECs=
-github.com/tychoish/grip/x/metrics v0.0.0-20230408192639-ef555fcdf0fd/go.mod h1:iBxZSvfe+m4BDoxf55hzKLB7/zPhly4Mj7WY/Xfymz0=
 github.com/yusufpapurcu/wmi v1.2.2 h1:KBNDSne4vP5mbSWnJbO+51IMOXJB67QiYCSBrubbPRg=
 github.com/yusufpapurcu/wmi v1.2.2/go.mod h1:SBZ9tNy3G9/m5Oi98Zks0QjeHVDvuK0qfxQmPyzfmi0=
 golang.org/x/sys v0.0.0-20190916202348-b4ddaad3f8a3/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

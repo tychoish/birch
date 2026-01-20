@@ -61,9 +61,6 @@ func TestCollectRuntime(t *testing.T) {
 	})
 
 	t.Run("ReadStructuredData", func(t *testing.T) {
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-
 		files, err := ioutil.ReadDir(dir)
 		if err != nil {
 			t.Fatal(err)
@@ -86,11 +83,10 @@ func TestCollectRuntime(t *testing.T) {
 						t.Fatal(err)
 					}
 				}()
-				iter := ftdc.ReadStructuredMetrics(ctx, f)
+				iter := ftdc.ReadStructuredMetrics(f)
 				counter := 0
-				for iter.Next(ctx) {
+				for doc := range iter.Iterator() {
 					counter++
-					doc := iter.Value()
 					if doc == nil {
 						t.Fatalf("%T value is nil", doc)
 					}
@@ -106,9 +102,6 @@ func TestCollectRuntime(t *testing.T) {
 		}
 	})
 	t.Run("ReadFlattenedData", func(t *testing.T) {
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-
 		files, err := ioutil.ReadDir(dir)
 		if err != nil {
 			t.Fatal(err)
@@ -131,11 +124,10 @@ func TestCollectRuntime(t *testing.T) {
 						t.Fatal(err)
 					}
 				}()
-				iter := ftdc.ReadMetrics(ctx, f)
+				iter := ftdc.ReadMetrics(f)
 				counter := 0
-				for iter.Next(ctx) {
+				for doc := range iter.Iterator() {
 					counter++
-					doc := iter.Value()
 					if doc == nil {
 						t.Fatalf("%T value is nil", doc)
 					}

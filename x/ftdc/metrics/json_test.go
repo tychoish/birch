@@ -307,12 +307,10 @@ func TestCollectJSON(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		iter := ftdc.ReadMetrics(ctx, fn)
 		idx := -1
-		for iter.Next(ctx) {
+		for s := range ftdc.ReadMetrics(fn).Iterator() {
 			idx++
 
-			s := iter.Value()
 			if 2 != s.Len() {
 				t.Error("values should be equal")
 			}
@@ -322,9 +320,6 @@ func TestCollectJSON(t *testing.T) {
 					t.Fatalf("values are not equal %v and %v", v, out.Interface())
 				}
 			}
-		}
-		if err := iter.Close(); err != nil {
-			t.Fatal(err)
 		}
 		if 2 != idx {
 			t.Error("values should be equal")
