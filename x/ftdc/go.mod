@@ -8,7 +8,7 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/tychoish/birch v0.3.1
-	github.com/tychoish/fun v0.14.1
+	github.com/tychoish/fun v0.14.5
 )
 
 require (
