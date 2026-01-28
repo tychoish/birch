@@ -82,11 +82,3 @@ History
 The "mongowire" package is heavily adapted from `github.com/erh/mongonet
 <https://github.com/erh/mongonet>`_. Indeed this repository retains that
 history.
-
-Dependencies
-~~~~~~~~~~~~
-
-mrpc uses the following core libraries:
-
-- `github.com/tychoish/grip <https://github.com/tychoish/grip>`_ (for logging)
-
