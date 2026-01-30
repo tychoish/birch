@@ -322,7 +322,7 @@ func TestCollectJSON(t *testing.T) {
 			}
 		}
 		if 2 != idx {
-			t.Error("values should be equal")
+			t.Error("values should be equal:", 2, idx)
 		} // zero indexed
 	})
 }

@@ -8,12 +8,12 @@ package birch
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"strconv"
 	"testing"
 
 	"github.com/tychoish/birch/bsonerr"
+	"github.com/tychoish/fun/irt"
 )
 
 func TestArray(t *testing.T) {
@@ -137,8 +137,6 @@ func TestArray(t *testing.T) {
 			{"one-one", tapag.oneOne()},
 			{"two-one", tapag.twoOne()},
 		}
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
 
 		for _, tc := range iteratorTests {
 			t.Run(tc.name, func(t *testing.T) {
@@ -147,28 +145,20 @@ func TestArray(t *testing.T) {
 					a.Append(elems...)
 				}
 
-				iter := a.Iterator()
+				arr := irt.Collect(a.Iterator())
+				if len(tc.values) != len(arr) {
+					t.Fatal("mismatch", len(arr), len(tc.values))
+				}
 
 				for idx, elem := range tc.values {
-					if !iter.Next(ctx) {
-						t.Error("ArrayIterator.Next() returned false", idx)
-					}
 
+					value := arr[idx]
 					for iidx, val := range elem {
-						got := iter.Value()
-						if !valueEqual(got, val) {
+						if !valueEqual(value, val) {
 							t.Log(idx, iidx)
-							t.Errorf("Returned element does not match expected element. got %#v; want %#v", got, val)
+							t.Errorf("Returned element does not match expected element. got %#v; want %#v", value, val)
 						}
 					}
-				}
-
-				if iter.Next(ctx) {
-					t.Errorf("ArrayIterator.Next() returned true. expected false")
-				}
-
-				if err := iter.Close(); err != nil {
-					t.Errorf("ArrayIterator.Err() returned non-nil error: %s", err)
 				}
 			})
 		}
@@ -221,7 +211,6 @@ func TestArray(t *testing.T) {
 				t.Error("error should not be nil")
 			}
 		})
-
 	})
 	t.Run("Lookup", func(t *testing.T) {
 		t.Run("FindValue", func(t *testing.T) {

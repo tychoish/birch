@@ -8,7 +8,6 @@ package birch
 
 import (
 	"bytes"
-	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -35,9 +34,6 @@ func BenchmarkReaderValidate(b *testing.B) {
 }
 
 func TestReader(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	t.Run("Validate", func(t *testing.T) {
 		t.Run("TooShort", func(t *testing.T) {
 			want := errTooSmall
@@ -92,7 +88,8 @@ func TestReader(t *testing.T) {
 			err  error
 		}{
 			{"null", Reader{'\x08', '\x00', '\x00', '\x00', '\x0A', 'x', '\x00', '\x00'}, 8, nil},
-			{"subdocument",
+			{
+				"subdocument",
 				Reader{
 					'\x15', '\x00', '\x00', '\x00',
 					'\x03',
@@ -102,7 +99,8 @@ func TestReader(t *testing.T) {
 				},
 				21, nil,
 			},
-			{"array",
+			{
+				"array",
 				Reader{
 					'\x15', '\x00', '\x00', '\x00',
 					'\x04',
@@ -176,14 +174,16 @@ func TestReader(t *testing.T) {
 			want *Element
 			err  error
 		}{
-			{"first",
+			{
+				"first",
 				Reader{
 					'\x08', '\x00', '\x00', '\x00', '\x0A', 'x', '\x00', '\x00',
 				},
 				[]string{"x"},
 				&Element{&Value{start: 4, offset: 7}}, nil,
 			},
-			{"first-second",
+			{
+				"first-second",
 				Reader{
 					'\x15', '\x00', '\x00', '\x00',
 					'\x03',
@@ -194,7 +194,8 @@ func TestReader(t *testing.T) {
 				[]string{"foo", "b"},
 				&Element{&Value{start: 7, offset: 10}}, nil,
 			},
-			{"first-second-array",
+			{
+				"first-second-array",
 				Reader{
 					'\x15', '\x00', '\x00', '\x00',
 					'\x04',
@@ -240,15 +241,21 @@ func TestReader(t *testing.T) {
 			index uint
 			want  *Element
 		}{
-			{"first",
+			{
+				"first",
 				Reader{0xe, 0x0, 0x0, 0x0, 0xa, 0x78, 0x0, 0xa, 0x79, 0x0, 0xa, 0x7a, 0x0, 0x0},
-				0, fromElement(EC.Null("x"))},
-			{"second",
+				0, fromElement(EC.Null("x")),
+			},
+			{
+				"second",
 				Reader{0xe, 0x0, 0x0, 0x0, 0xa, 0x78, 0x0, 0xa, 0x79, 0x0, 0xa, 0x7a, 0x0, 0x0},
-				1, fromElement(EC.Null("y"))},
-			{"third",
+				1, fromElement(EC.Null("y")),
+			},
+			{
+				"third",
 				Reader{0xe, 0x0, 0x0, 0x0, 0xa, 0x78, 0x0, 0xa, 0x79, 0x0, 0xa, 0x7a, 0x0, 0x0},
-				2, fromElement(EC.Null("z"))},
+				2, fromElement(EC.Null("z")),
+			},
 		}
 
 		for _, tc := range testCases {
@@ -260,7 +267,6 @@ func TestReader(t *testing.T) {
 
 				if !got.Equal(tc.want) {
 					t.Errorf("elements are not the same: a=%q b=%q", got.String(), tc.want.String())
-
 				}
 			})
 		}
@@ -362,7 +368,7 @@ func TestReader(t *testing.T) {
 				}
 
 				for _, elem := range tc.elems {
-					if !itr.Next(ctx) {
+					if !itr.Next() {
 						t.Fatal("truth assertion failed")
 					}
 					if err := itr.Close(); err != nil {
@@ -373,7 +379,7 @@ func TestReader(t *testing.T) {
 					}
 				}
 
-				if itr.Next(ctx) {
+				if itr.Next() {
 					t.Fatal("iterator should be empty")
 				}
 				if err := itr.Close(); tc.finalErr != err {

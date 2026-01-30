@@ -8,19 +8,16 @@ package birch
 
 import (
 	"bytes"
-	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
 	"testing"
 
 	"github.com/tychoish/birch/bsonerr"
+	"github.com/tychoish/fun/irt"
 )
 
 func TestDocument(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	t.Run("DC.Elements", func(t *testing.T) {
 		t.Run("TooShort", func(t *testing.T) {
 			want := errTooSmall
@@ -142,7 +139,8 @@ func TestDocument(t *testing.T) {
 				{
 					"first element nil",
 					nil,
-					&Document{elems: make([]*Element, 0)}},
+					&Document{elems: make([]*Element, 0)},
+				},
 			}
 
 			for _, tc := range testCases {
@@ -180,15 +178,18 @@ func TestDocument(t *testing.T) {
 				EC.Double("x", 3.14159),
 				(&Document{}).Append(EC.Double("x", 3.14159)),
 			},
-			{"second", (&Document{}).Append(EC.Double("x", 3.14159), EC.String("y", "z")),
+			{
+				"second", (&Document{}).Append(EC.Double("x", 3.14159), EC.String("y", "z")),
 				EC.Double("y", 1.2345),
 				(&Document{}).Append(EC.Double("x", 3.14159), EC.Double("y", 1.2345)),
 			},
-			{"concat", (&Document{}).Append(EC.Null("x")),
+			{
+				"concat", (&Document{}).Append(EC.Null("x")),
 				EC.Null("y"),
 				(&Document{}).Append(EC.Null("x"), EC.Null("y")),
 			},
-			{"concat-in-middle", (&Document{}).Append(EC.Null("w"), EC.Null("y"), EC.Null("z")),
+			{
+				"concat-in-middle", (&Document{}).Append(EC.Null("w"), EC.Null("y"), EC.Null("z")),
 				EC.Null("x"),
 				(&Document{}).Append(EC.Null("w"), EC.Null("y"), EC.Null("z"), EC.Null("x")),
 			},
@@ -251,7 +252,6 @@ func TestDocument(t *testing.T) {
 				if !tc.want.Equal(got) {
 					t.Fatalf("unqueal %v and %v", tc.want, got)
 				}
-
 			})
 		}
 	})
@@ -259,20 +259,13 @@ func TestDocument(t *testing.T) {
 		elems := []*Element{EC.String("foo", "bar"), EC.Int32("baz", 1), EC.Null("bing")}
 		d := DC.Elements(elems...)
 
-		iter := d.Iterator()
+		arr := irt.Collect(d.Iterator())
+		if len(arr) != len(elems) {
+			t.Fatal("incorrect lengths")
+		}
 
 		for idx, elem := range elems {
-			if !iter.Next(ctx) {
-				t.Error("truth assertion failed", idx)
-			}
-			requireElementsEqual(t, elem, iter.Value())
-		}
-
-		if iter.Next(ctx) {
-			t.Fatal("iterator should be empty")
-		}
-		if err := iter.Close(); err != nil {
-			t.Fatal(err)
+			requireElementsEqual(t, elem, arr[idx])
 		}
 	})
 	t.Run("Reset", func(t *testing.T) {
@@ -317,7 +310,6 @@ func TestDocument(t *testing.T) {
 				if !bytes.Equal(tc.want, buf.Bytes()) {
 					t.Fatalf("unqueal %v and %v", tc.want, buf.Bytes())
 				}
-
 			})
 		}
 	})
@@ -367,7 +359,8 @@ func TestDocument(t *testing.T) {
 			want *Document
 			err  error
 		}{
-			{"four",
+			{
+				"four",
 				[]byte{
 					'\x11', '\x00', '\x00', '\x00',
 					'\x0A', 'x', '\x00', '\x0A', 'y', '\x00', '\x0A', 'z', '\x00', '\x0A', 'w', '\x00',
@@ -413,7 +406,7 @@ func TestDocument(t *testing.T) {
 			}
 		})
 		t.Run("invalid-document", func(t *testing.T) {
-			var buf = &bytes.Buffer{}
+			buf := &bytes.Buffer{}
 			_, err := buf.Write([]byte{'\x07', '\x00', '\x00', '\x00', '\x01', '\x00', '\x00'})
 			if err != nil {
 				t.Errorf("Unexpected error while writing document to buffer: %s", err)
@@ -564,7 +557,6 @@ func TestDocument(t *testing.T) {
 				t.Fatalf("expected nil for 'elem' but got %v", elem)
 			}
 		})
-
 	})
 
 	t.Run("InterfaceOutput", func(t *testing.T) {
@@ -581,7 +573,6 @@ func TestDocument(t *testing.T) {
 			t.Error(ok, val)
 		}
 	})
-
 }
 
 var tpag testPrependAppendGenerator
@@ -650,7 +641,7 @@ func (testPrependAppendGenerator) twoOnePrependBytes() []byte {
 		0x1f, 0x0, 0x0, 0x0,
 		// type - key - value
 		0x1, 0x66, 0x6f, 0x6f, 0x0, 0x83, 0xc0, 0xca, 0xa1, 0x45, 0xb6, 0x16, 0x40,
-		//type - key - value
+		// type - key - value
 		0x1, 0x66, 0x6f, 0x6f, 0x0, 0x58, 0x39, 0xb4, 0xc8, 0x76, 0xbe, 0xf3, 0x3f,
 		// null terminator
 		0x0,

@@ -1,7 +1,6 @@
 package birch
 
 import (
-	"context"
 	"fmt"
 	"math"
 	"testing"
@@ -88,7 +87,6 @@ func makeDocumentTestCases(depth int) []jsonDocumentTestCase {
 			Expected: `{"signified":{"$symbol":"signifier"}}`,
 		},
 		{
-
 			Name:     "MDBTimeStamp",
 			Doc:      DC.Elements(EC.Timestamp("mdbts", uint32(now.Unix()), 1)),
 			Expected: fmt.Sprintf(`{"mdbts":{"$timestamp":{"t":%d,"i":1}}}`, now.Unix()),
@@ -305,9 +303,6 @@ func makeValueTestCases(depth int) []jsonValueTestCase {
 }
 
 func TestJSON(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	t.Run("Marshal", func(t *testing.T) {
 		t.Run("Document", func(t *testing.T) {
 			for _, test := range makeDocumentTestCases(0) {
@@ -317,7 +312,6 @@ func TestJSON(t *testing.T) {
 
 				t.Run(test.Name, func(t *testing.T) {
 					out, err := test.Doc.MarshalJSON()
-
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -334,7 +328,6 @@ func TestJSON(t *testing.T) {
 				}
 				t.Run(test.Name, func(t *testing.T) {
 					out, err := test.Array.MarshalJSON()
-
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -352,7 +345,6 @@ func TestJSON(t *testing.T) {
 
 				t.Run(test.Name, func(t *testing.T) {
 					out, err := test.Val.MarshalJSON()
-
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -377,8 +369,7 @@ func TestJSON(t *testing.T) {
 						t.Fatal(err)
 					}
 					iter := doc.Iterator()
-					for iter.Next(ctx) {
-						elem := iter.Value()
+					for elem := range iter {
 						expected, err := test.Doc.LookupErr(elem.Key())
 						if err != nil {
 							t.Fatal(err)
@@ -386,9 +377,6 @@ func TestJSON(t *testing.T) {
 						if !elem.Value().Equal(expected) {
 							t.Fatalf("[%s] %s != %s", test.Expected, expected.Interface(), elem.Value().Interface())
 						}
-					}
-					if err := iter.Close(); err != nil {
-						t.Fatal(err)
 					}
 				})
 			}
@@ -408,8 +396,7 @@ func TestJSON(t *testing.T) {
 
 					iter := array.Iterator()
 					idx := uint(0)
-					for iter.Next(ctx) {
-						elem := iter.Value()
+					for elem := range iter {
 						expected, err := test.Array.Lookup(idx)
 						if err != nil {
 							t.Fatal(err)
@@ -418,9 +405,6 @@ func TestJSON(t *testing.T) {
 							t.Fatal("expected true")
 						}
 						idx++
-					}
-					if err := iter.Close(); err != nil {
-						t.Fatal(err)
 					}
 				})
 			}
@@ -444,6 +428,5 @@ func TestJSON(t *testing.T) {
 				})
 			}
 		})
-
 	})
 }
