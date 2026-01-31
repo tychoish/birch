@@ -34,7 +34,7 @@ func readDiagnostic(ctx context.Context, f io.Reader, ch chan<- *birch.Document)
 	}
 }
 
-func readChunks(ctx context.Context, ch <-chan *birch.Document, o chan<- *Chunk) error {
+func readChunks(ctx context.Context, msi *metasourceImpl, ch <-chan *birch.Document, o chan<- *Chunk) error {
 	defer close(o)
 
 	var metadata *birch.Document
@@ -48,6 +48,9 @@ func readChunks(ctx context.Context, ch <-chan *birch.Document, o chan<- *Chunk)
 
 		if isNum(0, docType) {
 			metadata = doc
+			if msi != nil {
+				msi.inner.Store(doc)
+			}
 			continue
 		} else if !isNum(1, docType) {
 			continue

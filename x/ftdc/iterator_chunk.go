@@ -7,46 +7,40 @@ import (
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/fun/fnx"
-	"github.com/tychoish/fun/stw"
 )
 
 // ReadChunks creates a ChunkIterator from an underlying FTDC data
 // source.
 func ReadChunks(r io.Reader) *Iterator[*Chunk] {
-	pipe := make(chan *Chunk)
-	ipc := make(chan *birch.Document)
-
 	out := &Iterator[*Chunk]{}
-
-	ch := stw.ChanBlocking(pipe)
 	msi := &metasourceImpl{}
 	out.metasource = msi
 	out.iterator = func() iter.Seq[*Chunk] {
-		wg := &fnx.WaitGroup{}
-
-		setup := fnx.Operation(func(ctx context.Context) {
-			wg.Launch(ctx, func(ctx context.Context) { out.catcher.Push(readChunks(ctx, ipc, pipe)) })
-			wg.Launch(ctx, func(ctx context.Context) { out.catcher.Push(readDiagnostic(ctx, r, ipc)) })
-			wg.Operation().Background(ctx)
-			wg.Launch(ctx, func(ctx context.Context) {
-				for {
-					select {
-					case <-ctx.Done():
-					case meta := <-ipc:
-						msi.inner.Store(meta)
-					}
-				}
-			})
-		}).Once()
-
 		return func(yield func(*Chunk) bool) {
+			pipe := make(chan *Chunk)
+			ipc := make(chan *birch.Document)
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			setup(ctx)
 
-			for elem := range ch.Receive().Iterator(ctx) {
-				if !yield(elem) {
+			wg := &fnx.WaitGroup{}
+			wg.Launch(ctx, func(ctx context.Context) { out.catcher.Push(readChunks(ctx, msi, ipc, pipe)) })
+			wg.Launch(ctx, func(ctx context.Context) { out.catcher.Push(readDiagnostic(ctx, r, ipc)) })
+
+			go func() {
+				wg.Wait(ctx)
+			}()
+
+			for {
+				select {
+				case <-ctx.Done():
 					return
+				case elem, ok := <-pipe:
+					if !ok {
+						return
+					}
+					if !yield(elem) {
+						return
+					}
 				}
 			}
 		}
