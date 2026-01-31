@@ -39,113 +39,123 @@ func readChunks(ctx context.Context, msi *metasourceImpl, ch <-chan *birch.Docum
 
 	var metadata *birch.Document
 
-	for doc := range ch {
-		// the FTDC streams typically have onetime-per-file
-		// metadata that includes information that doesn't
-		// change (like process parameters, and machine
-		// info. This implementation entirely ignores that.)
-		docType := doc.Lookup("type")
-
-		if isNum(0, docType) {
-			metadata = doc
-			if msi != nil {
-				msi.inner.Store(doc)
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case doc, ok := <-ch:
+			if !ok {
+				return nil
 			}
-			continue
-		} else if !isNum(1, docType) {
-			continue
-		}
 
-		id, _ := doc.Lookup("_id").TimeOK()
+			// the FTDC streams typically have onetime-per-file
+			// metadata that includes information that doesn't
+			// change (like process parameters, and machine
+			// info. This implementation entirely ignores that.)
+			docType := doc.Lookup("type")
 
-		// get the data field which holds the metrics chunk
-		zelem := doc.LookupElement("data")
-		if zelem == nil {
-			return errors.New("data is not populated")
-		}
-		_, zBytes := zelem.Value().Binary()
+			if isNum(0, docType) {
+				metadata = doc
+				if msi != nil {
+					msi.inner.Store(doc)
+				}
+				continue
+			} else if !isNum(1, docType) {
+				continue
+			}
 
-		// the metrics chunk, after the first 4 bytes, is zlib
-		// compressed, so we make a reader for that. data
-		z, err := zlib.NewReader(bytes.NewBuffer(zBytes[4:]))
-		if err != nil {
-			return fmt.Errorf("problem building zlib reader: %w", err)
-		}
-		buf := bufio.NewReader(z)
+			id, _ := doc.Lookup("_id").TimeOK()
 
-		// the metrics chunk, which is *not* bson, first
-		// contains a bson document which begins the
-		// sample. This has the field and we use use it to
-		// create a slice of Metrics for each series. The
-		// deltas are not populated.
-		refDoc, metrics, err := readBufMetrics(buf)
-		if err != nil {
-			return fmt.Errorf("problem reading metrics: %w", err)
-		}
+			// get the data field which holds the metrics chunk
+			zelem := doc.LookupElement("data")
+			if zelem == nil {
+				return errors.New("data is not populated")
+			}
+			_, zBytes := zelem.Value().Binary()
 
-		// now go back and read the first few bytes
-		// (uncompressed) which tell us how many metrics are
-		// in each sample (e.g. the fields in the document)
-		// and how many events are collected in each series.
-		bl := make([]byte, 8)
-		_, err = io.ReadAtLeast(buf, bl, 8)
-		if err != nil {
-			return err
-		}
-		nmetrics := int(binary.LittleEndian.Uint32(bl[:4]))
-		ndeltas := int(binary.LittleEndian.Uint32(bl[4:]))
+			// the metrics chunk, after the first 4 bytes, is zlib
+			// compressed, so we make a reader for that. data
+			z, err := zlib.NewReader(bytes.NewBuffer(zBytes[4:]))
+			if err != nil {
+				return fmt.Errorf("problem building zlib reader: %w", err)
+			}
+			buf := bufio.NewReader(z)
 
-		// if the number of metrics that we see from the
-		// source document (metrics) and the number the file
-		// reports don't equal, it's probably corrupt.
-		if nmetrics != len(metrics) {
-			return fmt.Errorf("metrics mismatch, file likely corrupt Expected %d, got %d", nmetrics, len(metrics))
-		}
+			// the metrics chunk, which is *not* bson, first
+			// contains a bson document which begins the
+			// sample. This has the field and we use use it to
+			// create a slice of Metrics for each series. The
+			// deltas are not populated.
+			refDoc, metrics, err := readBufMetrics(buf)
+			if err != nil {
+				return fmt.Errorf("problem reading metrics: %w", err)
+			}
 
-		// now go back and populate the delta numbers
-		var nzeroes uint64
-		for i, v := range metrics {
-			metrics[i].startingValue = v.startingValue
-			metrics[i].Values = make([]int64, ndeltas)
+			// now go back and read the first few bytes
+			// (uncompressed) which tell us how many metrics are
+			// in each sample (e.g. the fields in the document)
+			// and how many events are collected in each series.
+			bl := make([]byte, 8)
+			_, err = io.ReadAtLeast(buf, bl, 8)
+			if err != nil {
+				return err
+			}
+			nmetrics := int(binary.LittleEndian.Uint32(bl[:4]))
+			ndeltas := int(binary.LittleEndian.Uint32(bl[4:]))
 
-			for j := 0; j < ndeltas; j++ {
-				var delta uint64
-				if nzeroes != 0 {
-					delta = 0
-					nzeroes--
-				} else {
-					delta, err = binary.ReadUvarint(buf)
-					if err != nil {
-						return fmt.Errorf("reached unexpected end of encoded integer: %w", err)
-					}
-					if delta == 0 {
-						nzeroes, err = binary.ReadUvarint(buf)
+			// if the number of metrics that we see from the
+			// source document (metrics) and the number the file
+			// reports don't equal, it's probably corrupt.
+			if nmetrics != len(metrics) {
+				return fmt.Errorf("metrics mismatch, file likely corrupt Expected %d, got %d", nmetrics, len(metrics))
+			}
+
+			// now go back and populate the delta numbers
+			var nzeroes uint64
+			for i, v := range metrics {
+				metrics[i].startingValue = v.startingValue
+				metrics[i].Values = make([]int64, ndeltas)
+
+				for j := 0; j < ndeltas; j++ {
+					var delta uint64
+					if nzeroes != 0 {
+						delta = 0
+						nzeroes--
+					} else {
+						delta, err = binary.ReadUvarint(buf)
 						if err != nil {
-							return err
+							return fmt.Errorf("reached unexpected end of encoded integer: %w", err)
+						}
+						if delta == 0 {
+							nzeroes, err = binary.ReadUvarint(buf)
+							if err != nil {
+								return err
+							}
 						}
 					}
+					metrics[i].Values[j] = int64(delta)
 				}
-				metrics[i].Values[j] = int64(delta)
-			}
-			if metrics[i].originalType == bsontype.Double {
-				metrics[i].Values = undeltaFloats(v.startingValue, metrics[i].Values)
-			} else {
-				metrics[i].Values = undelta(v.startingValue, metrics[i].Values)
-			}
+				if metrics[i].originalType == bsontype.Double {
+					metrics[i].Values = undeltaFloats(v.startingValue, metrics[i].Values)
+				} else {
+					metrics[i].Values = undelta(v.startingValue, metrics[i].Values)
+				}
 
-		}
-		select {
-		case o <- &Chunk{
-			Metrics:   metrics,
-			nPoints:   ndeltas + 1, // this accounts for the reference document
-			id:        id,
-			metadata:  metadata,
-			reference: refDoc,
-		}:
-		case <-ctx.Done():
-			return nil
+			}
+			select {
+			case o <- &Chunk{
+				Metrics:   metrics,
+				nPoints:   ndeltas + 1, // this accounts for the reference document
+				id:        id,
+				metadata:  metadata,
+				reference: refDoc,
+			}:
+			case <-ctx.Done():
+				return nil
+			}
 		}
 	}
+
 	return nil
 }
 

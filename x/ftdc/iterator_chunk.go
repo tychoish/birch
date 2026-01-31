@@ -6,7 +6,6 @@ import (
 	"iter"
 
 	"github.com/tychoish/birch"
-	"github.com/tychoish/fun/fnx"
 )
 
 // ReadChunks creates a ChunkIterator from an underlying FTDC data
@@ -22,13 +21,8 @@ func ReadChunks(r io.Reader) *Iterator[*Chunk] {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			wg := &fnx.WaitGroup{}
-			wg.Launch(ctx, func(ctx context.Context) { out.catcher.Push(readChunks(ctx, msi, ipc, pipe)) })
-			wg.Launch(ctx, func(ctx context.Context) { out.catcher.Push(readDiagnostic(ctx, r, ipc)) })
-
-			go func() {
-				wg.Wait(ctx)
-			}()
+			go func() { out.catcher.Push(readChunks(ctx, msi, ipc, pipe)) }()
+			go func() { out.catcher.Push(readDiagnostic(ctx, r, ipc)) }()
 
 			for {
 				select {
