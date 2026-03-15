@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"compress/zlib"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"math"
 	"sort"
 	"time"
-
-	"errors"
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/birch/bsontype"
@@ -89,7 +88,7 @@ func encodeValue(val int64) []byte {
 }
 
 func compressBuffer(input []byte) ([]byte, error) {
-	buf := bytes.NewBuffer(bufpool.Make())
+	buf := bytes.NewBuffer(bufpool.Get())
 	zbuf := zlib.NewWriter(buf)
 
 	_, err := buf.Write(encodeSizeValue(uint32(len(input))))

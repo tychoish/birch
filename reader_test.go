@@ -403,7 +403,7 @@ func TestReader(t *testing.T) {
 			},
 			{
 				"premature end of reader",
-				bytes.NewBuffer(bufpool.Make()),
+				bytes.NewBuffer(bufpool.Get()),
 				nil,
 				io.EOF,
 			},

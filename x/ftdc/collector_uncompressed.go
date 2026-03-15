@@ -2,9 +2,8 @@ package ftdc
 
 import (
 	"bytes"
-	"io"
-
 	"errors"
+	"io"
 
 	"github.com/tychoish/birch"
 )
@@ -193,7 +192,7 @@ func (c *uncompressedCollector) Resolve() ([]byte, error) {
 		return nil, errors.New("no data")
 	}
 
-	buf := bytes.NewBuffer(bufpool.Make())
+	buf := bytes.NewBuffer(bufpool.Get())
 
 	if c.metadata != nil {
 		if err := c.marshalWrite(buf, c.metadata); err != nil {

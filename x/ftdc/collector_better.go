@@ -2,10 +2,9 @@ package ftdc
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"time"
-
-	"errors"
 
 	"github.com/tychoish/birch"
 	"github.com/tychoish/fun/adt"
@@ -42,6 +41,7 @@ func (c *betterCollector) SetMetadata(in any) error {
 	c.metadata = doc
 	return nil
 }
+
 func (c *betterCollector) Reset() {
 	c.reference = nil
 	c.lastSample = nil
@@ -130,7 +130,7 @@ func (c *betterCollector) Resolve() ([]byte, error) {
 		return nil, err
 	}
 
-	buf := bytes.NewBuffer(bufpool.Make())
+	buf := bytes.NewBuffer(bufpool.Get())
 	if c.metadata != nil {
 		_, err = birch.DC.Elements(
 			birch.EC.Time("_id", c.startedAt),
@@ -153,7 +153,7 @@ func (c *betterCollector) Resolve() ([]byte, error) {
 }
 
 func (c *betterCollector) getPayload() ([]byte, error) {
-	payload := bytes.NewBuffer(bufpool.Make())
+	payload := bytes.NewBuffer(bufpool.Get())
 	if _, err := c.reference.WriteTo(payload); err != nil {
 		return nil, fmt.Errorf("problem writing reference document: %w", err)
 	}

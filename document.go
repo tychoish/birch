@@ -318,7 +318,7 @@ func (d *Document) ReadFrom(r io.Reader) (int64, error) {
 
 	givenLength := readi32(sizeBuf)
 
-	b := stw.NewSlice(bufpool.Make())
+	b := stw.NewSlice(bufpool.Get())
 	b.Grow(int(givenLength))
 
 	copy(b[0:4], sizeBuf)

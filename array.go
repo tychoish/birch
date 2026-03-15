@@ -274,7 +274,7 @@ func (a *Array) MarshalBSON() ([]byte, error) {
 		return nil, err
 	}
 
-	b := stw.NewSlice(bufpool.Make())
+	b := stw.NewSlice(bufpool.Get())
 	b.Grow(int(size))
 
 	if _, err = a.writeByteSlice(0, size, b); err != nil {
